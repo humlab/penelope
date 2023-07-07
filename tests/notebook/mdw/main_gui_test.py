@@ -48,12 +48,11 @@ def test_display_mdw():
 
 def test_create_load_gui(corpus_fixture):
     corpus_folder = './tests/test_data'
+    is_called: bool = False
 
-    def display_patch(corpus: dtm.VectorizedCorpus):
-        ...
-
-    def load_corpus(folder: str, tag: str) -> dtm.VectorizedCorpus:
-        return corpus_fixture
+    def done_callback(folder: str, tag: str) -> None:
+        nonlocal is_called
+        is_called = True
 
     with mock.patch(
         'penelope.notebook.dtm.LoadGUI.corpus_filename', new_callable=mock.PropertyMock
@@ -61,12 +60,10 @@ def test_create_load_gui(corpus_fixture):
         mocked_corpus_filename.return_value = "./tests/"
 
         for kind in ['chooser', 'picker']:
-            gui = dtm_ui.LoadGUI(folder=corpus_folder, done_callback=display_patch, kind=kind)
-            gui.load_corpus = load_corpus
+            gui = dtm_ui.LoadGUI(folder=corpus_folder, done_callback=done_callback, kind=kind)
             gui.setup()
-
             gui.is_dtm_corpus = mock.MagicMock(return_value=True)
-
             gui.load()
 
+            assert is_called
             assert gui._alert.value == "<span style='color=red'>✔</span>"

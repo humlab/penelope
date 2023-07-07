@@ -5,7 +5,7 @@ from penelope.corpus import dtm
 from penelope.notebook import grid_utility as gu
 from penelope.notebook.dtm import load_dtm_gui
 
-from .mdw_gui import create_mdw_gui
+from .mdw_gui import MDW_GUI
 
 view_display, view_gui = Output(), Output()
 
@@ -17,10 +17,11 @@ def display_mdw(corpus: dtm.VectorizedCorpus, df_mdw):  # pylint: disable=unused
 
 
 @view_gui.capture(clear_output=True)
-def default_loaded_callback(
-    corpus: dtm.VectorizedCorpus, folder: str, done_callback=display_mdw  # pylint: disable=unused-argument
-):
-    mdw_gui = create_mdw_gui(corpus, done_callback=done_callback)
+def default_loaded_callback(folder: str, tag: str):
+    corpus: dtm.VectorizedCorpus = dtm.load_corpus(
+        folder=folder, tag=tag, tf_threshold=None, n_top=None, axis=None, group_by_year=False
+    )
+    mdw_gui = MDW_GUI().setup(corpus=corpus, done_callback=display_mdw)
     ipy_display.display(mdw_gui.layout())
 
 

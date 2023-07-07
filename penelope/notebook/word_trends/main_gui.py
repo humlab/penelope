@@ -5,7 +5,7 @@ import ipywidgets as widgets
 from IPython.display import display
 
 import penelope.pipeline as pipeline
-from penelope.corpus import VectorizedCorpus
+from penelope.corpus import VectorizedCorpus, load_corpus
 from penelope.utility import PivotKeys
 from penelope.workflows import interface
 from penelope.workflows.vectorize import dtm as workflow
@@ -22,17 +22,12 @@ view = widgets.Output(layout={'border': '2px solid green'})
 
 
 @view.capture(clear_output=utility.CLEAR_OUTPUT)
-def loaded_callback(corpus: VectorizedCorpus, folder: str, n_top: int = 25000):
-    trends_service: TrendsService = TrendsService(corpus=corpus, n_top=n_top)
+def picked_callback(folder: str, tag: str):
+    corpus: VectorizedCorpus = load_corpus(
+        folder=folder, tag=tag, tf_threshold=None, n_top=None, axis=None, group_by_year=False
+    )
 
-    # gui: GofTrendsGUI = GofTrendsGUI(
-    #     gofs_gui=GoFsGUI().setup(),
-    #     trends_gui=TrendsGUI().setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS),
-    # )
-    pivot_keys: PivotKeys = PivotKeys.load(folder) if isfile(folder) else None
-    gui: TrendsGUI = TrendsGUI(pivot_key_specs=pivot_keys).setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS)
-    display(gui.layout())
-    gui.display(trends_service=trends_service)
+    display_trends(corpus=corpus, folder=folder)
 
 
 @view.capture(clear_output=utility.CLEAR_OUTPUT)
@@ -40,7 +35,7 @@ def computed_callback(corpus: VectorizedCorpus, opts: interface.ComputeOpts) -> 
     if opts.dry_run:
         return
 
-    loaded_callback(corpus=corpus, folder=dirname(opts.corpus_source))
+    display_trends(corpus=corpus, folder=dirname(opts.corpus_source))
 
 
 @view.capture(clear_output=utility.CLEAR_OUTPUT)
@@ -50,6 +45,19 @@ def compute_callback(args: interface.ComputeOpts, corpus_config: pipeline.Corpus
         return None
     corpus: VectorizedCorpus = workflow.compute(args=args, corpus_config=corpus_config)
     return corpus
+
+
+def display_trends(corpus: VectorizedCorpus, folder: str) -> None:
+    trends_service: TrendsService = TrendsService(corpus=corpus, n_top=25000)
+
+    # gui: GofTrendsGUI = GofTrendsGUI(
+    #     gofs_gui=GoFsGUI().setup(),
+    #     trends_gui=TrendsGUI().setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS),
+    # )
+    pivot_keys: PivotKeys = PivotKeys.load(folder) if isfile(folder) else None
+    gui: TrendsGUI = TrendsGUI(pivot_key_specs=pivot_keys).setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS)
+    display(gui.layout())
+    gui.display(trends_service=trends_service)
 
 
 def create_to_dtm_gui(
@@ -75,10 +83,7 @@ def create_to_dtm_gui(
         done_callback=computed_callback,
     )
 
-    gui_load: dtm_gui.LoadGUI = dtm_gui.LoadGUI(
-        corpus_folder=data_folder,
-        loaded_callback=loaded_callback,
-    )
+    gui_load: dtm_gui.LoadGUI = dtm_gui.LoadGUI(folder=data_folder, done_callback=picked_callback)
 
     accordion = widgets.Accordion(
         children=[

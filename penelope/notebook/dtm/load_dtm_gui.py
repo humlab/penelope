@@ -34,7 +34,7 @@ class LoadGUI:
         self._load_button = Button(
             description='Load', button_style='Success', layout=Layout(width='115px'), disabled=True
         )
-        self.extra_placeholder: HBox = None
+        self.extra_placeholder: HBox = VBox([])
 
     def load(self):
         self._load_handler({})
@@ -96,9 +96,8 @@ class LoadGUI:
         return self
 
     def layout(self):
-        ctrls = VBox([self._alert, self._load_button]) if self.kind == 'chooser' else [self._load_button, self._alert]
-        extras = [self.extra_placeholder] if self.extra_placeholder else []
-        return VBox([HBox([self._corpus_filename] + ctrls)] + extras)
+        ctrls = [VBox([self._alert, self._load_button])] if self.kind == 'chooser' else [self._load_button, self._alert]
+        return VBox([HBox([self._corpus_filename] + ctrls)] + [self.extra_placeholder])
 
     @property
     def corpus_filename(self):
