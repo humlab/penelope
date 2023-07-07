@@ -33,7 +33,7 @@ def monkey_patch(*_, **__):
 
 
 def test_create_main_gui():
-    gui = main_gui.create_main_gui(corpus_folder=TEST_DATA_FOLDER, loaded_callback=monkey_patch)
+    gui = main_gui.create_main_gui(folder=TEST_DATA_FOLDER, picked_callback=monkey_patch)
 
     assert isinstance(gui, VBox)
 
@@ -47,7 +47,7 @@ def test_display_mdw():
 
 
 def test_create_load_gui(corpus_fixture):
-    corpus_folder = './tests/test_data'
+    folder = './tests/test_data'
     is_called: bool = False
 
     def done_callback(folder: str, tag: str) -> None:
@@ -60,7 +60,7 @@ def test_create_load_gui(corpus_fixture):
         mocked_corpus_filename.return_value = "./tests/"
 
         for kind in ['chooser', 'picker']:
-            gui = dtm_ui.LoadGUI(folder=corpus_folder, done_callback=done_callback, kind=kind)
+            gui = dtm_ui.LoadGUI(folder=folder, pattern='*_vector_data.npz', picked_callback=done_callback, kind=kind)
             gui.setup()
             gui.is_dtm_corpus = mock.MagicMock(return_value=True)
             gui.load()

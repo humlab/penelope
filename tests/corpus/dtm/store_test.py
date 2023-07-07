@@ -109,6 +109,7 @@ def test_load_dumped_corpus(mode: str, vectorized_corpus: VectorizedCorpus):
 
     assert VectorizedCorpus.dump_exists(tag=tag, folder=folder)
     assert VectorizedCorpus.find_tags(folder) == [tag]
+    assert VectorizedCorpus.is_dump(jj(folder, f'{tag}_vector_data.npz'))
 
     loaded_corpus: VectorizedCorpus = VectorizedCorpus.load(tag=tag, folder=folder)
     assert (vectorized_corpus.term_frequency == loaded_corpus.term_frequency).all()
@@ -127,3 +128,7 @@ def test_load_dumped_corpus(mode: str, vectorized_corpus: VectorizedCorpus):
     assert not VectorizedCorpus.find_tags(folder)
 
     shutil.rmtree(folder)
+
+    assert VectorizedCorpus.split(jj(folder, f'{tag}_vector_data.npz')) == (folder, tag)
+    assert VectorizedCorpus.split(jj(folder, f'{tag}_vector_data.npy')) == (folder, tag)
+    assert VectorizedCorpus.split(jj(folder, f"{tag}_vectorizer_data.pickle")) == (folder, tag)

@@ -18,7 +18,10 @@ def display_mdw(corpus: dtm.VectorizedCorpus, df_mdw: pd.DataFrame):  # pylint: 
 
 
 @view_gui.capture(clear_output=True)
-def picked_callback(folder: str, tag: str):
+def picked_corpus_handler(filename: str):
+    if not dtm.VectorizedCorpus.is_dump(filename):
+        raise FileNotFoundError(f"Expected a DTM file, got {filename or 'None'}")
+    folder, tag = dtm.VectorizedCorpus.split(filename)
     corpus: dtm.VectorizedCorpus = dtm.load_corpus(
         folder=folder, tag=tag, tf_threshold=None, n_top=None, axis=None, group_by_year=False
     )
@@ -26,6 +29,6 @@ def picked_callback(folder: str, tag: str):
     ipy_display.display(mdw_gui.layout())
 
 
-def create_main_gui(corpus_folder: str, loaded_callback=picked_callback) -> VBox:
-    gui = load_dtm_gui.LoadGUI(folder=corpus_folder, done_callback=loaded_callback).setup()
+def create_main_gui(folder: str, picked_callback=picked_corpus_handler) -> VBox:
+    gui = load_dtm_gui.LoadGUI(folder=folder, pattern='*_vector_data.npz', picked_callback=picked_callback).setup()
     return VBox([gui.layout(), view_gui, view_display])

@@ -22,7 +22,11 @@ view = widgets.Output(layout={'border': '2px solid green'})
 
 
 @view.capture(clear_output=utility.CLEAR_OUTPUT)
-def picked_callback(folder: str, tag: str):
+def picked_callback(filename: str):
+    if not VectorizedCorpus.is_dump(filename):
+        raise ValueError(f"Expected a DTM file, got {filename or 'None'}")
+
+    folder, tag = VectorizedCorpus.split(filename)
     corpus: VectorizedCorpus = load_corpus(
         folder=folder, tag=tag, tf_threshold=None, n_top=None, axis=None, group_by_year=False
     )
@@ -83,7 +87,9 @@ def create_to_dtm_gui(
         done_callback=computed_callback,
     )
 
-    gui_load: dtm_gui.LoadGUI = dtm_gui.LoadGUI(folder=data_folder, done_callback=picked_callback)
+    gui_load: dtm_gui.LoadGUI = dtm_gui.LoadGUI(
+        folder=data_folder, pattern='*_vector_data.npz', picked_callback=picked_callback
+    )
 
     accordion = widgets.Accordion(
         children=[
