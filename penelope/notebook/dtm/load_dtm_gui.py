@@ -3,7 +3,7 @@ from os.path import basename, isfile, join, split, splitext
 from typing import Callable, Literal
 
 import ipyfilechooser
-from ipywidgets import HTML, Button, Dropdown, HBox, Layout, Output, VBox
+import ipywidgets as w
 
 from penelope.utility import default_data_folder, getLogger, right_chop
 
@@ -13,8 +13,6 @@ logger = getLogger('penelope')
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
 
-
-debug_view = Output(layout={'border': '1px solid black'})
 
 
 class LoadGUI:
@@ -29,17 +27,16 @@ class LoadGUI:
         self.kind: Literal['chooser', 'picker'] = kind
         self.filename_pattern: str = filename_pattern or '*_vector_data.npz'
         self.done_callback: Callable[[str, str], None] = done_callback
-        self._corpus_filename: ipyfilechooser.FileChooser | Dropdown = None
-        self._alert: HTML = HTML('.')
-        self._load_button = Button(
-            description='Load', button_style='Success', layout=Layout(width='115px'), disabled=True
+        self._corpus_filename: ipyfilechooser.FileChooser | w.Dropdown = None
+        self._alert: w.HTML = w.HTML('.')
+        self._load_button = w.Button(
+            description='Load', button_style='Success', layout=w.Layout(width='115px'), disabled=True
         )
-        self.extra_placeholder: HBox = VBox([])
+        self.extra_placeholder: w.HBox = w.HBox([])
 
     def load(self):
         self._load_handler({})
 
-    @debug_view.capture(clear_output=True)
     def _load_handler(self, _):
         try:
             if not self.is_dtm_corpus(self.corpus_filename):
@@ -74,11 +71,12 @@ class LoadGUI:
     def setup(self):
         if self.kind == 'picker':
             filenames: list[str] = glob(join(self.folder, "**", self.filename_pattern), recursive=True)
-            self._corpus_filename = Dropdown(
+            self._corpus_filename = w.Dropdown(
                 options={basename(f): f for f in filenames},
                 description='Corpus file:',
                 disabled=False,
             )
+            self._load_button.disabled = False
         else:
             self._corpus_filename = ipyfilechooser.FileChooser(
                 path=self.folder or default_data_folder(),
@@ -96,8 +94,11 @@ class LoadGUI:
         return self
 
     def layout(self):
-        ctrls = [VBox([self._alert, self._load_button])] if self.kind == 'chooser' else [self._load_button, self._alert]
-        return VBox([HBox([self._corpus_filename] + ctrls)] + [self.extra_placeholder])
+        ctrls: list[w.CoreWidget] = [w.VBox([self._alert, self._load_button])] if self.kind == 'chooser' else [self._load_button, self._alert]
+        return w.VBox([w.HBox([self._corpus_filename] + ctrls)] + [self.extra_placeholder])
+
+    def add(self, widget: w.CoreWidget):
+        self.extra_placeholder.children = list(self.extra_placeholder.children) + [widget]
 
     @property
     def corpus_filename(self):
