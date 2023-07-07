@@ -18,7 +18,7 @@ def display_mdw(corpus: dtm.VectorizedCorpus, df_mdw: pd.DataFrame):  # pylint: 
 
 
 @view_gui.capture(clear_output=True)
-def default_loaded_callback(folder: str, tag: str):
+def picked_callback(folder: str, tag: str):
     corpus: dtm.VectorizedCorpus = dtm.load_corpus(
         folder=folder, tag=tag, tf_threshold=None, n_top=None, axis=None, group_by_year=False
     )
@@ -26,6 +26,6 @@ def default_loaded_callback(folder: str, tag: str):
     ipy_display.display(mdw_gui.layout())
 
 
-def create_main_gui(corpus_folder: str, loaded_callback=default_loaded_callback) -> VBox:
+def create_main_gui(corpus_folder: str, loaded_callback=picked_callback) -> VBox:
     gui = load_dtm_gui.LoadGUI(folder=corpus_folder, done_callback=loaded_callback).setup()
     return VBox([gui.layout(), view_gui, view_display])
