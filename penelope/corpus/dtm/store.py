@@ -171,6 +171,10 @@ class StoreMixIn:
         return any(os.path.isfile(jj(folder, f"{tag}{suffix}")) for suffix in DATA_SUFFIXES)
 
     @staticmethod
+    def is_dump(filename: str) -> bool:
+        return filename and os.path.isfile(filename) and any(filename.endswith(suffix) for suffix in DATA_SUFFIXES)
+
+    @staticmethod
     def find_tags(folder: str) -> List[str]:
         """Return dump tags in specified folder."""
         tags: List[str] = list(
