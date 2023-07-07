@@ -1,4 +1,5 @@
 import IPython.display as ipy_display
+import pandas as pd
 from ipywidgets import Output, VBox
 
 from penelope.corpus import dtm
@@ -11,7 +12,7 @@ view_display, view_gui = Output(), Output()
 
 
 @view_display.capture(clear_output=True)
-def display_mdw(corpus: dtm.VectorizedCorpus, df_mdw):  # pylint: disable=unused-argument
+def display_mdw(corpus: dtm.VectorizedCorpus, df_mdw: pd.DataFrame):  # pylint: disable=unused-argument
     g = gu.table_widget(df_mdw)
     ipy_display.display(g)
 
