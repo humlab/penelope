@@ -183,13 +183,12 @@ class StoreMixIn:
         return tags
 
     @staticmethod
-    def get_tag(filename: str) -> str:
-        """Return tag for given filename."""
-        known_suffixes = DATA_SUFFIXES
+    def split(filename: str) -> tuple[str, str]:
+        """Return (folder, tag) for given filename."""
         basename = os.path.basename(filename)
-        for suffix in known_suffixes:
-            if basename.endswith(suffix):
-                return basename[0 : len(basename) - len(suffix)]
+        for suffix in DATA_SUFFIXES:
+            if os.path.basename(filename).endswith(suffix):
+                return (os.path.dirname(filename), basename[0 : len(basename) - len(suffix)])
         raise ValueError(f"Invalid dump filename {filename}")
 
     @staticmethod
