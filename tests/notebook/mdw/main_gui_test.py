@@ -5,8 +5,8 @@ import pytest
 from ipywidgets import VBox
 
 from penelope.corpus import dtm
-from penelope.notebook import dtm as dtm_ui
 from penelope.notebook.mdw import main_gui
+from penelope.notebook.pick_file_gui import PickFileGUI
 from tests.utils import TEST_DATA_FOLDER
 
 from ...utils import create_abc_corpus
@@ -60,7 +60,7 @@ def test_create_load_gui(corpus_fixture):
         mocked_corpus_filename.return_value = "./tests/"
 
         for kind in ['chooser', 'picker']:
-            gui = dtm_ui.LoadGUI(folder=folder, pattern='*_vector_data.npz', picked_callback=done_callback, kind=kind)
+            gui = PickFileGUI(folder=folder, pattern='*_vector_data.npz', picked_callback=done_callback, kind=kind)
             gui.setup()
             gui.is_dtm_corpus = mock.MagicMock(return_value=True)
             gui.load()

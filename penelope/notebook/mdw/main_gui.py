@@ -3,9 +3,9 @@ import pandas as pd
 from ipywidgets import Output, VBox
 
 from penelope.corpus import dtm
-from penelope.notebook import grid_utility as gu
-from penelope.notebook.dtm import load_dtm_gui
 
+from .. import grid_utility as gu
+from .. import pick_file_gui
 from .mdw_gui import MDW_GUI
 
 view_display, view_gui = Output(), Output()
@@ -30,5 +30,5 @@ def picked_corpus_handler(filename: str):
 
 
 def create_main_gui(folder: str, picked_callback=picked_corpus_handler) -> VBox:
-    gui = load_dtm_gui.LoadGUI(folder=folder, pattern='*_vector_data.npz', picked_callback=picked_callback).setup()
+    gui = pick_file_gui.PickFileGUI(folder=folder, pattern='*_vector_data.npz', picked_callback=picked_callback).setup()
     return VBox([gui.layout(), view_gui, view_display])

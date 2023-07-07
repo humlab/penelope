@@ -8,12 +8,12 @@ from loguru import logger
 
 from penelope.utility import default_data_folder
 
-from ..utility import shorten_filechooser_label
+from .utility import shorten_filechooser_label
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
 
 
-class LoadGUI:
+class PickFileGUI:
     def __init__(
         self,
         folder: str,

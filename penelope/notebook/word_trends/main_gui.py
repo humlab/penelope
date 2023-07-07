@@ -12,6 +12,7 @@ from penelope.workflows.vectorize import dtm as workflow
 
 from .. import dtm as dtm_gui
 from .. import utility
+from ..pick_file_gui import PickFileGUI
 from .displayers import DEFAULT_WORD_TREND_DISPLAYERS
 from .interface import TrendsService
 from .trends_gui import TrendsGUI
@@ -87,7 +88,7 @@ def create_to_dtm_gui(
         done_callback=computed_callback,
     )
 
-    gui_load: dtm_gui.LoadGUI = dtm_gui.LoadGUI(
+    gui_load: PickFileGUI = PickFileGUI(
         folder=data_folder, pattern='*_vector_data.npz', picked_callback=picked_callback
     )
 
