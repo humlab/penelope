@@ -19,6 +19,8 @@ from penelope.utility import read_json, strip_paths, write_json
 
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
 
+DATA_SUFFIXES: list[str] = ['_vector_data.npz', '_vector_data.npy', '_vectorizer_data.pickle']
+
 
 def create_corpus_instance(
     bag_term_matrix: scipy.sparse.csr_matrix,
@@ -166,33 +168,29 @@ class StoreMixIn:
         folder : str, optional
             Corpus folder to look in
         """
-        return any(
-            os.path.isfile(jj(folder, f"{tag}_{suffix}"))
-            for suffix in [
-                'vector_data.npz',
-                'vector_data.npy',
-                'vectorizer_data.pickle',
-                'document_index.csv.gz',
-            ]
-        )
+        return any(os.path.isfile(jj(folder, f"{tag}{suffix}")) for suffix in DATA_SUFFIXES)
 
     @staticmethod
     def find_tags(folder: str) -> List[str]:
         """Return dump tags in specified folder."""
-        known_suffixes = [
-            '_vector_data.npz',
-            '_vector_data.npy',
-            '_vectorizer_data.pickle',
-            '_document_index.csv.gz',
-        ]
         tags: List[str] = list(
             {
                 x[0 : len(x) - len(suffix)]
-                for suffix in known_suffixes
+                for suffix in DATA_SUFFIXES
                 for x in strip_paths(glob.glob(jj(folder, f'*{suffix}')))
             }
         )
         return tags
+
+    @staticmethod
+    def get_tag(filename: str) -> str:
+        """Return tag for given filename."""
+        known_suffixes = DATA_SUFFIXES
+        basename = os.path.basename(filename)
+        for suffix in known_suffixes:
+            if basename.endswith(suffix):
+                return basename[0 : len(basename) - len(suffix)]
+        raise ValueError(f"Invalid dump filename {filename}")
 
     @staticmethod
     def remove(*, tag: str, folder: str):
