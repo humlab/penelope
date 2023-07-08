@@ -141,11 +141,11 @@ class IVectorizedCorpus(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def slice_by_tf(self, threshold: int) -> "IVectorizedCorpus":
+    def slice_by_tf(self, threshold: int | None) -> "IVectorizedCorpus":
         ...
 
     @abc.abstractmethod
-    def slice_by_n_top(self, n_top) -> "IVectorizedCorpus":
+    def slice_by_n_top(self, n_top: int | None) -> "IVectorizedCorpus":
         ...
 
     @abc.abstractmethod
