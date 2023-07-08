@@ -326,18 +326,18 @@ def load_corpus(
     VectorizedCorpus
         The loaded corpus
     """
-    v_corpus = StoreMixIn.load(tag=tag, folder=folder)
+    corpus: IVectorizedCorpus = StoreMixIn.load(tag=tag, folder=folder)
 
     if group_by_year:
-        v_corpus = v_corpus.group_by_year()
+        corpus = corpus.group_by_year()
 
     if tf_threshold is not None:
-        v_corpus = v_corpus.slice_by_tf(tf_threshold)
+        corpus = corpus.slice_by_tf(tf_threshold)
 
     if n_top is not None:
-        v_corpus = v_corpus.slice_by_n_top(n_top)
+        corpus = corpus.slice_by_n_top(n_top)
 
-    if axis is not None and v_corpus.data.shape[1] > 0:
-        v_corpus = v_corpus.normalize(axis=axis, keep_magnitude=keep_magnitude)
+    if axis is not None and corpus.data.shape[1] > 0:
+        corpus = corpus.normalize(axis=axis, keep_magnitude=keep_magnitude)
 
-    return v_corpus
+    return corpus
