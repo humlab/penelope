@@ -21,10 +21,7 @@ def display_mdw(corpus: dtm.VectorizedCorpus, df_mdw: pd.DataFrame):  # pylint: 
 def picked_corpus_handler(filename: str):
     if not dtm.VectorizedCorpus.is_dump(filename):
         raise FileNotFoundError(f"Expected a DTM file, got {filename or 'None'}")
-    folder, tag = dtm.VectorizedCorpus.split(filename)
-    corpus: dtm.VectorizedCorpus = dtm.load_corpus(
-        folder=folder, tag=tag, tf_threshold=None, n_top=None, axis=None, group_by_year=False
-    )
+    corpus: dtm.VectorizedCorpus = dtm.VectorizedCorpus.load(filename=filename)
     mdw_gui = MDW_GUI().setup(corpus=corpus, done_callback=display_mdw)
     ipy_display.display(mdw_gui.layout())
 
