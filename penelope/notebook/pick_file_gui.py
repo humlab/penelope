@@ -50,13 +50,6 @@ class PickFileGUI:
         finally:
             self._load_button.disabled = False
 
-    def is_dtm_corpus(self, filename: str) -> bool:
-        if not filename or not isfile(self.filename):
-            return False
-        if not splitext(filename)[1] in [".pickle", ".npz"]:
-            return False
-        return True
-
     def file_select_callback(self, _: ipyfilechooser.FileChooser):
         self._load_button.disabled = False
         self.alert('✔')
