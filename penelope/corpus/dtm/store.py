@@ -207,7 +207,7 @@ class StoreMixIn:
             Path(jj(folder, f"{tag}_overridden_term_frequency.npy")).unlink(missing_ok=True)
 
     @staticmethod
-    def load(*, tag: str, folder: str) -> IVectorizedCorpus:
+    def load(*, tag: str = None, folder: str = None, filename: str = None) -> IVectorizedCorpus:
         """Loads corpus with tag `tag` in folder `folder`
 
         Raises `FileNotFoundError` if any of the two files containing metadata and matrix doesn't exist.
@@ -230,6 +230,12 @@ class StoreMixIn:
         VectorizedCorpus
             Loaded corpus
         """
+
+        if not (filename or (tag and folder)):
+            raise ValueError("Either tag and folder or filename must be specified.")
+
+        if filename:
+            folder, tag = StoreMixIn.split(filename)
 
         data: dict = load_metadata(tag=tag, folder=folder)
 

@@ -111,10 +111,14 @@ def test_load_dumped_corpus(mode: str, vectorized_corpus: VectorizedCorpus):
     assert VectorizedCorpus.find_tags(folder) == [tag]
     assert VectorizedCorpus.is_dump(jj(folder, f'{tag}_vector_data.npz'))
 
-    loaded_corpus: VectorizedCorpus = VectorizedCorpus.load(tag=tag, folder=folder)
-    assert (vectorized_corpus.term_frequency == loaded_corpus.term_frequency).all()
-    assert vectorized_corpus.document_index.to_dict() == loaded_corpus.document_index.to_dict()
-    assert vectorized_corpus.token2id == loaded_corpus.token2id
+    for args in [{'tag': tag, 'folder': folder}, {'filename': jj(folder, f'{tag}_vector_data.npz')}]:
+        loaded_corpus: VectorizedCorpus = VectorizedCorpus.load(**args)
+        assert (vectorized_corpus.term_frequency == loaded_corpus.term_frequency).all()
+        assert vectorized_corpus.document_index.to_dict() == loaded_corpus.document_index.to_dict()
+        assert vectorized_corpus.token2id == loaded_corpus.token2id
+
+    loaded_corpus: VectorizedCorpus = VectorizedCorpus.load(filename=jj(folder, f'{tag}_vector_data.npz'))
+
 
     loaded_options: dict = VectorizedCorpus.load_options(tag=tag, folder=folder)
     assert loaded_options == dict()
