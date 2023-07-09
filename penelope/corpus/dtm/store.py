@@ -237,6 +237,9 @@ class StoreMixIn:
         if filename:
             folder, tag = StoreMixIn.split(filename)
 
+        if not StoreMixIn.dump_exists(tag=tag, folder=folder):
+            raise FileNotFoundError(f"DTM file with tag {tag} not found in folder {folder}")
+
         data: dict = load_metadata(tag=tag, folder=folder)
 
         token2id: Mapping = data.get("token2id")
