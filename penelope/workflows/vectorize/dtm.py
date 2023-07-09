@@ -19,6 +19,9 @@ def compute(
     try:
         assert args.is_satisfied()
 
+        if args.dry_run:
+            return None
+
         if tagged_frame_pipeline is None:
             tagged_frame_pipeline = corpus_config.get_pipeline(
                 "tagged_frame_pipeline",
