@@ -1,6 +1,6 @@
 from glob import glob
-from os.path import basename, isfile, join, splitext
-from typing import Callable, Literal
+from os.path import basename, join
+from typing import Any, Callable, Literal, Protocol
 
 import ipyfilechooser
 import ipywidgets as w
@@ -12,13 +12,16 @@ from .utility import shorten_filechooser_label
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
 
+class PickedCallback(Protocol):
+    def __call__(self, filename: str, sender: 'PickFileGUI', **kwargs) -> None:
+        ...
 
 class PickFileGUI:
     def __init__(
         self,
         folder: str,
         pattern: str,
-        picked_callback: Callable[[str], None] = None,
+        picked_callback: PickedCallback = None,
         kind: Literal['chooser', 'picker'] = 'chooser',
     ):
         self.folder: str = folder
@@ -31,6 +34,7 @@ class PickFileGUI:
             description='Load', button_style='Success', layout=w.Layout(width='115px'), disabled=True
         )
         self.extra_placeholder: w.HBox = w.HBox([])
+        self.payload: Any = None
 
     def load(self):
         self._load_handler({})
@@ -39,7 +43,7 @@ class PickFileGUI:
         try:
             self._load_button.disabled = True
             self.info("⌛ Loading data...")
-            self.picked_callback(self.filename)
+            self.picked_callback(filename=self.filename, sender=self)
             self.info("✔")
 
         except FileNotFoundError:
@@ -85,8 +89,8 @@ class PickFileGUI:
         )
         return w.VBox([w.HBox([self._filename_picker] + ctrls)] + [self.extra_placeholder])
 
-    def add(self, widget: w.CoreWidget):
-        self.extra_placeholder.children = list(self.extra_placeholder.children) + [widget]
+    def add(self, widget: w.CoreWidget, append: bool = False):
+        self.extra_placeholder.children = (list(self.extra_placeholder.children) if append else []) + [widget]
 
     @property
     def filename(self):

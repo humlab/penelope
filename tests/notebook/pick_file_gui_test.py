@@ -1,3 +1,4 @@
+from typing import Any
 from unittest import mock
 
 import pytest
@@ -26,7 +27,7 @@ def test_create_load_gui(kind):
     folder = './tests/test_data'
     is_called: bool = False
 
-    def picked_callback(filename: str) -> None:
+    def picked_callback(filename: str, sender: Any) -> None:  # pylint: disable=unused-argument
         nonlocal is_called
         is_called = True
 

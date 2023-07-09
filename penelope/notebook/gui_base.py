@@ -1,6 +1,6 @@
 import contextlib
 from os.path import basename, dirname, join
-from typing import Any, Callable
+from typing import Any, Protocol
 
 import ipywidgets as w
 from loguru import logger
@@ -22,15 +22,29 @@ button_layout = w.Layout(width='140px')
 # view:Output = Output()
 
 
+class DoneCallback(Protocol):
+    def __call__(
+        self,
+        result: str | Any,
+        folder: str | None = None,
+        sender: Any | None = None,
+        opts: interface.ComputeOpts = None,
+        **kwargs: str,
+    ) -> None:
+        ...
+
+
+class ComputeCallback(Protocol):
+    def __call__(self, opts: interface.ComputeOpts, config: CorpusConfig) -> Any:
+        ...
+
+
 class BaseGUI:
     def __init__(
         self, default_corpus_path: str = None, default_corpus_filename: str = '', default_data_folder: str = None
     ):
         self._config: CorpusConfig = None
 
-        # self._config_chooser: notebook_utility.FileChooserExt2 = None
-        # self._corpus_filename: notebook_utility.FileChooserExt2 = None
-        # self._target_folder: notebook_utility.FileChooserExt2 = None
         self._config_chooser: notebook_utility.FileChooserExt2 = notebook_utility.FileChooserExt2(
             path=default_corpus_path or home_data_folder(),
             # filename="config.yml",
@@ -173,8 +187,8 @@ class BaseGUI:
 
         self._alert: w.HTML = w.HTML("&nbsp;", layout={'width': '95%'})
 
-        self.compute_callback: Callable[[interface.ComputeOpts, CorpusConfig], Any] = None
-        self.done_callback: Callable[[Any, interface.ComputeOpts], None] = None
+        self.compute_callback: ComputeCallback = None
+        self.done_callback: DoneCallback = None
 
     def alert(self, msg: str):
         self._alert.value = f"<b>{msg}</b>"
@@ -269,7 +283,6 @@ class BaseGUI:
             ]
         )
 
-    # @view.capture(clear_output=True)
     def _compute_handler(self, sender: w.Button, *_):
         if self.compute_callback is None:
             raise ValueError("fatal: cannot compute (callback is not specified)")
@@ -279,10 +292,16 @@ class BaseGUI:
         try:
             opts: interface.ComputeOpts = self.compute_opts
             opts.dry_run = sender.description == "CLI"
-            result: Any = self.compute_callback(opts, self.corpus_config)
+            result: Any = self.compute_callback(opts=opts, config=self.corpus_config)
 
             if result is not None and self.done_callback is not None:
-                self.done_callback(result, self.compute_opts)
+                self.done_callback(
+                    result=result,
+                    folder=dirname(opts.corpus_source),
+                    opts=opts,
+                    sender=self,
+                    config=self.corpus_config,
+                )
 
         except (ValueError, FileNotFoundError) as ex:
             self.warn(str(ex))
@@ -298,7 +317,6 @@ class BaseGUI:
         self._pos_paddings.disabled = self._corpus_type.value == 'text'
         self._lemmatize.disabled = self._corpus_type.value == 'text'
 
-    # @view.capture(clear_output=True)
     def _toggle_state_changed(self, event):
         with contextlib.suppress(Exception):
             event['owner'].icon = 'check' if event['new'] else ''
@@ -307,11 +325,7 @@ class BaseGUI:
         self._extra_stopwords.disabled = not self._remove_stopwords.value
 
     def setup(
-        self,
-        *,
-        compute_callback: Callable[[interface.ComputeOpts, CorpusConfig], Any],
-        done_callback: Callable[[Any, interface.ComputeOpts], None],
-        config: CorpusConfig = None,
+        self, *, compute_callback: ComputeCallback, done_callback: DoneCallback, config: CorpusConfig = None
     ) -> "BaseGUI":
         self._config: CorpusConfig = config
 

@@ -1,11 +1,7 @@
-from unittest import mock
-
-import pandas as pd
 import pytest
-from ipywidgets import VBox
 
-from penelope.corpus import dtm
-from penelope.notebook.mdw import main_gui
+import penelope.notebook.mdw as mdw
+from penelope.notebook import pick_file_gui as pfg
 from tests.utils import TEST_DATA_FOLDER
 
 from ...utils import create_abc_corpus
@@ -31,15 +27,14 @@ def monkey_patch(*_, **__):
     ...
 
 
-def test_create_main_gui():
-    gui = main_gui.create_main_gui(folder=TEST_DATA_FOLDER, picked_callback=monkey_patch)
+def test_create_main_gui(corpus_fixture):
+    gui: pfg.PickFileGUI = mdw.create_main_gui(folder=TEST_DATA_FOLDER)
+    assert isinstance(gui, pfg.PickFileGUI)
+    assert isinstance(gui.payload, mdw.MDW_GUI)
 
-    assert isinstance(gui, VBox)
+    gui.payload.corpus = corpus_fixture
+    gui.payload._period1.value = (2013, 2013)
+    gui.payload._period2.value = (2014, 2014)
+    gui.payload._top_n_terms.value = 2
+    gui.payload._compute.click()
 
-
-@mock.patch('IPython.display.display', monkey_patch)
-@mock.patch('penelope.notebook.grid_utility.table_widget', monkey_patch)
-def test_display_mdw():
-    corpus = mock.MagicMock(spec=dtm.VectorizedCorpus)
-    df_mdw = mock.MagicMock(spec=pd.DataFrame)
-    main_gui.display_mdw(corpus, df_mdw)
