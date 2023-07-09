@@ -284,7 +284,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
         if axis is None or self.data.shape[1] == 0:
             return self
-        
+
         btm = sklearn.preprocessing.normalize(self._bag_term_matrix, axis=axis, norm=norm)
 
         if keep_magnitude is True:

@@ -119,7 +119,6 @@ def test_load_dumped_corpus(mode: str, vectorized_corpus: VectorizedCorpus):
 
     loaded_corpus: VectorizedCorpus = VectorizedCorpus.load(filename=jj(folder, f'{tag}_vector_data.npz'))
 
-
     loaded_options: dict = VectorizedCorpus.load_options(tag=tag, folder=folder)
     assert loaded_options == dict()
 
