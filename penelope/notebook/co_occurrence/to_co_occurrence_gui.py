@@ -7,7 +7,7 @@ from penelope.co_occurrence import Bundle, ContextOpts
 from penelope.pipeline import CorpusConfig
 from penelope.workflows import interface
 
-from ..gui_base import BaseGUI, button_layout, default_layout
+from ..gui_base import BaseGUI, ComputeCallback, DoneCallback, button_layout, default_layout
 
 tooltips = {
     '_context_width': "Max distance to the midmost word, window size two times this value plus one",
@@ -97,7 +97,7 @@ class ComputeGUI(BaseGUI):
         layout = super().layout(hide_input, hide_output)
         return layout
 
-    def setup(self, *, config: CorpusConfig, compute_callback: Callable, done_callback: Callable):
+    def setup(self, *, config: CorpusConfig, compute_callback: ComputeCallback, done_callback: DoneCallback):
         super().setup(config=config, compute_callback=compute_callback, done_callback=done_callback)
         self._ignore_concept.observe(self._toggle_state_changed, 'value')
         self._ignore_padding.observe(self._toggle_state_changed, 'value')

@@ -1,3 +1,3 @@
 # type: ignore
-from .main_gui import create_main_gui, default_loaded_callback
+from .main_gui import create_main_gui
 from .mdw_gui import MDW_GUI

@@ -1,12 +1,7 @@
-from unittest import mock
-
-import pandas as pd
 import pytest
-from ipywidgets import VBox
 
-from penelope.corpus import dtm
-from penelope.notebook import dtm as dtm_ui
-from penelope.notebook.mdw import main_gui
+import penelope.notebook.mdw as mdw
+from penelope.notebook import pick_file_gui as pfg
 from tests.utils import TEST_DATA_FOLDER
 
 from ...utils import create_abc_corpus
@@ -32,38 +27,13 @@ def monkey_patch(*_, **__):
     ...
 
 
-def test_create_main_gui():
-    gui = main_gui.create_main_gui(corpus_folder=TEST_DATA_FOLDER, loaded_callback=monkey_patch)
+def test_create_main_gui(corpus_fixture):
+    gui: pfg.PickFileGUI = mdw.create_main_gui(folder=TEST_DATA_FOLDER)
+    assert isinstance(gui, pfg.PickFileGUI)
+    assert isinstance(gui.payload, mdw.MDW_GUI)
 
-    assert isinstance(gui, VBox)
-
-
-@mock.patch('IPython.display.display', monkey_patch)
-@mock.patch('penelope.notebook.grid_utility.table_widget', monkey_patch)
-def test_display_mdw():
-    corpus = mock.MagicMock(spec=dtm.VectorizedCorpus)
-    df_mdw = mock.MagicMock(spec=pd.DataFrame)
-    main_gui.display_mdw(corpus, df_mdw)
-
-
-def test_create_load_gui(corpus_fixture):
-    corpus_folder = './tests/test_data'
-    is_called: bool = False
-
-    def done_callback(folder: str, tag: str) -> None:
-        nonlocal is_called
-        is_called = True
-
-    with mock.patch(
-        'penelope.notebook.dtm.LoadGUI.corpus_filename', new_callable=mock.PropertyMock
-    ) as mocked_corpus_filename:
-        mocked_corpus_filename.return_value = "./tests/"
-
-        for kind in ['chooser', 'picker']:
-            gui = dtm_ui.LoadGUI(folder=corpus_folder, done_callback=done_callback, kind=kind)
-            gui.setup()
-            gui.is_dtm_corpus = mock.MagicMock(return_value=True)
-            gui.load()
-
-            assert is_called
-            assert gui._alert.value == "<span style='color=red'>✔</span>"
+    gui.payload.corpus = corpus_fixture
+    gui.payload._period1.value = (2013, 2013)
+    gui.payload._period2.value = (2014, 2014)
+    gui.payload._top_n_terms.value = 2
+    gui.payload._compute.click()

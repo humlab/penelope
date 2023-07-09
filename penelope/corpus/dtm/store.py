@@ -19,6 +19,8 @@ from penelope.utility import read_json, strip_paths, write_json
 
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
 
+DATA_SUFFIXES: list[str] = ['_vector_data.npz', '_vector_data.npy', '_vectorizer_data.pickle']
+
 
 def create_corpus_instance(
     bag_term_matrix: scipy.sparse.csr_matrix,
@@ -166,33 +168,32 @@ class StoreMixIn:
         folder : str, optional
             Corpus folder to look in
         """
-        return any(
-            os.path.isfile(jj(folder, f"{tag}_{suffix}"))
-            for suffix in [
-                'vector_data.npz',
-                'vector_data.npy',
-                'vectorizer_data.pickle',
-                'document_index.csv.gz',
-            ]
-        )
+        return any(os.path.isfile(jj(folder, f"{tag}{suffix}")) for suffix in DATA_SUFFIXES)
+
+    @staticmethod
+    def is_dump(filename: str) -> bool:
+        return filename and os.path.isfile(filename) and any(filename.endswith(suffix) for suffix in DATA_SUFFIXES)
 
     @staticmethod
     def find_tags(folder: str) -> List[str]:
         """Return dump tags in specified folder."""
-        known_suffixes = [
-            '_vector_data.npz',
-            '_vector_data.npy',
-            '_vectorizer_data.pickle',
-            '_document_index.csv.gz',
-        ]
         tags: List[str] = list(
             {
                 x[0 : len(x) - len(suffix)]
-                for suffix in known_suffixes
+                for suffix in DATA_SUFFIXES
                 for x in strip_paths(glob.glob(jj(folder, f'*{suffix}')))
             }
         )
         return tags
+
+    @staticmethod
+    def split(filename: str) -> tuple[str, str]:
+        """Return (folder, tag) for given filename."""
+        basename = os.path.basename(filename)
+        for suffix in DATA_SUFFIXES:
+            if os.path.basename(filename).endswith(suffix):
+                return (os.path.dirname(filename), basename[0 : len(basename) - len(suffix)])
+        raise ValueError(f"Invalid dump filename {filename}")
 
     @staticmethod
     def remove(*, tag: str, folder: str):
@@ -206,7 +207,7 @@ class StoreMixIn:
             Path(jj(folder, f"{tag}_overridden_term_frequency.npy")).unlink(missing_ok=True)
 
     @staticmethod
-    def load(*, tag: str, folder: str) -> IVectorizedCorpus:
+    def load(*, tag: str = None, folder: str = None, filename: str = None) -> IVectorizedCorpus:
         """Loads corpus with tag `tag` in folder `folder`
 
         Raises `FileNotFoundError` if any of the two files containing metadata and matrix doesn't exist.
@@ -229,6 +230,15 @@ class StoreMixIn:
         VectorizedCorpus
             Loaded corpus
         """
+
+        if not (filename or (tag and folder)):
+            raise ValueError("Either tag and folder or filename must be specified.")
+
+        if filename:
+            folder, tag = StoreMixIn.split(filename)
+
+        if not StoreMixIn.dump_exists(tag=tag, folder=folder):
+            raise FileNotFoundError(f"DTM file with tag {tag} not found in folder {folder}")
 
         data: dict = load_metadata(tag=tag, folder=folder)
 
@@ -325,18 +335,18 @@ def load_corpus(
     VectorizedCorpus
         The loaded corpus
     """
-    v_corpus = StoreMixIn.load(tag=tag, folder=folder)
+    corpus: IVectorizedCorpus = StoreMixIn.load(tag=tag, folder=folder)
 
     if group_by_year:
-        v_corpus = v_corpus.group_by_year()
+        corpus = corpus.group_by_year()
 
     if tf_threshold is not None:
-        v_corpus = v_corpus.slice_by_tf(tf_threshold)
+        corpus = corpus.slice_by_tf(tf_threshold)
 
     if n_top is not None:
-        v_corpus = v_corpus.slice_by_n_top(n_top)
+        corpus = corpus.slice_by_n_top(n_top)
 
-    if axis is not None and v_corpus.data.shape[1] > 0:
-        v_corpus = v_corpus.normalize(axis=axis, keep_magnitude=keep_magnitude)
+    if axis is not None and corpus.data.shape[1] > 0:
+        corpus = corpus.normalize(axis=axis, keep_magnitude=keep_magnitude)
 
-    return v_corpus
+    return corpus

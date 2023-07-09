@@ -1,10 +1,6 @@
-from typing import Any, Callable
-
-from penelope.corpus import VectorizedCorpus
 from penelope.pipeline import CorpusConfig
-from penelope.workflows import interface
 
-from ..gui_base import BaseGUI
+from ..gui_base import BaseGUI, ComputeCallback, DoneCallback
 
 
 class ComputeGUI(BaseGUI):
@@ -12,9 +8,7 @@ class ComputeGUI(BaseGUI):
         layout = super().layout(hide_input, hide_output)
         return layout
 
-    def setup(
-        self, *, config: CorpusConfig, compute_callback: Callable, done_callback: Callable[[Any, "ComputeGUI"], None]
-    ):
+    def setup(self, *, config: CorpusConfig, compute_callback: ComputeCallback, done_callback: DoneCallback):
         super().setup(config=config, compute_callback=compute_callback, done_callback=done_callback)
         return self
 
@@ -23,8 +17,8 @@ def create_compute_gui(
     *,
     corpus_folder: str,
     data_folder: str,
-    compute_callback: Callable[[interface.ComputeOpts, CorpusConfig], VectorizedCorpus],
-    done_callback: Callable[[Any, interface.ComputeOpts], None],
+    compute_callback: ComputeCallback,
+    done_callback: DoneCallback,
     config: str | CorpusConfig = None,
 ) -> ComputeGUI:
     """Returns a GUI for turning a corpus pipeline to a document-term-matrix (DTM)"""
