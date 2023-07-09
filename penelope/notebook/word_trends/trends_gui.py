@@ -75,7 +75,7 @@ class TrendsBaseGUI(abc.ABC):
             rows=1,
             value="",
             placeholder='Enter words, wildcards and/or regexps such as "information", "info*", "*ment",  "|.*tion$|"',
-            layout=w.Layout(width='740px'),
+            layout=w.Layout(width='700px'),
             continuous_update=False,
         )
         self._top_words_count: w.BoundedIntText = w.BoundedIntText(
@@ -85,7 +85,7 @@ class TrendsBaseGUI(abc.ABC):
             step=10,
             description='',
             disabled=False,
-            layout={'width': '180px'},
+            layout={'width': '80px'},
         )
         self._compute: w.Button = w.Button(
             description="Compute", button_style='success', disabled=False, layout=BUTTON_LAYOUT
@@ -193,6 +193,7 @@ class TrendsBaseGUI(abc.ABC):
                         self._placeholder,
                         w.VBox([w.HTML("<b>Grouping</b>"), self._temporal_key]),
                         self._widgets_placeholder,
+                        w.HTML("&nbsp;"),
                         w.VBox([self._normalize, self._smooth]),
                         w.VBox([self._auto_compute, self._compute]),
                         w.VBox([w.HTML("📌"), self._alert]),
@@ -202,15 +203,23 @@ class TrendsBaseGUI(abc.ABC):
                 w.HBox(
                     [
                         w.VBox(
-                            [w.HTML("<b>Words to find</b> (press <b>tab</b> to start search)"), self._words_to_find]
+                            [
+                                w.HTML("<b>Words to find</b> (press <b>tab</b> to start search)"),
+                                self._words_to_find,
+                            ]
                         ),
-                        w.VBox([w.HTML("<b>Top count</b>"), self._top_words_count]),
+                        w.VBox(
+                            [
+                                w.HTML("<b>Top count</b>"),
+                                self._top_words_count,
+                            ]
+                        ),
                     ],
                     layout={'width': '99%'},
                 ),
                 w.HBox([self._sidebar_placeholder, self._tab], layout={'width': '100%'}),
             ],
-            layout=w.Layout(width='auto'),
+            layout=w.Layout(width='100%'),
         )
 
         return layout
