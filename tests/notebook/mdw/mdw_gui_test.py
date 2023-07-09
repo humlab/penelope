@@ -16,7 +16,7 @@ def monkey_patch(*_, **__):
 def test_default_compute_callback():
     corpus = MagicMock(spec=dtm.VectorizedCorpus)
     gui = MagicMock(spec=mdw_gui.MDW_GUI)
-    mdw_gui.default_compute_callback(corpus, gui)
+    mdw_gui.default_compute_mdw(corpus, gui)
 
 
 def test_mdw_gui():
