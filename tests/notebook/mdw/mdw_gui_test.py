@@ -21,7 +21,7 @@ def test_default_compute_callback():
 
 def test_mdw_gui():
     corpus = MagicMock(spec=dtm.VectorizedCorpus)
-    gui = mdw_gui.MDW_GUI().setup(corpus, monkey_patch)
+    gui = mdw_gui.MDW_GUI().setup(monkey_patch)
     assert isinstance(gui, mdw_gui.MDW_GUI)
     layout = gui.layout()
     assert isinstance(layout, widgets.VBox)
@@ -30,11 +30,3 @@ def test_mdw_gui():
     assert gui.top_n_terms is not None
     assert gui.max_n_terms is not None
     gui._compute_handler({})  # pylint: disable=protected-access
-
-
-def test_create_mdw_gui():
-    corpus = MagicMock(spec=dtm.VectorizedCorpus)
-
-    gui = mdw_gui.MDW_GUI().setup(corpus, monkey_patch)
-
-    assert gui is not None

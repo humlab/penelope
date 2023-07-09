@@ -12,9 +12,11 @@ from .utility import shorten_filechooser_label
 
 # pylint: disable=attribute-defined-outside-init, too-many-instance-attributes
 
+
 class PickedCallback(Protocol):
     def __call__(self, filename: str, sender: 'PickFileGUI', **kwargs) -> None:
         ...
+
 
 class PickFileGUI:
     def __init__(

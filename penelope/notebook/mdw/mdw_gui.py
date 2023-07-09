@@ -56,7 +56,9 @@ class MDW_GUI:
         )
         self._extra_placeholder: w.HBox = w.HBox([])
 
-        self._compute = w.Button(description='Compute', icon='', button_style='Success', layout={'width': '120px'}, disabled=True)
+        self._compute = w.Button(
+            description='Compute', icon='', button_style='Success', layout={'width': '120px'}, disabled=True
+        )
         self.compute_callback: ComputeCallback = default_compute_mdw
         self.computed_callback: ComputedCallback = None
 
@@ -155,7 +157,7 @@ class MDW_GUI:
     @property
     def disabled(self) -> bool:
         return self._compute.disabled
-    
+
     @disabled.setter
     def disabled(self, value: bool):
         self._compute.disabled = value
@@ -163,7 +165,6 @@ class MDW_GUI:
         self._period2.disabled = value
         self._top_n_terms.disabled = value
         self._max_n_terms.disabled = value
-
 
 
 def default_compute_mdw(corpus: dtm.VectorizedCorpus, args: MDW_GUI) -> pd.DataFrame:

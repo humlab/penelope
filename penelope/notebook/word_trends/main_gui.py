@@ -56,7 +56,9 @@ def create_advanced_dtm_gui(
         done_callback=display_trends,
     )
 
-    gui_load: pfg.PickFileGUI = pfg.PickFileGUI(folder=data_folder, pattern='*_vector_data.npz', picked_callback=display_trends)
+    gui_load: pfg.PickFileGUI = pfg.PickFileGUI(
+        folder=data_folder, pattern='*_vector_data.npz', picked_callback=display_trends
+    )
 
     accordion = w.Accordion(
         children=[

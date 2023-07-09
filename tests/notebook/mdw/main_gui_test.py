@@ -37,4 +37,3 @@ def test_create_main_gui(corpus_fixture):
     gui.payload._period2.value = (2014, 2014)
     gui.payload._top_n_terms.value = 2
     gui.payload._compute.click()
-
