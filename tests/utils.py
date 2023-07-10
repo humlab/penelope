@@ -2,7 +2,7 @@ import contextlib
 import glob
 import os
 import shutil
-from typing import Any, Callable, List
+from typing import Any, Callable
 
 import numpy as np
 import pandas as pd
@@ -31,9 +31,6 @@ if __file__ in globals():
     this_path = os.path.abspath(this_file)
     TEST_CORPUS_FILENAME = os.path.join(this_path, TEST_CORPUS_FILENAME)
 
-# http://www.nltk.org/howto/collocations.html
-# PMI
-
 
 def clear_output(path: str = './tests/output'):
     with contextlib.suppress(Exception):
@@ -57,12 +54,12 @@ class inline_code:
 
 
 def create_abc_corpus(
-    dtm: List[List[int]], document_years: List[int] = None, token2id: dict = None
+    dtm: list[list[int]], document_years: list[int] = None, token2id: dict = None
 ) -> VectorizedCorpus:
     bag_term_matrix = np.array(dtm)
     token2id = token2id or {chr(ord('a') + i): i for i in range(0, bag_term_matrix.shape[1])}
 
-    years: List[int] = (
+    years: list[int] = (
         document_years if document_years is not None else [2000 + i for i in range(0, bag_term_matrix.shape[0])]
     )
 
@@ -88,27 +85,6 @@ def simple_vectorized_abc_corpus() -> VectorizedCorpus:
         ],
         document_years=[2013, 2013, 2014, 2014, 2014],
     )
-
-
-def create_text_reader(
-    source_path=TEST_CORPUS_FILENAME,
-    as_binary: bool = False,
-    filename_fields=None,
-    index_field=None,
-    filename_filter: str = None,
-    filename_pattern: str = "*.txt",
-    text_transforms: str = "dehyphen,normalize-whitespace",
-) -> TextReader:
-    reader_opts: TextReaderOpts = TextReaderOpts(
-        filename_pattern=filename_pattern,
-        filename_filter=filename_filter,
-        filename_fields=filename_fields,
-        index_field=index_field,
-        as_binary=as_binary,
-    )
-    transform_opts: TextTransformOpts = TextTransformOpts(transforms=text_transforms)
-    reader: TextReader = TextReader(source=source_path, reader_opts=reader_opts, transform_opts=transform_opts)
-    return reader
 
 
 def create_tokens_reader(
@@ -141,8 +117,8 @@ def create_tokens_reader(
     return reader
 
 
-def create_bundle(tag: str = 'DUMMY') -> Bundle:
-    folder = f'./tests/test_data/{tag}'
-    filename = to_filename(folder=folder, tag=tag)
+def load_test_bundle(tag: str = 'DUMMY') -> Bundle:
+    folder: str = f'./tests/test_data/{tag}'
+    filename: str = to_filename(folder=folder, tag=tag)
     bundle: Bundle = Bundle.load(filename, compute_frame=False)
     return bundle
