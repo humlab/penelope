@@ -6,7 +6,7 @@ from penelope.co_occurrence import Bundle
 from penelope.corpus import DocumentIndexHelper, VectorizedCorpus
 from penelope.utility import is_strictly_increasing
 
-from ...utils import create_bundle, simple_vectorized_abc_corpus
+from ...utils import load_test_bundle, simple_vectorized_abc_corpus
 
 try:
     from sklearn.feature_extraction.text import CountVectorizer
@@ -23,7 +23,7 @@ def corpus() -> VectorizedCorpus:
 
 @pytest.fixture(scope="module")
 def bundle() -> Bundle:
-    return create_bundle('VENUS')
+    return load_test_bundle('VENUS')
 
 
 def test_categorize_document_index(bundle: Bundle):
