@@ -116,9 +116,3 @@ def create_tokens_reader(
     )
     return reader
 
-
-def load_test_bundle(tag: str = 'DUMMY') -> Bundle:
-    folder: str = f'./tests/test_data/{tag}'
-    filename: str = to_filename(folder=folder, tag=tag)
-    bundle: Bundle = Bundle.load(filename, compute_frame=False)
-    return bundle

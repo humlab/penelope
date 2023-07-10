@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from penelope.co_occurrence import Bundle
+from penelope.co_occurrence import Bundle, to_filename
 from penelope.corpus import DocumentIndexHelper, VectorizedCorpus
 from penelope.utility import is_strictly_increasing
 
@@ -16,6 +16,13 @@ except ImportError:
 #  # pylint: disable=redefined-outer-name
 
 
+def _load_test_bundle(tag: str = 'VENUS') -> Bundle:
+    folder: str = f'./tests/test_data/{tag}'
+    filename: str = to_filename(folder=folder, tag=tag)
+    bundle: Bundle = Bundle.load(filename, compute_frame=False)
+    return bundle
+
+
 @pytest.fixture
 def corpus() -> VectorizedCorpus:
     return simple_vectorized_abc_corpus()
@@ -23,7 +30,7 @@ def corpus() -> VectorizedCorpus:
 
 @pytest.fixture(scope="module")
 def bundle() -> Bundle:
-    return load_test_bundle('VENUS')
+    return _load_test_bundle('VENUS')
 
 
 def test_categorize_document_index(bundle: Bundle):
