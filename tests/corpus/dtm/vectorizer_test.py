@@ -4,7 +4,7 @@ import pandas as pd
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import TextReaderOpts, TextTokenizer
 from tests.fixtures import MockedProcessedCorpus, TranströmerCorpus
-from tests.utils import TEST_CORPUS_FILENAME, create_tokens_reader
+from tests.utils import TEST_CORPUS_FILENAME, create_test_corpus_tokens_reader
 
 
 def mock_corpus() -> MockedProcessedCorpus:
@@ -21,7 +21,7 @@ def mock_corpus() -> MockedProcessedCorpus:
 
 def create_reader():
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-    reader = create_tokens_reader(filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace")
+    reader = create_test_corpus_tokens_reader(filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace")
     return reader
 
 

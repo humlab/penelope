@@ -87,7 +87,7 @@ def simple_vectorized_abc_corpus() -> VectorizedCorpus:
     )
 
 
-def create_tokens_reader(
+def create_test_corpus_tokens_reader(
     source_path=TEST_CORPUS_FILENAME,
     as_binary: bool = False,
     filename_fields=None,

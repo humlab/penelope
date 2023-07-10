@@ -1,6 +1,6 @@
 from penelope.corpus import readers
 from penelope.corpus.readers.text_tokenizer import TextTokenizer
-from tests.utils import create_tokens_reader
+from tests.utils import create_test_corpus_tokens_reader
 
 
 def get_file(reader, filename):
@@ -11,12 +11,12 @@ def get_file(reader, filename):
 
 
 def test_archive_filenames_when_filter_txt_returns_txt_files():
-    reader = create_tokens_reader(filename_pattern='*.txt')
+    reader = create_test_corpus_tokens_reader(filename_pattern='*.txt')
     assert 5 == len(reader.filenames)
 
 
 def test_archive_filenames_when_filter_md_returns_md_files():
-    reader = create_tokens_reader(filename_pattern='*.md')
+    reader = create_test_corpus_tokens_reader(filename_pattern='*.md')
     assert 1 == len(reader.filenames)
 
 
@@ -24,7 +24,7 @@ def test_archive_filenames_when_filter_function_txt_returns_txt_files():
     def filename_filter(x):
         return x.endswith('txt')
 
-    reader = create_tokens_reader(filename_filter=filename_filter)
+    reader = create_test_corpus_tokens_reader(filename_filter=filename_filter)
     assert 5 == len(reader.filenames)
 
 
@@ -36,7 +36,7 @@ def test_tokenize_corpus_with_list_source():
 
 def test_get_file_when_default_returns_unmodified_content():
     filename = 'dikt_2019_01_test.txt'
-    reader = create_tokens_reader(text_transforms="dehyphen", filename_filter=[filename])
+    reader = create_test_corpus_tokens_reader(text_transforms="dehyphen", filename_filter=[filename])
     result = next(reader)
     expected = (
         "Tre svarta ekar ur snön . "
@@ -49,7 +49,7 @@ def test_get_file_when_default_returns_unmodified_content():
 
 
 def test_metadata_has_filena():
-    tokens_reader = create_tokens_reader()
+    tokens_reader = create_test_corpus_tokens_reader()
     assert tokens_reader is not None
     assert tokens_reader.filenames is not None
     assert len(tokens_reader.filenames) > 0
@@ -60,7 +60,7 @@ def test_metadata_has_filena():
 
 def test_can_get_file_when_compress_whitespace_is_true_strips_whitespaces():
     filename = 'dikt_2019_01_test.txt'
-    reader = create_tokens_reader(text_transforms="dehyphen,normalize-whitespace", filename_filter=[filename])
+    reader = create_test_corpus_tokens_reader(text_transforms="dehyphen,normalize-whitespace", filename_filter=[filename])
     result = next(reader)
     expected = (
         "Tre svarta ekar ur snön . "
@@ -74,7 +74,7 @@ def test_can_get_file_when_compress_whitespace_is_true_strips_whitespaces():
 
 def test_get_file_when_fix_hyphenation_is_trye_removes_hyphens():
     filename = 'dikt_2019_03_test.txt'
-    reader = create_tokens_reader(text_transforms="dehyphen,normalize-whitespace", filename_filter=[filename])
+    reader = create_test_corpus_tokens_reader(text_transforms="dehyphen,normalize-whitespace", filename_filter=[filename])
     result = next(reader)
     expected = (
         "Nordlig storm . Det är den i den tid när rönnbärsklasar mognar . Vaken i mörkret hör man "
@@ -88,7 +88,7 @@ def test_get_file_when_fix_hyphenation_is_trye_removes_hyphens():
 def test_get_file_when_file_exists_and_extractor_specified_returns_content_and_metadata():
     filename = 'dikt_2019_03_test.txt'
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-    reader = create_tokens_reader(
+    reader = create_test_corpus_tokens_reader(
         filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace", filename_filter=[filename]
     )
     result = next(reader)
@@ -104,7 +104,7 @@ def test_get_file_when_file_exists_and_extractor_specified_returns_content_and_m
 
 def test_get_index_when_extractor_passed_returns_metadata():
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-    reader = create_tokens_reader(filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace")
+    reader = create_test_corpus_tokens_reader(filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace")
     result = reader.metadata
     expected = [
         dict(filename='dikt_2019_01_test.txt', serial_no=1, year=2019),
@@ -121,7 +121,7 @@ def test_get_index_when_extractor_passed_returns_metadata():
 
 def test_get_index_when_extractor_passed_returns_metadata2():
     filename_fields = "year:_:1#serial_no:_:2"
-    reader: TextTokenizer = create_tokens_reader(
+    reader: TextTokenizer = create_test_corpus_tokens_reader(
         filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace"
     )
     result = reader.metadata
@@ -151,7 +151,7 @@ def test_get_index_when_extractor_passed_returns_metadata2():
 
 
 def test_reader_can_be_reiterated():
-    reader: TextTokenizer = create_tokens_reader(
+    reader: TextTokenizer = create_test_corpus_tokens_reader(
         filename_fields="year:_:1", text_transforms="dehyphen,normalize-whitespace"
     )
     for _ in range(0, 4):

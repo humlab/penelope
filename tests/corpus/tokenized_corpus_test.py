@@ -1,11 +1,11 @@
 import penelope.corpus.tokenized_corpus as corpora
 from penelope.corpus import TokensTransformOpts
-from tests.utils import create_tokens_reader
+from tests.utils import create_test_corpus_tokens_reader
 
 
 def create_reader():
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-    reader = create_tokens_reader(filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace")
+    reader = create_test_corpus_tokens_reader(filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace")
     return reader
 
 
@@ -32,7 +32,7 @@ def test_next_document_when_only_any_alphanumeric_true_skips_deliminators():
 
 
 def test_next_document_when_only_any_alphanumeric_true_skips_deliminators_using_defaults():
-    reader = create_tokens_reader(filename_fields=None, text_transforms="dehyphen,normalize-whitespace")
+    reader = create_test_corpus_tokens_reader(filename_fields=None, text_transforms="dehyphen,normalize-whitespace")
     corpus = corpora.TokenizedCorpus(
         reader, transform_opts=TokensTransformOpts(transforms={'only-any-alphanumeric': True})
     )
@@ -88,7 +88,7 @@ def test_n_tokens_when_exhausted_and_only_any_alphanumeric_min_len_two_returns_e
 
 
 def test_next_document_when_new_corpus_returns_document():
-    reader = create_tokens_reader(text_transforms="dehyphen,normalize-whitespace")
+    reader = create_test_corpus_tokens_reader(text_transforms="dehyphen,normalize-whitespace")
     corpus = corpora.TokenizedCorpus(reader)
     result = next(corpus)
     expected = (
@@ -102,7 +102,7 @@ def test_next_document_when_new_corpus_returns_document():
 
 def test_get_index_when_extract_passed_returns_metadata():
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-    reader = create_tokens_reader(filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace")
+    reader = create_test_corpus_tokens_reader(filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace")
     corpus = corpora.TokenizedCorpus(reader)
     result = corpus.metadata
     expected = [
@@ -118,14 +118,14 @@ def test_get_index_when_extract_passed_returns_metadata():
 
 
 def test_get_index_when_no_extract_passed_returns_not_none():
-    reader = create_tokens_reader(filename_fields=None, text_transforms="dehyphen,normalize-whitespace")
+    reader = create_test_corpus_tokens_reader(filename_fields=None, text_transforms="dehyphen,normalize-whitespace")
     corpus = corpora.TokenizedCorpus(reader)
     result = corpus.metadata
     assert result is not None
 
 
 def test_next_document_when_token_corpus_returns_tokenized_document():
-    reader = create_tokens_reader(filename_fields=None, text_transforms="dehyphen,normalize-whitespace")
+    reader = create_test_corpus_tokens_reader(filename_fields=None, text_transforms="dehyphen,normalize-whitespace")
     corpus = corpora.TokenizedCorpus(reader, transform_opts=TokensTransformOpts())
     _, tokens = next(corpus)
     expected = (
@@ -152,7 +152,7 @@ def test_n_tokens_when_exhausted_iterater_returns_expected_count():
 
 
 def test_n_tokens_when_exhausted_and_only_any_alphanumeric_is_true_returns_expected_count():
-    reader = create_tokens_reader(filename_fields=None, text_transforms="dehyphen,normalize-whitespace")
+    reader = create_test_corpus_tokens_reader(filename_fields=None, text_transforms="dehyphen,normalize-whitespace")
     corpus = corpora.TokenizedCorpus(
         reader, transform_opts=TokensTransformOpts(transforms={'only-any-alphanumeric': True})
     )
@@ -163,7 +163,7 @@ def test_n_tokens_when_exhausted_and_only_any_alphanumeric_is_true_returns_expec
 
 
 def test_corpus_can_be_reiterated():
-    reader = create_tokens_reader(filename_fields=None, text_transforms="dehyphen,normalize-whitespace")
+    reader = create_test_corpus_tokens_reader(filename_fields=None, text_transforms="dehyphen,normalize-whitespace")
 
     corpus = corpora.TokenizedCorpus(
         reader, transform_opts=TokensTransformOpts(transforms={'only-any-alphanumeric': True})

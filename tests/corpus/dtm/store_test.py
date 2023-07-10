@@ -16,7 +16,7 @@ from penelope.corpus import (
     store_metadata,
 )
 from penelope.corpus.document_index import load_document_index
-from tests.utils import OUTPUT_FOLDER, create_tokens_reader
+from tests.utils import OUTPUT_FOLDER, create_test_corpus_tokens_reader
 
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
@@ -26,7 +26,7 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 @pytest.fixture
 def text_corpus() -> TokenizedCorpus:
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-    reader = create_tokens_reader(filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace")
+    reader = create_test_corpus_tokens_reader(filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace")
     transform_opts = TokensTransformOpts(
         transforms={
             'only-any-alphanumeric': True,
