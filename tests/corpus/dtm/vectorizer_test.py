@@ -3,7 +3,7 @@ import pandas as pd
 
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import TextReaderOpts, TextTokenizer
-from tests.fixtures import MockedProcessedCorpus
+from tests.fixtures import MockedProcessedCorpus, TranströmerCorpus
 from tests.utils import TEST_CORPUS_FILENAME, create_tokens_reader
 
 
@@ -153,7 +153,7 @@ def test_term_frequency_are_absolute_word_of_entire_corpus():
 
 
 def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
-    corpus = TokenizedCorpus(
+    corpus: TokenizedCorpus = TokenizedCorpus(
         reader=create_reader(),
         transform_opts=TokensTransformOpts(transforms={'to-lower': True, 'min-chars': 10}),
     )
@@ -172,6 +172,9 @@ def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
 
     assert expected_vocabulary_reversed == vocabulary
 
+def test_tranströmer_corpus():
+    corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(TranströmerCorpus())
+    assert corpus is not None
 
 def test_from_token_ids_stream():
     tokenized_corpus: MockedProcessedCorpus = mock_corpus()
