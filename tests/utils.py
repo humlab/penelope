@@ -77,7 +77,7 @@ def create_abc_corpus(
     return corpus
 
 
-def create_vectorized_corpus() -> VectorizedCorpus:
+def simple_vectorized_abc_corpus() -> VectorizedCorpus:
     return create_abc_corpus(
         dtm=[
             [2, 1, 4, 1],
@@ -99,15 +99,15 @@ def create_text_reader(
     filename_pattern: str = "*.txt",
     text_transforms: str = "dehyphen,normalize-whitespace",
 ) -> TextReader:
-    reader_opts = TextReaderOpts(
+    reader_opts: TextReaderOpts = TextReaderOpts(
         filename_pattern=filename_pattern,
         filename_filter=filename_filter,
         filename_fields=filename_fields,
         index_field=index_field,
         as_binary=as_binary,
     )
-    transform_opts = TextTransformOpts(transforms=text_transforms)
-    reader = TextReader(source=source_path, reader_opts=reader_opts, transform_opts=transform_opts)
+    transform_opts: TextTransformOpts = TextTransformOpts(transforms=text_transforms)
+    reader: TextReader = TextReader(source=source_path, reader_opts=reader_opts, transform_opts=transform_opts)
     return reader
 
 

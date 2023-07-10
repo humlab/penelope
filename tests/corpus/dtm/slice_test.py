@@ -8,14 +8,14 @@ import scipy
 from penelope.corpus import VectorizedCorpus
 from penelope.corpus.token2id import id2token2token2id
 
-from ...utils import create_abc_corpus, create_vectorized_corpus
+from ...utils import create_abc_corpus, simple_vectorized_abc_corpus
 
 # pylint: disable=redefined-outer-name
 
 
 @pytest.fixture
 def slice_corpus() -> VectorizedCorpus:
-    return create_vectorized_corpus()
+    return simple_vectorized_abc_corpus()
 
 
 def test_slice_by_indices():
