@@ -60,7 +60,9 @@ def test_metadata_has_filena():
 
 def test_can_get_file_when_compress_whitespace_is_true_strips_whitespaces():
     filename = 'dikt_2019_01_test.txt'
-    reader = create_test_corpus_tokens_reader(text_transforms="dehyphen,normalize-whitespace", filename_filter=[filename])
+    reader = create_test_corpus_tokens_reader(
+        text_transforms="dehyphen,normalize-whitespace", filename_filter=[filename]
+    )
     result = next(reader)
     expected = (
         "Tre svarta ekar ur snön . "
@@ -74,7 +76,9 @@ def test_can_get_file_when_compress_whitespace_is_true_strips_whitespaces():
 
 def test_get_file_when_fix_hyphenation_is_trye_removes_hyphens():
     filename = 'dikt_2019_03_test.txt'
-    reader = create_test_corpus_tokens_reader(text_transforms="dehyphen,normalize-whitespace", filename_filter=[filename])
+    reader = create_test_corpus_tokens_reader(
+        text_transforms="dehyphen,normalize-whitespace", filename_filter=[filename]
+    )
     result = next(reader)
     expected = (
         "Nordlig storm . Det är den i den tid när rönnbärsklasar mognar . Vaken i mörkret hör man "
@@ -104,7 +108,9 @@ def test_get_file_when_file_exists_and_extractor_specified_returns_content_and_m
 
 def test_get_index_when_extractor_passed_returns_metadata():
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-    reader = create_test_corpus_tokens_reader(filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace")
+    reader = create_test_corpus_tokens_reader(
+        filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace"
+    )
     result = reader.metadata
     expected = [
         dict(filename='dikt_2019_01_test.txt', serial_no=1, year=2019),

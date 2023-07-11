@@ -19,7 +19,9 @@ class Test_ChiSquare(unittest.TestCase):
 
     def create_reader(self):
         filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-        reader = create_test_corpus_tokens_reader(filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace")
+        reader = create_test_corpus_tokens_reader(
+            filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace"
+        )
         return reader
 
     def create_corpus(self):

@@ -5,7 +5,9 @@ from tests.utils import create_test_corpus_tokens_reader
 
 def create_reader():
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-    reader = create_test_corpus_tokens_reader(filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace")
+    reader = create_test_corpus_tokens_reader(
+        filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace"
+    )
     return reader
 
 
@@ -102,7 +104,9 @@ def test_next_document_when_new_corpus_returns_document():
 
 def test_get_index_when_extract_passed_returns_metadata():
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-    reader = create_test_corpus_tokens_reader(filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace")
+    reader = create_test_corpus_tokens_reader(
+        filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace"
+    )
     corpus = corpora.TokenizedCorpus(reader)
     result = corpus.metadata
     expected = [
