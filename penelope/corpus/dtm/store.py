@@ -234,6 +234,9 @@ class StoreMixIn:
         if not (filename or (tag and folder)):
             raise ValueError("Either tag and folder or filename must be specified.")
 
+        if isinstance(filename, IVectorizedCorpus):
+            return filename
+        
         if filename:
             folder, tag = StoreMixIn.split(filename)
 
