@@ -29,7 +29,7 @@ class PickFileGUI:
         self.folder: str = folder
         self.kind: Literal['chooser', 'picker'] = kind
         self.pattern: str = pattern or '*_vector_data.npz'
-        self.picked_callback: Callable[[str, str], None] = picked_callback
+        self.picked_callback: PickedCallback = picked_callback
         self._filename_picker: ipyfilechooser.FileChooser | w.Dropdown = None
         self._alert: w.HTML = w.HTML('.')
         self._load_button = w.Button(
