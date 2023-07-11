@@ -77,6 +77,8 @@ def test_strip_path_and_extension():
     assert pu.strip_path_and_extension('/tmp/hej.txt') == 'hej'
     assert pu.strip_path_and_extension('/tmp/hej') == 'hej'
     assert pu.strip_path_and_extension('hej') == 'hej'
+    assert pu.strip_path_and_extension(['/tmp/hej.txt', 'då']) == ['hej', 'då']
+    assert pu.strip_path_and_extension([]) == []
 
 
 def test_strip_path_and_add_counter():
