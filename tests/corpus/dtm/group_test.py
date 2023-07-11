@@ -6,7 +6,7 @@ from penelope.co_occurrence import Bundle, to_filename
 from penelope.corpus import DocumentIndexHelper, VectorizedCorpus
 from penelope.utility import is_strictly_increasing
 
-from ...utils import load_test_bundle, simple_vectorized_abc_corpus
+from ...utils import simple_vectorized_abc_corpus
 
 try:
     from sklearn.feature_extraction.text import CountVectorizer
