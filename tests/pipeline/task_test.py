@@ -43,7 +43,6 @@ def test_task_vocabulary_token2id():
 
 def test_CheckpointFeather_write_document_index():
     folder = './tests/output'
-    expected_filename = os.path.join(folder, feather.FEATHER_DOCUMENT_INDEX_NAME)
 
     os.makedirs(folder, exist_ok=True)
 
@@ -57,7 +56,7 @@ B.txt;2019;2;B;1;Night;59
 
     feather.write_document_index(folder, document_index)
 
-    assert os.path.isfile(expected_filename)
+    assert os.path.isfile(os.path.join(folder, 'document_index.feathering'))
 
     df = feather.read_document_index(folder)
 

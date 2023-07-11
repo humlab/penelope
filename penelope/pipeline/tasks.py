@@ -257,9 +257,16 @@ class LoadTaggedCSV(PoSCountMixIn, ITask):
         self.checkpoint_opts = self.checkpoint_opts or self.pipeline.config.checkpoint_opts
         self.checkpoint_data: cp.CheckpointData = self.load_archive()
 
-        document_index: pd.DataFrame = cp.feather.get_document_index(
-            self.checkpoint_opts.feather_folder, self.checkpoint_data.document_index
-        )
+        document_index: pd.DataFrame = cp.feather.read_document_index(self.checkpoint_opts.feather_folder)
+
+        if document_index is not None:
+            if len(document_index or []) != len(self.checkpoint_data.document_index):
+                raise PipelineError(
+                    "Document index in feather folder is out of sync with checkpoint archive (use --force-checkpoint)"
+                )
+
+        if document_index is None:
+            document_index = self.checkpoint_data.document_index
 
         self.pipeline.payload.set_reader_index(document_index)
 
