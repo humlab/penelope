@@ -187,7 +187,7 @@ def process(
             ),
         )
 
-        workflow.compute(args=args, corpus_config=corpus_config)
+        workflow.compute(opts=args, config=corpus_config)
 
         logger.info('Done!')
 
