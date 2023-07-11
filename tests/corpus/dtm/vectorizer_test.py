@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pandas as pd
 
@@ -21,7 +23,9 @@ def mock_corpus() -> MockedProcessedCorpus:
 
 def create_reader():
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-    reader = create_test_corpus_tokens_reader(filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace")
+    reader = create_test_corpus_tokens_reader(
+        filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace"
+    )
     return reader
 
 
@@ -172,9 +176,15 @@ def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
 
     assert expected_vocabulary_reversed == vocabulary
 
-def test_tranströmer_corpus():
+
+def test_dump_of_tranströmer_corpus():
+    folder: str = 'tests/output/tranströmer'
+    os.makedirs(folder, exist_ok=True)
     corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(TranströmerCorpus())
     assert corpus is not None
+    corpus.dump(tag='tranströmer', folder=folder)
+    assert corpus.dump_exists(tag='tranströmer', folder=folder)
+
 
 def test_from_token_ids_stream():
     tokenized_corpus: MockedProcessedCorpus = mock_corpus()
