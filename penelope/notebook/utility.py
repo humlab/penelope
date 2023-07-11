@@ -153,7 +153,7 @@ def shorten_filechooser_label(fc: ipyfilechooser.FileChooser, max_length: int):
         )
         setattr(fc, '_LBL_TEMPLATE', fake)
         if len(fc.selected) > max_length:
-            getattr(fc, '_label').value = fake.format(None, fc.selected, 'green')
+            getattr(fc, '_label').value = fake.format(fc.selected, 'green')
     except:  # pylint: disable=bare-except
         pass
 
