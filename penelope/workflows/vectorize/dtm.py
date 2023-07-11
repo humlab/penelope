@@ -10,40 +10,40 @@ CheckpointPath = str
 
 
 def compute(
-    args: interface.ComputeOpts,
-    corpus_config: CorpusConfig,
+    opts: interface.ComputeOpts,
+    config: CorpusConfig,
     tagged_frame_pipeline: pipeline.CorpusPipeline = None,
 ) -> VectorizedCorpus:
     """Computes DTM from from stream reseived from a tagged frame pipeline.
     Uses tagged_frame_pipeline argument or pipeline specified in corpus config."""
     try:
-        assert args.is_satisfied()
+        assert opts.is_satisfied()
 
-        if args.dry_run:
+        if opts.dry_run:
             return None
 
         if tagged_frame_pipeline is None:
-            tagged_frame_pipeline = corpus_config.get_pipeline(
+            tagged_frame_pipeline = config.get_pipeline(
                 "tagged_frame_pipeline",
-                corpus_source=args.corpus_source,
-                enable_checkpoint=args.enable_checkpoint,
-                force_checkpoint=args.force_checkpoint,
-                tagged_corpus_source=args.tagged_corpus_source,
+                corpus_source=opts.corpus_source,
+                enable_checkpoint=opts.enable_checkpoint,
+                force_checkpoint=opts.force_checkpoint,
+                tagged_corpus_source=opts.tagged_corpus_source,
             )
         corpus: VectorizedCorpus = (
             tagged_frame_pipeline
             + wildcard_to_DTM_pipeline(
-                transform_opts=args.transform_opts,
-                extract_opts=args.extract_opts,
-                vectorize_opts=args.vectorize_opts,
+                transform_opts=opts.transform_opts,
+                extract_opts=opts.extract_opts,
+                vectorize_opts=opts.vectorize_opts,
             )
         ).value()
 
-        if (args.tf_threshold or 1) > 1:
-            corpus = corpus.slice_by_tf(args.tf_threshold)
+        if (opts.tf_threshold or 1) > 1:
+            corpus = corpus.slice_by_tf(opts.tf_threshold)
 
-        if args.persist:
-            store_corpus_bundle(corpus, args)
+        if opts.persist:
+            store_corpus_bundle(corpus, opts)
 
         return corpus
 
