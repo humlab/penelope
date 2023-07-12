@@ -5,7 +5,7 @@ import pandas as pd
 
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts, VectorizedCorpus
 from penelope.corpus.readers import TextReaderOpts, TextTokenizer
-from tests.fixtures import MockedProcessedCorpus, TranströmerCorpus
+from tests.fixtures import MockedProcessedCorpus, TranstromerCorpus
 from tests.utils import TEST_CORPUS_FILENAME, create_test_corpus_tokens_reader
 
 
@@ -177,10 +177,10 @@ def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
     assert expected_vocabulary_reversed == vocabulary
 
 
-def test_dump_of_tranströmer_corpus():
+def test_dump_of_transtromer_corpus():
     folder: str = 'tests/output/tranströmer'
     os.makedirs(folder, exist_ok=True)
-    corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(TranströmerCorpus())
+    corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(TranstromerCorpus())
     assert corpus is not None
     corpus.dump(tag='tranströmer', folder=folder)
     assert corpus.dump_exists(tag='tranströmer', folder=folder)

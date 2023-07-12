@@ -10,7 +10,7 @@ from penelope.pipeline import ContentType, CorpusConfig, CorpusPipeline, Documen
 from penelope.pipeline.interfaces import ContentStream
 from penelope.pipeline.topic_model.tasks import ToTopicModel
 from penelope.topic_modelling.utility import ModelFolder, find_models
-from tests.fixtures import TranströmerCorpus  # pylint: disable=non-ascii-module-import
+from tests.fixtures import TranstromerCorpus  # pylint: disable=non-ascii-module-import
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
 # pylint: disable=redefined-outer-name, non-ascii-name
@@ -122,7 +122,7 @@ def test_topic_model_task_with_token_stream_and_document_index(method):
 
     target_folder: str = './tests/output'
     target_name: str = f'{str(uuid.uuid1())[:8]}'
-    corpus: TranströmerCorpus = TranströmerCorpus()
+    corpus: TranstromerCorpus = TranstromerCorpus()
     default_engine_args: dict = {
         'n_topics': 4,
         'passes': 1,

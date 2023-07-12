@@ -62,7 +62,7 @@ class SimpleTestCorpus:
             raise
 
 
-class TranströmerCorpus(SimpleTestCorpus):
+class TranstromerCorpus(SimpleTestCorpus):
     def __init__(self):
         # tran_2019_02_test.txt
         meta_fields = ["year:_:1", "year_serial_id:_:2"]

@@ -17,7 +17,7 @@ from penelope.topic_modelling.engines.engine_gensim import SUPPORTED_ENGINES, co
 from penelope.topic_modelling.engines.engine_gensim.utility import diagnostics_to_topic_token_weights_data
 from penelope.topic_modelling.engines.interface import ITopicModelEngine
 from penelope.vendor.gensim_api._gensim.wrappers.mallet_tm import MalletTopicModel
-from tests.fixtures import TranströmerCorpus  # pylint: disable=non-ascii-module-import
+from tests.fixtures import TranstromerCorpus  # pylint: disable=non-ascii-module-import
 from tests.utils import OUTPUT_FOLDER
 
 from ..utils import PERSISTED_INFERRED_MODEL_SOURCE_FOLDER
@@ -35,7 +35,7 @@ jj = os.path.join
 
 
 def create_train_corpus() -> tm.TrainingCorpus:
-    corpus: TranströmerCorpus = TranströmerCorpus()
+    corpus: TranstromerCorpus = TranstromerCorpus()
     sparse_corpus, vocabulary = convert.TranslateCorpus().translate(corpus, id2token=None)
     tc: tm.TrainingCorpus = tm.TrainingCorpus(
         corpus=sparse_corpus,
@@ -70,7 +70,7 @@ def create_model_data(method) -> Tuple[tm.TrainingCorpus, tm.InferredModel]:
 
 
 def test_tranströmers_corpus():
-    corpus = TranströmerCorpus()
+    corpus = TranstromerCorpus()
     for filename, tokens in corpus:
         assert len(filename) > 0
         assert len(tokens) > 0
