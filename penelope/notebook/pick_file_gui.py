@@ -1,6 +1,6 @@
 from glob import glob
 from os.path import basename, join
-from typing import Any, Callable, Literal, Protocol
+from typing import Any, Literal, Protocol
 
 import ipyfilechooser
 import ipywidgets as w

@@ -7,6 +7,7 @@ from penelope.notebook import pick_file_gui as pfg
 from penelope.notebook.word_trends import ITrendDisplayer, TrendsGUI, TrendsService, main_gui
 
 # from ..utils import create_abc_corpus
+# pylint: disable=protected-access
 
 
 def mocked_displayer_ctor(**_):
@@ -32,10 +33,6 @@ def test_TrendsGUI_display():
     gui = TrendsGUI().setup(displayers=[mocked_displayer_ctor])
     gui.trends_service = trends_service
     gui.display(trends_service=trends_service)
-
-
-def monkey_patch(*_, **__):
-    ...
 
 
 def monkey_patch(*_, **__):

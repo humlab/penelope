@@ -20,7 +20,6 @@ def test_default_compute_callback():
 
 
 def test_mdw_gui():
-    corpus = MagicMock(spec=dtm.VectorizedCorpus)
     gui = mdw_gui.MDW_GUI().setup(monkey_patch)
     assert isinstance(gui, mdw_gui.MDW_GUI)
     layout = gui.layout()

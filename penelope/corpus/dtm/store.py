@@ -236,7 +236,7 @@ class StoreMixIn:
 
         if isinstance(filename, IVectorizedCorpus):
             return filename
-        
+
         if filename:
             folder, tag = StoreMixIn.split(filename)
 

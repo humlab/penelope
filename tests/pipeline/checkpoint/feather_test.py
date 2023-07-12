@@ -3,10 +3,9 @@ from os.path import join as jj
 
 import pandas as pd
 
-from penelope.utility import strip_paths
-
-from penelope.pipeline.interfaces import ContentType
 from penelope.pipeline.checkpoint import feather
+from penelope.pipeline.interfaces import ContentType
+from penelope.utility import strip_paths
 
 FEATHER_DOCUMENT_INDEX_NAME = 'document_index.feathering'
 

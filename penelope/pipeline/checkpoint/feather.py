@@ -1,6 +1,5 @@
 import glob
-import os
-from os.path import basename, isfile
+from os.path import isfile
 from os.path import join as jj
 
 import pandas as pd

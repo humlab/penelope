@@ -7,11 +7,13 @@ from .. import grid_utility as gu
 from .. import pick_file_gui as pfg
 from .mdw_gui import MDW_GUI
 
+# pylint: disable=unused-argument
+
 
 def create_main_gui(folder: str) -> VBox:
     view: HBox = HBox()
 
-    def display_mdw(result: pd.DataFrame, sender: pfg.PickFileGUI):  # pylint: disable=unused-argument
+    def display_mdw(result: pd.DataFrame, sender: pfg.PickFileGUI):
         g = gu.table_widget(result)
         view.children = [g]
 

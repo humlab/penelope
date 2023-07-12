@@ -134,6 +134,7 @@ def strip_paths(filenames: Union[str, List[str]]) -> Union[str, List[str]]:
 def strip_path_and_extension(filename: str | list[str]) -> str | list[str]:
     return strip_extensions(strip_paths(filename))
 
+
 def strip_extensions(filename: Union[str, List[str]]) -> List[str]:
     if isinstance(filename, str):
         return os.path.splitext(filename)[0]
