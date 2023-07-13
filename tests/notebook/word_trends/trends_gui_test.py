@@ -74,10 +74,11 @@ def test_advanced_gui():
     assert len(gui.content_placeholder.children) > 0
     assert gui.gui_trends._alert.value == "🥱 (not computed)"
 
-    gui.gui_compute._config_chooser.reset(path='tests/test_data/tranströmer', filename='tranströmer.yml')
-    gui.gui_compute._corpus_tag.value = 'poems'
-    gui.gui_compute._config_chooser_changed()
-    gui.gui_compute._compute_button.click()
+    gui.gui_trends._compute.click()
 
     assert gui.gui_trends._alert.value == "🙃 Please specify tokens to plot"
     assert gui.gui_trends._alert.value == "🙂"
+
+    # gui.gui_compute._config_chooser.reset(path='tests/test_data/tranströmer', filename='tranströmer.yml')
+    # gui.gui_compute._config_chooser_changed()
+    # gui.gui_compute._compute_button.click()

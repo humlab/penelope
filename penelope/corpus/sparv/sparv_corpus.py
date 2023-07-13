@@ -55,10 +55,10 @@ class SparvTokenizedCsvCorpus(TokenizedCorpus):
         chunk_size: int = None,
     ):
         reader_opts = reader_opts or TextReaderOpts()
-        if isinstance(source, readers.SparvCsvTokenizer):
+        if isinstance(source, readers.SparvCsvReader):
             tokens_reader = source
         else:
-            tokens_reader = readers.SparvCsvTokenizer(
+            tokens_reader = readers.SparvCsvReader(
                 source,
                 extract_opts=extract_opts,
                 reader_opts=reader_opts,

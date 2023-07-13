@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 # pylint: disable=too-many-arguments, super-with-arguments
 
 
-class SparvCsvTokenizer(TokenizeTextReader):
+class SparvCsvReader(TokenizeTextReader):
     def __init__(
         self,
         source: TextSource,

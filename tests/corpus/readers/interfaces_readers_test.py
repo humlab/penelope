@@ -25,9 +25,9 @@ def test_pandas_reader_interface():
 
 
 def test_sparv_csv_tokenizer_interface():
-    assert issubclass(readers.SparvCsvTokenizer, ICorpusReader)
+    assert issubclass(readers.SparvCsvReader, ICorpusReader)
 
-    instance = readers.SparvCsvTokenizer(SPARV_CSV_EXPORT_FILENAME_SMALL, reader_opts=TextReaderOpts())
+    instance = readers.SparvCsvReader(SPARV_CSV_EXPORT_FILENAME_SMALL, reader_opts=TextReaderOpts())
     assert isinstance(instance, ICorpusReader)
 
 
