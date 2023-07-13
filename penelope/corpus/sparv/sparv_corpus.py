@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import penelope.utility.zip_utils as zip_util
 
-from . import readers
-from .readers import ExtractTaggedTokensOpts, TextReaderOpts
-from .tokenized_corpus import TokenizedCorpus
-from .tokens_transformer import TokensTransformOpts
+from .. import readers
+from ..readers import ExtractTaggedTokensOpts, TextReaderOpts
+from ..tokenized_corpus import TokenizedCorpus
+from ..tokens_transformer import TokensTransformOpts
 
 
 class SparvTokenizedXmlCorpus(TokenizedCorpus):

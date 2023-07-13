@@ -30,7 +30,7 @@ from .dtm import (
 from .interfaces import ICorpus, ITokenizedCorpus
 from .readers.interfaces import ExtractTaggedTokensOpts, FilenameFilterSpec, PhraseSubstitutions, TextReaderOpts
 from .segmented_text_corpus import ChunkSegmenter, DocumentSegmenter, SegmentedTextCorpus, SentenceSegmenter
-from .sparv_corpus import (
+from .sparv.sparv_corpus import (
     SparvTokenizedCsvCorpus,
     SparvTokenizedXmlCorpus,
     sparv_csv_extract_and_store,
