@@ -13,4 +13,4 @@ from .sparv_xml_tokenizer import Sparv3XmlReader, SparvXmlReader
 from .streamify_text_source import streamify_text_source
 from .text_reader import TextReader, TextReaderOpts
 from .tokenize_reader import TokenizeTextReader
-from .zip_iterator import ZipTextIterator
+from .zip_reader import ZipCorpusReader

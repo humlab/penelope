@@ -11,7 +11,7 @@ from .text_reader import TextReaderOpts
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 
 
-class ZipTextIterator(ICorpusReader):
+class ZipCorpusReader(ICorpusReader):
     """Iterator that returns filename and content for each matching file in archive."""
 
     def __init__(self, source_path: str, reader_opts: TextReaderOpts):
