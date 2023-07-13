@@ -46,6 +46,6 @@ def test_sparv_xml_tokenizer_interface():
 
 
 def test_zip_text_iterator_interface():
-    assert issubclass(readers.ZipTextIterator, ICorpusReader)
-    instance = readers.ZipTextIterator(TEST_CORPUS_FILENAME, reader_opts=TextReaderOpts())
+    assert issubclass(readers.ZipCorpusReader, ICorpusReader)
+    instance = readers.ZipCorpusReader(TEST_CORPUS_FILENAME, reader_opts=TextReaderOpts())
     assert isinstance(instance, ICorpusReader)
