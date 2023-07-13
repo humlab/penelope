@@ -7,9 +7,9 @@ from penelope.utility import (
     tuple_of_lists_to_list_of_tuples,
 )
 
-from .document_index import metadata_to_document_index
-from .interfaces import ITokenizedCorpus
-from .tokenized_corpus import ReiterableTerms
+from ..document_index import metadata_to_document_index
+from ..interfaces import ITokenizedCorpus
+from ..tokenized_corpus import ReiterableTerms
 
 
 class SimpleTextLinesCorpus(ITokenizedCorpus):

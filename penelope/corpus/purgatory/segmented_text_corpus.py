@@ -4,9 +4,9 @@ import shutil
 
 from penelope.vendor.nltk import sent_tokenize, word_tokenize
 
-from .readers.interfaces import ICorpusReader
-from .tokenized_corpus import TokenizedCorpus
-from .tokens_transformer import TokensTransformOpts
+from ..readers.interfaces import ICorpusReader
+from ..tokenized_corpus import TokenizedCorpus
+from ..tokens_transformer import TokensTransformOpts
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 
