@@ -3,7 +3,7 @@ import pandas as pd
 from penelope.vendor.nltk import word_tokenize
 
 from .. import transformer as tr
-from . import tng
+from ..readers import tng
 
 
 class PandasCorpusReader(tng.CorpusReader):

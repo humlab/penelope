@@ -1,5 +1,5 @@
 from penelope.corpus import readers
-from penelope.corpus.readers.text_tokenizer import TextTokenizer
+from penelope.corpus.readers.text_tokenizer import TokenizeTextReader
 from tests.utils import create_test_corpus_tokens_reader
 
 
@@ -29,7 +29,7 @@ def test_archive_filenames_when_filter_function_txt_returns_txt_files():
 
 
 def test_tokenize_corpus_with_list_source():
-    source = readers.TextTokenizer(source=["a b c", "e f g"])
+    source = readers.TokenizeTextReader(source=["a b c", "e f g"])
 
     assert [('document_1.txt', ['a', 'b', 'c']), ('document_2.txt', ['e', 'f', 'g'])] == [x for x in source]
 
@@ -127,7 +127,7 @@ def test_get_index_when_extractor_passed_returns_metadata():
 
 def test_get_index_when_extractor_passed_returns_metadata2():
     filename_fields = "year:_:1#serial_no:_:2"
-    reader: TextTokenizer = create_test_corpus_tokens_reader(
+    reader: TokenizeTextReader = create_test_corpus_tokens_reader(
         filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace"
     )
     result = reader.metadata
@@ -157,7 +157,7 @@ def test_get_index_when_extractor_passed_returns_metadata2():
 
 
 def test_reader_can_be_reiterated():
-    reader: TextTokenizer = create_test_corpus_tokens_reader(
+    reader: TokenizeTextReader = create_test_corpus_tokens_reader(
         filename_fields="year:_:1", text_transforms="dehyphen,normalize-whitespace"
     )
     for _ in range(0, 4):

@@ -4,7 +4,7 @@ import os
 from penelope import corpus as pc
 from penelope import pipeline as pp
 from penelope import topic_modelling as tm
-from penelope.corpus.readers import TextTokenizer
+from penelope.corpus.readers import TokenizeTextReader
 from penelope.topic_modelling.engines.engine_gensim.options import SUPPORTED_ENGINES
 
 # pylint: disable=unused-argument, too-many-arguments
@@ -27,7 +27,7 @@ def compute(
     n_tokens: int = 200,
     minimum_probability: float = 0.001,
 ):
-    tokens_reader: TextTokenizer = TextTokenizer(
+    tokens_reader: TokenizeTextReader = TokenizeTextReader(
         source=corpus_source,
         transform_opts=text_transform_opts,
         reader_opts=reader_opts,

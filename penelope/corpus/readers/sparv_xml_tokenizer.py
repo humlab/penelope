@@ -4,7 +4,7 @@ import logging
 from ..sparv.sparv_xml_to_text import XSLT_FILENAME_V3, SparvXml2Text
 from ..transformer import TextTransformOpts
 from .interfaces import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
-from .text_tokenizer import TextTokenizer
+from .text_tokenizer import TokenizeTextReader
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 # FIXME: Implement pos_paddings
-class SparvXmlReader(TextTokenizer):
+class SparvXmlReader(TokenizeTextReader):
     def __init__(
         self,
         source: TextSource,

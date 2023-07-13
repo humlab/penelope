@@ -8,9 +8,9 @@ from tests.utils import TEST_CORPUS_FILENAME
 
 
 def test_text_tokenizer_interface():
-    assert issubclass(readers.TextTokenizer, ICorpusReader)
+    assert issubclass(readers.TokenizeTextReader, ICorpusReader)
 
-    instance = readers.TextTokenizer(source=["a b c", "e f g"])
+    instance = readers.TokenizeTextReader(source=["a b c", "e f g"])
     assert isinstance(instance, ICorpusReader)
 
     # assert [('document_1.txt', ['a', 'b', 'c']), ('document_2.txt', ['e', 'f', 'g'])] == [ x for x in corpus ]

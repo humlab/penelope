@@ -4,14 +4,14 @@ import logging
 from ..sparv.sparv_csv_to_text import SparvCsvToText
 from ..transformer import TextTransformOpts
 from .interfaces import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
-from .text_tokenizer import TextTokenizer
+from .text_tokenizer import TokenizeTextReader
 
 logger = logging.getLogger(__name__)
 
 # pylint: disable=too-many-arguments, super-with-arguments
 
 
-class SparvCsvTokenizer(TextTokenizer):
+class SparvCsvTokenizer(TokenizeTextReader):
     def __init__(
         self,
         source: TextSource,

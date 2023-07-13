@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from penelope.corpus import TextTransformOpts, VectorizedCorpus
-from penelope.corpus.readers import TextReaderOpts, TextTokenizer
+from penelope.corpus.readers import TextReaderOpts, TokenizeTextReader
 
 OUTPUT_FOLDER = './tests/output'
 TEST_DATA_FOLDER = './tests/test_data'
@@ -93,7 +93,7 @@ def create_test_corpus_tokens_reader(
     text_transforms: str = "dehyphen,normalize-whitespace",
     chunk_size: int = None,
     tokenize: Callable = None,
-) -> TextTokenizer:
+) -> TokenizeTextReader:
     reader_opts = TextReaderOpts(
         filename_pattern=filename_pattern,
         filename_filter=filename_filter,
@@ -103,7 +103,7 @@ def create_test_corpus_tokens_reader(
     )
     transform_opts = TextTransformOpts(transforms=text_transforms)
 
-    reader = TextTokenizer(
+    reader = TokenizeTextReader(
         source_path,
         reader_opts=reader_opts,
         transform_opts=transform_opts,

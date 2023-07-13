@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts, VectorizedCorpus
-from penelope.corpus.readers import TextReaderOpts, TextTokenizer
+from penelope.corpus.readers import TextReaderOpts, TokenizeTextReader
 from tests.fixtures import MockedProcessedCorpus, TranstromerCorpus
 from tests.utils import TEST_CORPUS_FILENAME, create_test_corpus_tokens_reader
 
@@ -39,7 +39,7 @@ def create_corpus():
 
 
 def test_create_text_tokenizer_smoke_test():
-    reader = TextTokenizer(TEST_CORPUS_FILENAME, reader_opts=TextReaderOpts())
+    reader = TokenizeTextReader(TEST_CORPUS_FILENAME, reader_opts=TextReaderOpts())
     assert reader is not None
     assert next(reader) is not None
 

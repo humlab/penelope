@@ -1,5 +1,5 @@
 from penelope.corpus import SparvTokenizedCsvCorpus, TokensTransformOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TextTokenizer
+from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TokenizeTextReader
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
 SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer/tranströmer_corpus_export.sparv4.csv.zip'
@@ -46,7 +46,7 @@ def test_corpus_apply_when_single_group_partition_filter_then_other_groups_are_f
     document_names = corpus.group_documents_by_key('year')[2019]
 
     assert expected_document_names == document_names
-    assert isinstance(corpus.reader, TextTokenizer)
+    assert isinstance(corpus.reader, TokenizeTextReader)
     assert hasattr(corpus.reader, 'apply_filter')
 
     corpus.reader.apply_filter(document_names)
