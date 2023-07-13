@@ -1,5 +1,5 @@
 from penelope.corpus import readers
-from penelope.corpus.readers.text_tokenizer import TokenizeTextReader
+from penelope.corpus.readers.tokenize_reader import TokenizeTextReader
 from tests.utils import create_test_corpus_tokens_reader
 
 

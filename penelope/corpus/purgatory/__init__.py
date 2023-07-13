@@ -12,5 +12,5 @@ from .sparv_csv_tokenizer import SparvCsvReader
 from .sparv_xml_tokenizer import Sparv3XmlReader, SparvXmlReader
 from .streamify_text_source import streamify_text_source
 from .text_reader import TextReader, TextReaderOpts
-from .text_tokenizer import TokenizeTextReader
+from .tokenize_reader import TokenizeTextReader
 from .zip_iterator import ZipTextIterator

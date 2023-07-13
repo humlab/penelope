@@ -3,8 +3,8 @@ import logging
 
 from ..sparv.sparv_csv_to_text import SparvCsvToText
 from ..transformer import TextTransformOpts
-from .interfaces import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
-from .text_tokenizer import TokenizeTextReader
+from ..interfaces import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
+from ..readers.tokenize_reader import TokenizeTextReader
 
 logger = logging.getLogger(__name__)
 
