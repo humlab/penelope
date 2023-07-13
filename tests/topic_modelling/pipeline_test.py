@@ -16,7 +16,7 @@ from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 # pylint: disable=redefined-outer-name, non-ascii-name
 
 
-def tranströmer_topic_model_payload(method: str, target_folder: str, target_name: str) -> DocumentPayload:
+def transtromer_topic_model_payload(method: str, target_folder: str, target_name: str) -> DocumentPayload:
     transform_opts: TokensTransformOpts = TokensTransformOpts()
     extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(
         lemmatize=True,
@@ -69,7 +69,7 @@ def test_predict_topics(method: str):
 
     target_folder: str = './tests/output'
     train_target_name: str = f'train_{str(uuid.uuid1())[:8]}'
-    payload: DocumentPayload = tranströmer_topic_model_payload(
+    payload: DocumentPayload = transtromer_topic_model_payload(
         method=method, target_folder=target_folder, target_name=train_target_name
     )
     model_folder: str = os.path.join(payload.content.get("target_folder"), payload.content.get("target_name"))
