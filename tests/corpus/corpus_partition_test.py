@@ -23,7 +23,7 @@ def test_partition_documents():
         2020: ['tran_2020_01_test', 'tran_2020_02_test'],
     }
 
-    groups = create_test_corpus().partition_documents('year')
+    groups = create_test_corpus().group_documents_by_key('year')
 
     assert expected_groups == groups
 
@@ -33,7 +33,7 @@ def test_partition_groups_by_year_contains_year():
         2019: ['tran_2019_01_test', 'tran_2019_02_test', 'tran_2019_03_test'],
     }
 
-    groups = create_test_corpus().partition_documents('year')
+    groups = create_test_corpus().group_documents_by_key('year')
 
     assert expected_groups[2019] == groups[2019]
 
@@ -43,7 +43,7 @@ def test_corpus_apply_when_single_group_partition_filter_then_other_groups_are_f
 
     corpus: SparvTokenizedCsvCorpus = create_test_corpus()
 
-    document_names = corpus.partition_documents('year')[2019]
+    document_names = corpus.group_documents_by_key('year')[2019]
 
     assert expected_document_names == document_names
     assert isinstance(corpus.reader, TextTokenizer)
@@ -219,7 +219,7 @@ def test_corpus_apply_when_looping_through_partition_groups_filter_outs_other_gr
         transform_opts=TokensTransformOpts(transforms={'min-chars': 2, 'to_upper': True}),
     )
 
-    partitions = corpus.partition_documents('year')
+    partitions = corpus.group_documents_by_key('year')
 
     for key in partitions:
         corpus.reader.apply_filter(partitions[key])
