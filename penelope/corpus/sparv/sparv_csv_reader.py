@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from ..sparv.sparv_csv_to_text import SparvCsvToText
-from ..transformer import TextTransformOpts
 from ..interfaces import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
 from ..readers.tokenize_reader import TokenizeTextReader
+from ..sparv.sparv_csv_to_text import SparvCsvToText
+from ..transformer import TextTransformOpts
 
 logger = logging.getLogger(__name__)
 
