@@ -21,6 +21,8 @@ def get_document_filenames(*, folder: str) -> list[str]:
 
 def get_document_index_filename(folder: str) -> str:
     """Returns document index filename if exists, otherwise None"""
+    if folder is None:
+        return None
     return next((x for x in glob.glob(jj(folder, "document_index.feather*"))), None)
 
 
