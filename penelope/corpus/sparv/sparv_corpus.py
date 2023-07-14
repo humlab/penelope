@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import penelope.utility.zip_utils as zip_util
 
 from .. import sparv
-from ..readers import ExtractTaggedTokensOpts, TextReaderOpts
+from ..readers.interfaces import ExtractTaggedTokensOpts, TextReaderOpts
 from ..tokenized_corpus import TokenizedCorpus
 
 if TYPE_CHECKING:

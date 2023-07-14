@@ -5,7 +5,7 @@ import os
 from typing import TYPE_CHECKING, Any, Dict, Set
 
 if TYPE_CHECKING:
-    from penelope.corpus.readers import ExtractTaggedTokensOpts
+    from ..readers.interfaces import ExtractTaggedTokensOpts
 
 script_path = os.path.dirname(os.path.abspath(__file__))
 

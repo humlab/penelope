@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ..readers import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
+from ..readers.interfaces import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
 from ..readers.tokenize_reader import TokenizeTextReader
 from ..sparv.sparv_xml_to_text import XSLT_FILENAME_V3, SparvXml2Text
 from ..transform import TextTransformOpts
