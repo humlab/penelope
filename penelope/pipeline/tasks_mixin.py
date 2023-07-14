@@ -5,8 +5,7 @@ from typing import Any, List, Mapping, Optional, Set, Tuple
 import numpy as np
 import pandas as pd
 
-from penelope.corpus import Token2Id, TokensTransformOpts, Transform
-from penelope.corpus.document_index import update_document_index_by_dicts_or_tuples
+from penelope.corpus import Token2Id, TokensTransformOpts, Transform, update_document_index_by_dicts_or_tuples
 from penelope.utility import PoS_Tag_Scheme
 from penelope.utility.file_utility import write_json
 

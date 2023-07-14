@@ -1,5 +1,4 @@
-from penelope.corpus import SparvTokenizedCsvCorpus, TokensTransformOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
+from penelope.corpus import ExtractTaggedTokensOpts, SparvTokenizedCsvCorpus, TextReaderOpts, TokensTransformOpts
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
 SPARV_ZIPPED_CSV_EXPORT_FILENAME = './tests/test_data/tranströmer/tranströmer_corpus_export.sparv4.csv.zip'

@@ -1,8 +1,8 @@
 import pytest
 
 from penelope import pipeline
+from penelope.corpus import ExtractTaggedTokensOpts
 from penelope.corpus.readers import tng
-from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts
 from penelope.pipeline import tagged_frame, tasks
 
 # pylint: disable=redefined-outer-name

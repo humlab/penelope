@@ -1,5 +1,3 @@
-from typing import Dict
-
 from penelope.utility import (
     FilenameFieldSpecs,
     extract_filenames_metadata,
@@ -18,7 +16,7 @@ class SimpleTextLinesCorpus(ITokenizedCorpus):
     def __init__(
         self,
         filename: str,
-        fields: Dict[str, int],
+        fields: dict[str, int],
         filename_fields: FilenameFieldSpecs = None,
         index_field: str = None,
         sep: str = ' # ',

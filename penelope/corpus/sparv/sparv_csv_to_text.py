@@ -1,11 +1,11 @@
+from __future__ import annotations
+
 import csv
-import logging
 import os
-from typing import Any, Dict, Set
+from typing import TYPE_CHECKING, Any, Dict, Set
 
-from penelope.corpus.readers import ExtractTaggedTokensOpts
-
-logger = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from penelope.corpus.readers import ExtractTaggedTokensOpts
 
 script_path = os.path.dirname(os.path.abspath(__file__))
 

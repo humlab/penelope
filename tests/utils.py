@@ -7,8 +7,7 @@ from typing import Any, Callable
 import numpy as np
 import pandas as pd
 
-from penelope.corpus import TextTransformOpts, VectorizedCorpus
-from penelope.corpus.readers import TextReaderOpts, TokenizeTextReader
+from penelope.corpus import TextReaderOpts, TextTransformOpts, TokenizeTextReader, VectorizedCorpus
 
 OUTPUT_FOLDER = './tests/output'
 TEST_DATA_FOLDER = './tests/test_data'

@@ -1,7 +1,6 @@
 from penelope import corpus as pc
-from penelope.corpus.readers import TextReader
 
-from .. import utils as tu
+from ... import utils as tu
 
 
 def simple_test_corpus(
@@ -9,8 +8,8 @@ def simple_test_corpus(
     filename_filter: str = None,
     filename_pattern: str = "*.txt",
     text_transforms: str = "dehyphen,normalize-whitespace",
-) -> TextReader:
-    reader: TextReader = TextReader(
+) -> pc.TextReader:
+    reader: pc.TextReader = pc.TextReader(
         source=tu.TEST_CORPUS_FILENAME,
         reader_opts=pc.TextReaderOpts(
             filename_pattern=filename_pattern,
@@ -120,7 +119,7 @@ def test_get_index_when_filename_fields_is_set_returns_metadata():
 
 def test_get_index_when_extractor_passed_returns_metadata2():
     filename_fields = "year:_:1#serial_no:_:2"
-    reader: TextReader = simple_test_corpus(
+    reader: pc.TextReader = simple_test_corpus(
         filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace"
     )
     result = reader.metadata
@@ -150,7 +149,9 @@ def test_get_index_when_extractor_passed_returns_metadata2():
 
 
 def test_reader_can_be_reiterated():
-    reader: TextReader = simple_test_corpus(filename_fields="year:_:1", text_transforms="dehyphen,normalize-whitespace")
+    reader: pc.TextReader = simple_test_corpus(
+        filename_fields="year:_:1", text_transforms="dehyphen,normalize-whitespace"
+    )
     for _ in range(0, 4):
         n_chars = [len(x) for _, x in reader]
         expected = [105, 84, 140, 220, 93]

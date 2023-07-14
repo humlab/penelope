@@ -3,8 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from penelope.corpus import CorpusVectorizer, TokenizedCorpus, TokensTransformOpts, VectorizedCorpus
-from penelope.corpus.readers import TextReaderOpts, TokenizeTextReader
+import penelope.corpus as pc
 from tests.fixtures import MockedProcessedCorpus, TranstromerCorpus
 from tests.utils import TEST_CORPUS_FILENAME, create_test_corpus_tokens_reader
 
@@ -31,29 +30,29 @@ def create_reader():
 
 def create_corpus():
     reader = create_reader()
-    transform_opts = TokensTransformOpts(
+    transform_opts = pc.TokensTransformOpts(
         transforms={'only-any-alphanumeric': True, 'to-lower': True, 'min-chars': 2, 'remove-numerals': True}
     )
-    corpus = TokenizedCorpus(reader, transform_opts=transform_opts)
+    corpus = pc.TokenizedCorpus(reader, transform_opts=transform_opts)
     return corpus
 
 
 def test_create_text_tokenizer_smoke_test():
-    reader = TokenizeTextReader(TEST_CORPUS_FILENAME, reader_opts=TextReaderOpts())
+    reader = pc.TokenizeTextReader(TEST_CORPUS_FILENAME, reader_opts=pc.TextReaderOpts())
     assert reader is not None
     assert next(reader) is not None
 
 
 def test_fit_transform_creates_a_vocabulary_with_unique_tokens_with_an_id_sequence():
     corpus = create_corpus()
-    vectorizer = CorpusVectorizer()
+    vectorizer = pc.CorpusVectorizer()
     v_corpus = vectorizer.fit_transform(corpus, already_tokenized=True)
     assert corpus.token2id == v_corpus.token2id
 
 
 def test_fit_transform_creates_a_bag_of_word_bag_term_matrix():
     corpus = mock_corpus()
-    vectorizer = CorpusVectorizer()
+    vectorizer = pc.CorpusVectorizer()
     v_corpus = vectorizer.fit_transform(corpus, already_tokenized=True)
     expected_vocab = {'a': 0, 'b': 1, 'c': 2, 'd': 3}
     expected_dtm = [[2, 1, 4, 1], [2, 2, 3, 0], [2, 3, 2, 0], [2, 4, 1, 1], [2, 0, 1, 1]]
@@ -65,7 +64,7 @@ def test_fit_transform_creates_a_bag_of_word_bag_term_matrix():
 
 def test_term_frequency_are_absolute_word_of_entire_corpus():
     corpus = create_corpus()
-    vectorizer = CorpusVectorizer()
+    vectorizer = pc.CorpusVectorizer()
     v_corpus = vectorizer.fit_transform(corpus, already_tokenized=True)
     results = v_corpus.term_frequency
     expected = {
@@ -157,19 +156,19 @@ def test_term_frequency_are_absolute_word_of_entire_corpus():
 
 
 def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
-    corpus: TokenizedCorpus = TokenizedCorpus(
+    corpus: pc.TokenizedCorpus = pc.TokenizedCorpus(
         reader=create_reader(),
-        transform_opts=TokensTransformOpts(transforms={'to-lower': True, 'min-chars': 10}),
+        transform_opts=pc.TokensTransformOpts(transforms={'to-lower': True, 'min-chars': 10}),
     )
 
-    vocabulary = CorpusVectorizer().fit_transform(corpus, already_tokenized=True).token2id
+    vocabulary = pc.CorpusVectorizer().fit_transform(corpus, already_tokenized=True).token2id
 
     assert corpus.token2id == vocabulary
 
     expected_vocabulary_reversed = {k: abs(v - 5) for k, v in corpus.token2id.items()}
 
     vocabulary = (
-        CorpusVectorizer()
+        pc.CorpusVectorizer()
         .fit_transform(corpus, already_tokenized=True, vocabulary=expected_vocabulary_reversed)
         .token2id
     )
@@ -180,7 +179,7 @@ def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
 def test_dump_of_transtromer_corpus():
     folder: str = 'tests/output/tranströmer'
     os.makedirs(folder, exist_ok=True)
-    corpus: VectorizedCorpus = CorpusVectorizer().fit_transform(TranstromerCorpus())
+    corpus: pc.VectorizedCorpus = pc.CorpusVectorizer().fit_transform(TranstromerCorpus())
     assert corpus is not None
     corpus.dump(tag='tranströmer', folder=folder)
     assert corpus.dump_exists(tag='tranströmer', folder=folder)
@@ -200,7 +199,7 @@ def test_from_token_ids_stream():
 
     """Act: create a vectorized corpus out of stream"""
 
-    vectorized_corpus: VectorizedCorpus = VectorizedCorpus.from_token_id_stream(stream, token2id, document_index)
+    vectorized_corpus: pc.VectorizedCorpus = pc.VectorizedCorpus.from_token_id_stream(stream, token2id, document_index)
 
     assert vectorized_corpus is not None
 

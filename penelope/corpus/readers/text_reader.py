@@ -14,7 +14,7 @@ from penelope.utility import (
 )
 
 from ..document_index import DocumentIndex, DocumentIndexHelper, metadata_to_document_index
-from ..transformer import TextTransformer, TextTransformOpts
+from ..transform import TextTransformer, TextTransformOpts
 from .interfaces import FilenameFilterSpec, ICorpusReader, TextReaderOpts, TextSource
 
 # pylint: disable=too-many-arguments,too-many-instance-attributes

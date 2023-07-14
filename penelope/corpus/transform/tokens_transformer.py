@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable, Optional
+from typing import TYPE_CHECKING, Callable, Optional
 
 import numpy as np
 import pandas as pd
@@ -9,8 +9,10 @@ from penelope.utility.utils import CommaStr
 from penelope.vendor.nltk import load_stopwords
 
 from . import transforms as tr
-from .token2id import Token2Id
 from .transformer import TransformOpts, TransformProperty
+
+if TYPE_CHECKING:
+    from ..token2id import Token2Id
 
 # pylint: disable=too-many-arguments
 

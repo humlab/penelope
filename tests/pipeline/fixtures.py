@@ -3,8 +3,7 @@ import shutil
 import uuid
 
 from penelope.co_occurrence import Bundle, ContextOpts
-from penelope.corpus import TokensTransformOpts, VectorizeOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
+from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TokensTransformOpts, VectorizeOpts
 from penelope.pipeline import CorpusConfig, CorpusType
 from penelope.pipeline.co_occurrence import to_co_occurrence_pipeline
 from penelope.workflows.interface import ComputeOpts

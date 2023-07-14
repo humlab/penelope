@@ -4,12 +4,11 @@ import abc
 import csv
 import zipfile
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Sequence, Set, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Union
+
+import pandas as pd
 
 from penelope.utility import FilenameFieldSpecs, PropertyValueMaskingOpts, PropsMixIn
-
-if TYPE_CHECKING:
-    from ..document_index import DocumentIndex
 
 # pylint: disable=too-many-instance-attributes
 
@@ -183,7 +182,7 @@ class ICorpusReader(abc.ABC):
         return None
 
     @property
-    def document_index(self) -> DocumentIndex:
+    def document_index(self) -> pd.DataFrame:
         return None
 
     @abc.abstractmethod

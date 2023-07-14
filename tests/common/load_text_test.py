@@ -1,5 +1,5 @@
+from penelope.corpus import dehyphen
 from penelope.corpus.render import LemmaCorpusLoader, TaggedCorpusLoader, ZipLoader, ZippedTextCorpusLoader
-from penelope.corpus.transforms import dehyphen
 
 # pylint: disable=protected-access
 

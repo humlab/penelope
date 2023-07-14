@@ -3,7 +3,7 @@ import os
 import pytest
 
 import penelope.pipeline.checkpoint as checkpoint
-from penelope.corpus.readers.interfaces import TextReaderOpts
+from penelope.corpus import TextReaderOpts
 
 
 @pytest.mark.long_running

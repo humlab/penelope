@@ -8,8 +8,7 @@ from penelope.type_alias import PartitionKeys
 from .document_index import DocumentIndex, metadata_to_document_index, update_document_index_token_counts
 from .interfaces import ITokenizedCorpus
 from .readers.interfaces import ICorpusReader
-from .tokens_transformer import TokensTransformOpts
-from .transforms import Transform
+from .transform import TokensTransformOpts, Transform
 from .utils import generate_token2id
 
 

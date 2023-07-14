@@ -16,7 +16,6 @@ from tqdm import tqdm
 
 from penelope import corpus as pc
 from penelope import utility as pu
-from penelope.corpus.readers import ExtractTaggedTokensOpts
 
 from . import convert
 from .interfaces import IDocumentTagger, ITask, PipelineError
@@ -272,7 +271,7 @@ class ToTaggedFrame(PoSCountMixIn, ITask):
 class FilterTaggedFrame(TokenCountMixIn, ITask):
     """Filters and transforms tagged frame (can be numeric or text)."""
 
-    extract_opts: ExtractTaggedTokensOpts = None
+    extract_opts: pc.ExtractTaggedTokensOpts = None
     pos_schema: pu.PoS_Tag_Scheme = None
     transform_opts: pc.TokensTransformOpts = None
     normalize_column_names: bool = False
@@ -303,7 +302,7 @@ class FilterTaggedFrame(TokenCountMixIn, ITask):
 class TaggedFrameToTokens(TokenCountMixIn, VocabularyIngestMixIn, TransformTokensMixIn, ITask):
     """Extracts text from payload.content based on annotations etc."""
 
-    extract_opts: ExtractTaggedTokensOpts | str = None
+    extract_opts: pc.ExtractTaggedTokensOpts | str = None
     normalize_column_names: bool = True
 
     def __post_init__(self):

@@ -1,12 +1,13 @@
-# -*- coding: utf-8 -*-
-import logging
+from __future__ import annotations
 
-from ..interfaces import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
+from typing import TYPE_CHECKING
+
 from ..readers.tokenize_reader import TokenizeTextReader
 from ..sparv.sparv_csv_to_text import SparvCsvToText
-from ..transformer import TextTransformOpts
+from ..transform import TextTransformOpts
 
-logger = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from ..readers import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
 
 # pylint: disable=too-many-arguments, super-with-arguments
 

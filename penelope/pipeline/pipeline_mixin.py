@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Container, Optional, Union
 
-from penelope.corpus import ITokenizedCorpus, TokensTransformOpts
+from penelope.corpus import ITokenizedCorpus, TextTransformOpts, TokensTransformOpts
 from penelope.utility import PoS_Tag_Scheme, deprecated
 
 from . import tagged_frame, tasks
 
 if TYPE_CHECKING:
-    from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts, TextTransformOpts
+    from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
 
     from . import interfaces, pipelines
     from .checkpoint import CheckpointOpts

@@ -1,7 +1,7 @@
 import pytest
 
-import penelope.corpus.readers as readers
-from penelope.corpus.readers import ExtractTaggedTokensOpts
+from penelope import corpus as pc
+from penelope.corpus import sparv
 
 SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_data/sparv_xml_export.xml'
 SPARV_XML_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_data/sparv_xml_export_small.xml'
@@ -32,10 +32,10 @@ def test_reader_when_no_transforms_returns_source_tokens():
     ]
     expected_name = "sparv_xml_export_small.txt"
 
-    reader = readers.SparvXmlReader(
+    reader = sparv.SparvXmlReader(
         SPARV_XML_EXPORT_FILENAME_SMALL,
         chunk_size=None,
-        extract_opts=ExtractTaggedTokensOpts(pos_includes='', pos_paddings=None, lemmatize=False, pos_excludes=None),
+        extract_opts=pc.ExtractTaggedTokensOpts(pos_includes='', pos_paddings=None, lemmatize=False, pos_excludes=None),
     )
 
     filename, tokens = next(iter(reader))
@@ -63,10 +63,10 @@ def test_reader_when_lemmatized_returns_tokens_in_baseform():
     ]
     expected_name = "sparv_xml_export_small.txt"
 
-    reader = readers.SparvXmlReader(
+    reader = sparv.SparvXmlReader(
         SPARV_XML_EXPORT_FILENAME_SMALL,
         chunk_size=None,
-        extract_opts=ExtractTaggedTokensOpts(pos_includes='', pos_paddings=None, lemmatize=True, pos_excludes=None),
+        extract_opts=pc.ExtractTaggedTokensOpts(pos_includes='', pos_paddings=None, lemmatize=True, pos_excludes=None),
     )
 
     filename, tokens = next(iter(reader))
@@ -93,10 +93,10 @@ def test_reader_when_ignore_puncts_returns_filter_outs_puncts():
     ]
     expected_name = "sparv_xml_export_small.txt"
 
-    reader = readers.SparvXmlReader(
+    reader = sparv.SparvXmlReader(
         SPARV_XML_EXPORT_FILENAME_SMALL,
         chunk_size=None,
-        extract_opts=ExtractTaggedTokensOpts(
+        extract_opts=pc.ExtractTaggedTokensOpts(
             pos_includes='', pos_paddings=None, lemmatize=True, pos_excludes="|MAD|MID|PAD|"
         ),
     )
@@ -111,10 +111,10 @@ def test_reader_when_only_nouns_ignore_puncts_returns_filter_outs_puncts():
     expected = ['rödräv', 'hunddjur', 'utbredning', 'halvklot']
     expected_name = "sparv_xml_export_small.txt"
 
-    reader = readers.SparvXmlReader(
+    reader = sparv.SparvXmlReader(
         SPARV_XML_EXPORT_FILENAME_SMALL,
         chunk_size=None,
-        extract_opts=ExtractTaggedTokensOpts(
+        extract_opts=pc.ExtractTaggedTokensOpts(
             pos_includes='|NN|',
             pos_paddings=None,
             lemmatize=True,
@@ -131,10 +131,10 @@ def test_reader_when_chunk_size_specified_returns_chunked_text():
     expected_documents = [['rödräv', 'hunddjur'], ['utbredning', 'halvklot']]
     expected_names = ["sparv_xml_export_small_001.txt", "sparv_xml_export_small_002.txt"]
 
-    reader = readers.SparvXmlReader(
+    reader = sparv.SparvXmlReader(
         SPARV_XML_EXPORT_FILENAME_SMALL,
         chunk_size=2,
-        extract_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', lemmatize=True),
+        extract_opts=pc.ExtractTaggedTokensOpts(pos_includes='|NN|', lemmatize=True),
     )
 
     for i, (filename, tokens) in enumerate(reader):
@@ -149,10 +149,10 @@ def test_reader_when_source_is_zipped_archive_succeeds():
     ]
     expected_names = ["document_001.txt", "document_002.txt"]
 
-    reader = readers.SparvXmlReader(
+    reader = sparv.SparvXmlReader(
         SPARV_ZIPPED_XML_EXPORT_FILENAME,
         chunk_size=None,
-        extract_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', pos_paddings=None, lemmatize=True),
+        extract_opts=pc.ExtractTaggedTokensOpts(pos_includes='|NN|', pos_paddings=None, lemmatize=True),
     )
 
     for i, (filename, tokens) in enumerate(reader):
@@ -165,10 +165,10 @@ def test_reader_when_source_is_zipped_archive_succeeds():
 def test_reader_when_source_is_sparv3_succeeds():
     sparv_zipped_xml_export_v3_filename = './tests/test_data/sparv_data/sou_test_sparv3_xml.zip'
 
-    reader = readers.Sparv3XmlReader(
+    reader = sparv.Sparv3XmlReader(
         sparv_zipped_xml_export_v3_filename,
         chunk_size=None,
-        extract_tokens_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', pos_paddings=None, lemmatize=True),
+        extract_tokens_opts=pc.ExtractTaggedTokensOpts(pos_includes='|NN|', pos_paddings=None, lemmatize=True),
     )
 
     for _, (_, tokens) in enumerate(reader):

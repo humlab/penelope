@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
-import logging
 
-from ..interfaces import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
+from ..readers import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
 from ..readers.tokenize_reader import TokenizeTextReader
 from ..sparv.sparv_xml_to_text import XSLT_FILENAME_V3, SparvXml2Text
-from ..transformer import TextTransformOpts
-
-logger = logging.getLogger(__name__)
+from ..transform import TextTransformOpts
 
 # pylint: disable=too-many-arguments, super-with-arguments, too-many-instance-attributes
 

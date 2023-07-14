@@ -1,12 +1,8 @@
-# -*- coding: utf-8 -*-
-import logging
 import os
 
 from lxml import etree
 
 from ..readers import ExtractTaggedTokensOpts
-
-logger = logging.getLogger(__name__)
 
 script_path = os.path.dirname(os.path.abspath(__file__))
 XSLT_FILENAME = os.path.join(script_path, 'resources', 'sparv_xml_extract.xslt')

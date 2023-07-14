@@ -2,8 +2,8 @@ import pandas as pd
 
 from penelope.vendor.nltk import word_tokenize
 
-from .. import transformer as tr
-from ..readers import tng
+from .. import transform as tr
+from . import tng
 
 
 class PandasCorpusReader(tng.CorpusReader):

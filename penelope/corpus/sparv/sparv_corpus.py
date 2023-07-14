@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import penelope.utility.zip_utils as zip_util
 
-from .. import readers
+from .. import sparv
 from ..readers import ExtractTaggedTokensOpts, TextReaderOpts
 from ..tokenized_corpus import TokenizedCorpus
-from ..tokens_transformer import TokensTransformOpts
+
+if TYPE_CHECKING:
+    from ..transform import TokensTransformOpts
 
 
 class SparvTokenizedXmlCorpus(TokenizedCorpus):
@@ -21,10 +25,10 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
     ):
         reader_opts = reader_opts or TextReaderOpts()
 
-        if isinstance(source, readers.SparvXmlReader):
+        if isinstance(source, sparv.SparvXmlReader):
             tokens_reader = source
         else:
-            tokens_reader = readers.SparvXmlReader(
+            tokens_reader = sparv.SparvXmlReader(
                 source,
                 extract_opts=extract_opts or ExtractTaggedTokensOpts(lemmatize=True),
                 xslt_filename=None,
@@ -55,10 +59,10 @@ class SparvTokenizedCsvCorpus(TokenizedCorpus):
         chunk_size: int = None,
     ):
         reader_opts = reader_opts or TextReaderOpts()
-        if isinstance(source, readers.SparvCsvReader):
+        if isinstance(source, sparv.SparvCsvReader):
             tokens_reader = source
         else:
-            tokens_reader = readers.SparvCsvReader(
+            tokens_reader = sparv.SparvCsvReader(
                 source,
                 extract_opts=extract_opts,
                 reader_opts=reader_opts,

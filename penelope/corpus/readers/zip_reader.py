@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-import logging
 from typing import Any, AnyStr, Iterable, List, Mapping, Tuple
 
 from penelope.utility import extract_filenames_metadata, list_any_source, streamify_zip_source
@@ -7,8 +5,6 @@ from penelope.utility import extract_filenames_metadata, list_any_source, stream
 from ..document_index import DocumentIndex, metadata_to_document_index
 from .interfaces import ICorpusReader
 from .text_reader import TextReaderOpts
-
-logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 
 
 class ZipCorpusReader(ICorpusReader):
