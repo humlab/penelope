@@ -114,14 +114,25 @@ def test_filename_satisfied_by():
     # assert filename_satisfied_by("abc", filename_filter=["abc.txt"], filename_pattern=None)
 
 
-def test_basename():
-    # basename(path)
-    pass
+def test_replace_folder():
+    assert pu.replace_folder("abc.txt", "tmp") == "tmp/abc.txt"
+    assert pu.replace_folder(["abc.txt"], "tmp") == ["tmp/abc.txt"]
+    assert pu.replace_folder("abc.txt", None) == "abc.txt"
+    assert pu.replace_folder(["abc.txt"], None) == ["abc.txt"]
+    assert pu.replace_folder("tmp/abc.txt", None) == "abc.txt"
 
+def test_replace_extension():
+    assert pu.replace_extension("abc.txt", "csv") == "abc.csv"  
+    assert pu.replace_extension(["abc.txt"], "csv") == ["abc.csv"]
+    assert pu.replace_extension("abc.txt", None) == "abc"
+    assert pu.replace_extension(["abc.txt"], None) == ["abc"]
 
-def test_store():
-    # utility.store(archive_name: str, stream: Iterable[Tuple[str,Iterable[str]]])
-    pass
+def test_replace_folder_and_extension():
+    assert pu.replace_folder_and_extension("abc.txt", "tmp", "csv") == "tmp/abc.csv"
+    assert pu.replace_folder_and_extension(["abc.txt"], "tmp", "csv") == ["tmp/abc.csv"]
+    assert pu.replace_folder_and_extension("abc.txt", None, "csv") == "abc.csv"
+    assert pu.replace_folder_and_extension(["abc.txt"], None, "csv") == ["abc.csv"]
+    assert pu.replace_folder_and_extension("tmp/abc.txt", None, "csv") == "abc.csv"
 
 
 def test_read():

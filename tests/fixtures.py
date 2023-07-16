@@ -66,7 +66,7 @@ class TranstromerCorpus(SimpleTestCorpus):
     def __init__(self):
         # tran_2019_02_test.txt
         meta_fields = ["year:_:1", "year_serial_id:_:2"]
-        super().__init__('./tests/test_data//tranströmer/tranströmer.txt', TextReaderOpts(filename_fields=meta_fields))
+        super().__init__('./tests/test_data/tranströmer/tranströmer.txt', TextReaderOpts(filename_fields=meta_fields))
 
 
 SIMPLE_CORPUS_ABCDE_5DOCS = [

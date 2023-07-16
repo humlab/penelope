@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 import penelope.corpus as pc
+from penelope.pipeline.convert import tagged_frame_to_tokens
 from tests.fixtures import MockedProcessedCorpus, TranstromerCorpus
 from tests.utils import TEST_CORPUS_FILENAME, create_test_corpus_tokens_reader
 
@@ -176,13 +177,31 @@ def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
     assert expected_vocabulary_reversed == vocabulary
 
 
-def test_dump_of_transtromer_corpus():
+def test_dump_of_transtromer_text_corpus():
     folder: str = 'tests/output/tranströmer'
     os.makedirs(folder, exist_ok=True)
     corpus: pc.VectorizedCorpus = pc.CorpusVectorizer().fit_transform(TranstromerCorpus())
     assert corpus is not None
     corpus.dump(tag='tranströmer', folder=folder)
     assert corpus.dump_exists(tag='tranströmer', folder=folder)
+
+def test_dump_of_transtromer_pos_csv_corpus():
+    folder: str = 'tests/output/tranströmer'
+    os.makedirs(folder, exist_ok=True)
+    
+    # tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-statements
+    #     doc,
+    #     extract_opts=ExtractTaggedTokensOpts(),
+    #     token2id=None,
+    #     transform_opts = TokensTransformOpts(),
+    #     pos_schema = PoS_Tag_Schemes.SUC,
+    # )
+
+    corpus: pc.VectorizedCorpus = pc.CorpusVectorizer().fit_transform(TranstromerCorpus())
+    assert corpus is not None
+    corpus.dump(tag='tranströmer', folder=folder)
+    assert corpus.dump_exists(tag='tranströmer', folder=folder)
+
 
 
 def test_from_token_ids_stream():
