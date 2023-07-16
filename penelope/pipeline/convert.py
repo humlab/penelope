@@ -249,7 +249,7 @@ def tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-stat
     transform_opts: TokensTransformOpts = None,
     pos_schema: PoS_Tag_Scheme = None,
 ) -> Iterable[str | int]:
-    """Extracts tokens from a tagged document represented as a Pandas data frame.
+    """Extracts tokens from a tagged document (VRT) represented as a Pandas data frame.
 
     Args:
         extract_opts (ExtractTaggedTokensOpts): Part-of-speech/lemma extract options (e.g. PoS-filter)
