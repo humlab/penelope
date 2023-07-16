@@ -1,20 +1,25 @@
-import os
 import zipfile
 from multiprocessing import get_context
-from typing import Callable, Iterable, List, Tuple, Union
-
+from typing import Callable, Iterable, Protocol, Union
+from os.path import basename, join, isfile 
 import pandas as pd
 from loguru import logger
 from tqdm import tqdm
 
-from penelope.type_alias import TaggedFrame
+from penelope.type_alias import TaggedFrame, TaggedFrameStore
+from penelope.utility.filename_utils import replace_extension, replace_folder_and_extension
 from penelope.utility.zip_utils import zipfile_or_filename
-
+from penelope.utility import strip_path_and_extension
 from ..interfaces import ContentType, DocumentPayload
-from .interface import CheckpointOpts, IContentSerializer, Serializer, TaggedFrameStore
+from .interface import CheckpointOpts, IContentSerializer, Serializer
 from .serialize import create_serializer
 
-PayloadLoader = Callable[[str, CheckpointOpts, List[str], bool], Iterable[DocumentPayload]]
+class PayloadLoader(Protocol):
+    def __call__(    zip_or_filename: str,
+    checkpoint_opts: CheckpointOpts,
+    filenames: list[str],
+    ordered: bool = False,) -> Iterable[DocumentPayload]:
+        ...
 
 
 @zipfile_or_filename(mode='r')
@@ -35,8 +40,8 @@ def load_tagged_frame(
 def load_feathered_tagged_frame(
     *, zip_or_filename: TaggedFrameStore, filename: str, checkpoint_opts: CheckpointOpts, serializer: Serializer
 ) -> pd.DataFrame:
-    feather_filename: str = checkpoint_opts.feather_filename(filename)
-    if os.path.isfile(feather_filename):
+    feather_filename: str = replace_folder_and_extension(filename, checkpoint_opts.feather_folder, '.feather')
+    if isfile(feather_filename):
         tagged_frame: pd.DataFrame = pd.read_feather(feather_filename)
         if checkpoint_opts.lower_lemma:
             if len(tagged_frame) > 0:
@@ -81,7 +86,7 @@ def load_payload(
 
 
 def load_payloads_singleprocess(
-    *, zip_or_filename: Union[str, zipfile.ZipFile], checkpoint_opts: CheckpointOpts, filenames: List[str]
+    *, zip_or_filename: Union[str, zipfile.ZipFile], checkpoint_opts: CheckpointOpts, filenames: list[str]
 ) -> Iterable[DocumentPayload]:
     """Yields a deserialized payload stream read from given source"""
 
@@ -93,7 +98,7 @@ def load_payloads_singleprocess(
     return (load_payload(zip_or_filename, filename, checkpoint_opts, serializer) for filename in filenames)
 
 
-def _multiprocess_load_task(args: Tuple) -> DocumentPayload:
+def _multiprocess_load_task(args: tuple) -> DocumentPayload:
     filename, zip_or_filename, serializer, checkpoint_opts = args
     try:
         payload = load_payload(zip_or_filename, filename, checkpoint_opts, serializer)
@@ -109,7 +114,7 @@ def load_payloads_multiprocess(
     *,
     zip_or_filename: str,
     checkpoint_opts: CheckpointOpts,
-    filenames: List[str],
+    filenames: list[str],
     ordered: bool = False,
 ) -> Iterable[DocumentPayload]:
     try:
@@ -119,7 +124,7 @@ def load_payloads_multiprocess(
 
         serializer: IContentSerializer = create_serializer(checkpoint_opts)
 
-        args: Iterable[Tuple] = tqdm(
+        args: Iterable[tuple] = tqdm(
             [(filename, zip_or_filename, serializer, checkpoint_opts) for filename in filenames], desc="read"
         )
 

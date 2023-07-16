@@ -2,9 +2,8 @@ import abc
 import copy
 import csv
 import os
-import zipfile
 from dataclasses import dataclass, field
-from typing import Callable, List, Optional, Union
+from typing import List, Optional, Protocol, Union
 
 import pandas as pd
 
@@ -61,7 +60,7 @@ class CheckpointOpts:
         return opts
 
     @staticmethod
-    def load(data: dict) -> "CheckpointOpts":
+    def create(data: dict) -> "CheckpointOpts":
         opts = CheckpointOpts()
         for key in data.keys():
             if hasattr(opts, key):
@@ -81,11 +80,6 @@ class CheckpointOpts:
     def text_column_name(self, lemmatized: bool = False):
         return self.lemma_column if lemmatized else self.text_column
 
-    def feather_filename(self, filename: str) -> str:
-        if not self.feather_folder:
-            return None
-        return os.path.join(self.feather_folder, f'{strip_path_and_extension(filename)}.feather')
-
     @property
     def tagged_columns(self) -> dict:
         return dict(
@@ -95,9 +89,10 @@ class CheckpointOpts:
         )
 
 
-Serializer = Callable[[str, CheckpointOpts], pd.DataFrame]
-TaggedFrameStore = Union[str, zipfile.ZipFile]
-
+class Serializer(Protocol):
+    def __call__(self, data: str, options: CheckpointOpts) -> pd.DataFrame:
+        ...
+    
 
 class IContentSerializer(abc.ABC):
     @abc.abstractmethod
