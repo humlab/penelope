@@ -18,19 +18,17 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
         source,
         version,
         *,
-        reader_opts: TextReaderOpts = None,
-        extract_opts: ExtractTaggedTokensOpts = None,
-        transform_opts: TokensTransformOpts = None,
+        reader_opts: TextReaderOpts,
+        extract_opts: ExtractTaggedTokensOpts,
+        transform_opts: TokensTransformOpts,
         chunk_size: int = None,
     ):
-        reader_opts = reader_opts or TextReaderOpts()
-
         if isinstance(source, sparv.SparvXmlReader):
             tokens_reader = source
         else:
             tokens_reader = sparv.SparvXmlReader(
                 source,
-                extract_opts=extract_opts or ExtractTaggedTokensOpts(lemmatize=True),
+                extract_opts=extract_opts,
                 xslt_filename=None,
                 version=version,
                 reader_opts=reader_opts,
@@ -53,12 +51,12 @@ class SparvTokenizedCsvCorpus(TokenizedCorpus):
         self,
         source,
         *,
-        reader_opts: TextReaderOpts = None,
-        extract_opts: ExtractTaggedTokensOpts = None,
-        transform_opts: TokensTransformOpts = None,
+        reader_opts: TextReaderOpts,
+        extract_opts: ExtractTaggedTokensOpts,
+        transform_opts: TokensTransformOpts,
         chunk_size: int = None,
     ):
-        reader_opts = reader_opts or TextReaderOpts()
+        reader_opts = reader_opts
         if isinstance(source, sparv.SparvCsvReader):
             tokens_reader = source
         else:
@@ -75,9 +73,9 @@ def sparv_xml_extract_and_store(
     source: str,
     target: str,
     version: int,
-    extract_opts: ExtractTaggedTokensOpts = None,
-    reader_opts: TextReaderOpts = None,
-    transform_opts: TokensTransformOpts = None,
+    extract_opts: ExtractTaggedTokensOpts,
+    reader_opts: TextReaderOpts,
+    transform_opts: TokensTransformOpts,
     chunk_size: int = None,
 ):
     """[summary]

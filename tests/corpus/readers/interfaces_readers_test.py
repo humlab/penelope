@@ -1,3 +1,4 @@
+from unittest.mock import MagicMock
 import pandas as pd
 
 from penelope import corpus as pc
@@ -27,7 +28,7 @@ def test_pandas_reader_interface():
 def test_sparv_csv_tokenizer_interface():
     assert issubclass(sparv.SparvCsvReader, pc.ICorpusReader)
 
-    instance = sparv.SparvCsvReader(SPARV_CSV_EXPORT_FILENAME_SMALL, reader_opts=pc.TextReaderOpts())
+    instance = sparv.SparvCsvReader(SPARV_CSV_EXPORT_FILENAME_SMALL, reader_opts=MagicMock(), extract_opts=MagicMock())
     assert isinstance(instance, pc.ICorpusReader)
 
 

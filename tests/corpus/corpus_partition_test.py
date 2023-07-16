@@ -12,6 +12,7 @@ def create_test_corpus() -> SparvTokenizedCsvCorpus:
             filename_fields="year:_:1",
         ),
         extract_opts=ExtractTaggedTokensOpts(lemmatize=True, **SPARV_TAGGED_COLUMNS),
+        transform_opts=TokensTransformOpts(),
     )
 
     return corpus
