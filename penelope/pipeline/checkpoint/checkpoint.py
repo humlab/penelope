@@ -139,7 +139,7 @@ def load_archive(
     reader_opts: TextReaderOpts = None,
     payload_loader: PayloadLoader = None,
 ) -> CheckpointData:
-    """Load a TAGGED FRAME checkpoint stored in a ZIP FILE with CSV-filed and optionally a document index
+    """Load a TAGGED FRAME corpus stored in a ZIP FILE with CSV-files and optionally a document index
 
     Args:
         source_name (str): [description]
@@ -159,7 +159,7 @@ def load_archive(
             filenames=zf.document_filenames,
             document_index=zf.document_index,
             token2id=zf.token2id,
-            checkpoint_opts=zf.checkpoint_opts or checkpoint_opts,
+            checkpoint_opts=zf.opts or checkpoint_opts,
             payload_loader_override=payload_loader,
             reader_opts=reader_opts,
         )
@@ -175,14 +175,14 @@ class _CheckpointZipFile(zipfile.ZipFile):
     ) -> None:
         super().__init__(file, mode=mode, compresslevel=zipfile.ZIP_DEFLATED)
 
-        self.checkpoint_opts: CheckpointOpts = checkpoint_opts or self._checkpoint_opts()
+        self.opts: CheckpointOpts = checkpoint_opts or self._checkpoint_opts()
 
-        if self.checkpoint_opts is None:
+        if self.opts is None:
             raise PipelineError(
                 f"Checkpoint options not supplied and file {CHECKPOINT_OPTS_FILENAME} not found in archive."
             )
 
-        self.document_index_name: str = document_index_name or self.checkpoint_opts.document_index_name
+        self.document_index_name: str = document_index_name or self.opts.document_index_name
         self.document_index: DocumentIndex = self._document_index()
         self.token2id: Token2Id = self._token2id()
 
@@ -193,7 +193,7 @@ class _CheckpointZipFile(zipfile.ZipFile):
             return None
 
         _opts_dict: dict = zip_utils.read_json(zip_or_filename=self, filename=CHECKPOINT_OPTS_FILENAME)
-        _opts = CheckpointOpts.load(_opts_dict)
+        _opts = CheckpointOpts.create(_opts_dict)
 
         return _opts
 
@@ -206,7 +206,7 @@ class _CheckpointZipFile(zipfile.ZipFile):
             StringIO(
                 zip_utils.read_file_content(zip_or_filename=self, filename=self.document_index_name, as_binary=False)
             ),
-            sep=self.checkpoint_opts.document_index_sep,
+            sep=self.opts.document_index_sep,
         )
 
     def _token2id(self) -> Optional[Token2Id]:
