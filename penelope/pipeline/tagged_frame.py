@@ -141,7 +141,7 @@ class LoadIdTaggedFrame(PoSCountMixIn, DefaultResolveMixIn, ITask):
     def setup(self) -> ITask:
         super().setup()
         if self.corpus_source is None:
-            raise FileNotFoundError("LoadTaggedFrame: Corpus source is None")
+            raise FileNotFoundError("LoadIdTaggedFrame: Corpus source is None")
         self.pipeline.payload.effective_document_index = self.document_index
         self.pipeline.payload.token2id = self.token2id
         return self
