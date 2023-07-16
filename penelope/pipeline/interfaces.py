@@ -5,7 +5,7 @@ import zipfile
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
 from functools import cached_property
-from os.path import dirname, isdir, isfile, join
+from os.path import basename, dirname, isdir, isfile, join
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Literal, Mapping, Sequence, Tuple, Type, Union
 
@@ -22,7 +22,7 @@ from penelope.corpus import (
 )
 from penelope.corpus.readers import TextSource
 from penelope.type_alias import TaggedFrame
-from penelope.utility import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, dictify, replace_path, strip_path_and_extension
+from penelope.utility import Known_PoS_Tag_Schemes, PoS_Tag_Scheme, dictify, strip_path_and_extension
 
 if TYPE_CHECKING:
     from . import pipelines
@@ -245,7 +245,7 @@ class PipelinePayload:
             raise ValueError("only strategies `merge` or `replace` are allowed")
         if method == "join":
             return join(new_path, old_path)
-        return replace_path(old_path, new_path)
+        return join(new_path, basename(old_path))
 
     def folders(self, path: str, method: Literal['join', 'replace'] = "replace") -> "PipelinePayload":
         """Replaces (any) existing source path specification for corpus/index to `path`"""
