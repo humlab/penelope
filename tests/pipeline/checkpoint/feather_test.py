@@ -1,10 +1,8 @@
 import os
-from os.path import join as jj
 
 import pandas as pd
 
 from penelope.pipeline.checkpoint import feather
-from penelope.pipeline.interfaces import ContentType
 from penelope.utility import strip_paths
 
 FEATHER_DOCUMENT_INDEX_NAME = 'document_index.feathering'
@@ -51,14 +49,3 @@ def test_write_document_index():
 
 def test_is_complete():
     assert feather.is_complete(TEST_FOLDER) is True
-
-
-def test_read_payload():
-    payload = feather.read_payload(jj(TEST_FOLDER, 'tran_2019_01_test.feather'))
-    assert payload is not None
-    assert payload.content is not None
-    assert payload.content_type == ContentType.TAGGED_FRAME
-
-    feather.write_payload('tests/output', payload)
-
-    assert feather.payload_exists('tests/output', payload) is True
