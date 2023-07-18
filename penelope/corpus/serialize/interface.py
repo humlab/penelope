@@ -1,29 +1,31 @@
 import abc
 import copy
 import csv
-import os
 from dataclasses import dataclass, field
+from enum import IntEnum, unique
 from typing import List, Optional, Protocol, Union
 
 import pandas as pd
 
 from penelope.type_alias import SerializableContent
-from penelope.utility import create_class, dictify, strip_path_and_extension
+from penelope.utility import create_class, dictify
 
-from ..interfaces import ContentType
-
-CHECKPOINT_OPTS_FILENAME: str = "options.json"
-DOCUMENT_INDEX_FILENAME: str = "document_index.csv"
-DICTIONARY_FILENAME: str = "dictionary.csv"
-FILE_PATTERN: str = "*.zip"
 # pylint: disable=too-many-instance-attributes
 
 
+@unique
+class ContentType(IntEnum):
+    NONE = 0
+    TAGGED_FRAME = 1
+    TEXT = 2
+    TOKENS = 3
+
+
 @dataclass
-class CheckpointOpts:
+class SerializeOpts:
     content_type_code: int = 0
 
-    document_index_name: str = field(default=DOCUMENT_INDEX_FILENAME)
+    document_index_name: str = field(default="document_index.csv")
     document_index_sep: str = field(default='\t')
 
     sep: str = '\t'
@@ -54,14 +56,14 @@ class CheckpointOpts:
     def content_type(self, value: ContentType):
         self.content_type_code = int(value)
 
-    def as_type(self, value: ContentType) -> "CheckpointOpts":
+    def as_type(self, value: ContentType) -> "SerializeOpts":
         opts = copy.copy(self)
         opts.content_type_code = int(value)
         return opts
 
     @staticmethod
-    def create(data: dict) -> "CheckpointOpts":
-        opts = CheckpointOpts()
+    def create(data: dict) -> "SerializeOpts":
+        opts = SerializeOpts()
         for key in data.keys():
             if hasattr(opts, key):
                 setattr(opts, key, data[key])
@@ -90,19 +92,19 @@ class CheckpointOpts:
 
 
 class Serializer(Protocol):
-    def __call__(self, data: str, options: CheckpointOpts) -> pd.DataFrame:
+    def __call__(self, data: str, options: SerializeOpts) -> pd.DataFrame:
         ...
-    
+
 
 class IContentSerializer(abc.ABC):
     @abc.abstractmethod
-    def serialize(self, *, content: SerializableContent, options: CheckpointOpts) -> str:
+    def serialize(self, *, content: SerializableContent, options: SerializeOpts) -> str:
         ...
 
     @abc.abstractmethod
-    def deserialize(self, *, content: str, options: CheckpointOpts) -> SerializableContent:
+    def deserialize(self, *, content: str, options: SerializeOpts) -> SerializableContent:
         ...
 
     @abc.abstractmethod
-    def compute_term_frequency(self, *, content: SerializableContent, options: CheckpointOpts) -> dict:
+    def compute_term_frequency(self, *, content: SerializableContent, options: SerializeOpts) -> dict:
         ...

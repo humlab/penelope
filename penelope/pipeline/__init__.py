@@ -1,21 +1,19 @@
 # type: ignore
 
-from . import spacy, sparv
-from .checkpoint import (
-    CheckpointData,
-    CheckpointOpts,
-    CorruptCheckpointError,
+from penelope.corpus.serialize import (
     CsvContentSerializer,
-    EmptyCheckpointError,
     IContentSerializer,
+    SerializeOpts,
     TextContentSerializer,
     TokensContentSerializer,
-    create_serializer,
-    find_checkpoints,
+)
+
+from . import spacy, sparv
+from .checkpoint import (
+    CorpusCheckpoint,
     load_archive,
     load_payloads_multiprocess,
     load_payloads_singleprocess,
-    read_document_index,
     store_archive,
 )
 from .co_occurrence import wildcard_to_partition_by_document_co_occurrence_pipeline

@@ -4,10 +4,12 @@ from os.path import join as jj
 
 import pandas as pd
 
-from penelope.utility import replace_extension, strip_paths
-from penelope.utility.filename_utils import strip_path_and_extension
+from penelope.utility import replace_extension, strip_path_and_extension
 
-from ..interfaces import ContentType, DocumentPayload
+
+def to_document_filename(folder: str, document_name: str) -> str:
+    """Returns document filename"""
+    return jj(folder, replace_extension(document_name, '.feather'))
 
 
 def get_document_filenames(*, folder: str) -> list[str]:
@@ -42,12 +44,6 @@ def read_document_index(folder: str) -> pd.DataFrame:
     return None
 
 
-# def drop_document_index(folder: str) -> None:
-#     filename: str = get_document_index_filename(folder)
-#     if filename is not None:
-#         os.remove(filename)
-
-
 def write_document_index(folder: str, document_index: pd.DataFrame):
     if document_index is None:
         return
@@ -67,6 +63,11 @@ def sanitize_document_index(document_index: pd.DataFrame):
         document_index.rename_axis('', inplace=True)
 
 
+def write_document(document: pd.DataFrame, filename: str, force: bool = False):
+    if force or not isfile(filename):
+        document.reset_index(drop=True).to_feather(filename, compression="lz4")
+
+
 def is_complete(folder: str, di: pd.DataFrame = None) -> bool:
     """Returns True if all documents in folder are indexed in document index"""
     if di is None:
@@ -78,25 +79,3 @@ def is_complete(folder: str, di: pd.DataFrame = None) -> bool:
     on_disk: set[str] = set(strip_path_and_extension(get_document_filenames(folder=folder)))
     in_memory: set[str] = set(strip_path_and_extension(di.document_name))
     return on_disk == in_memory
-
-
-def write_payload(folder: str, payload: DocumentPayload) -> DocumentPayload:
-    filename: str = jj(folder, replace_extension(payload.filename, ".feather"))
-
-    payload.content.reset_index(drop=True).to_feather(filename, compression="lz4")
-
-    return payload
-
-
-def payload_exists(folder: str, payload: DocumentPayload) -> DocumentPayload:
-    filename = jj(folder, replace_extension(payload.filename, ".feather"))
-    return isfile(filename)
-
-
-def read_payload(filename: str) -> DocumentPayload:
-    filename = replace_extension(filename, ".feather")
-    return DocumentPayload(
-        content_type=ContentType.TAGGED_FRAME,
-        content=pd.read_feather(filename),
-        filename=replace_extension(strip_paths(filename), ".csv"),
-    )

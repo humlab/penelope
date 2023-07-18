@@ -1,107 +1,62 @@
 import zipfile
 from multiprocessing import get_context
-from typing import Callable, Iterable, Protocol, Union
-from os.path import basename, join, isfile 
-import pandas as pd
+from typing import Iterable, Protocol, Union
+
 from loguru import logger
 from tqdm import tqdm
 
-from penelope.type_alias import TaggedFrame, TaggedFrameStore
-from penelope.utility.filename_utils import replace_extension, replace_folder_and_extension
-from penelope.utility.zip_utils import zipfile_or_filename
-from penelope.utility import strip_path_and_extension
-from ..interfaces import ContentType, DocumentPayload
-from .interface import CheckpointOpts, IContentSerializer, Serializer
-from .serialize import create_serializer
+from penelope.corpus.serialize import IContentSerializer, LoaderRegistry, SerializeOpts, SerializerRegistry
+
+from ..interfaces import DocumentPayload
+
 
 class PayloadLoader(Protocol):
-    def __call__(    zip_or_filename: str,
-    checkpoint_opts: CheckpointOpts,
-    filenames: list[str],
-    ordered: bool = False,) -> Iterable[DocumentPayload]:
+    def __call__(
+        self,
+        zip_or_filename: str,
+        opts: SerializeOpts,
+        filenames: list[str],
+        ordered: bool = False,
+    ) -> Iterable[DocumentPayload]:
         ...
 
 
-@zipfile_or_filename(mode='r')
-def load_tagged_frame(
-    *, zip_or_filename: TaggedFrameStore, filename: str, checkpoint_opts: CheckpointOpts, serializer: Serializer
-) -> TaggedFrame:
-    tagged_frame: TaggedFrame = serializer.deserialize(
-        content=zip_or_filename.read(filename).decode(encoding='utf-8'),
-        options=checkpoint_opts,
-    )
-    if checkpoint_opts.lower_lemma:
-        tagged_frame[checkpoint_opts.lemma_column] = pd.Series(
-            [x.lower() for x in tagged_frame[checkpoint_opts.lemma_column]], dtype=object
-        )
-    return tagged_frame
-
-
-def load_feathered_tagged_frame(
-    *, zip_or_filename: TaggedFrameStore, filename: str, checkpoint_opts: CheckpointOpts, serializer: Serializer
-) -> pd.DataFrame:
-    feather_filename: str = replace_folder_and_extension(filename, checkpoint_opts.feather_folder, '.feather')
-    if isfile(feather_filename):
-        tagged_frame: pd.DataFrame = pd.read_feather(feather_filename)
-        if checkpoint_opts.lower_lemma:
-            if len(tagged_frame) > 0:
-                tagged_frame[checkpoint_opts.lemma_column] = tagged_frame[checkpoint_opts.lemma_column].str.lower()
-    else:
-        tagged_frame = load_tagged_frame(
-            zip_or_filename=zip_or_filename,
-            filename=filename,
-            checkpoint_opts=checkpoint_opts,
-            serializer=serializer,
-        )
-        tagged_frame.reset_index(drop=True).to_feather(feather_filename, compression="lz4")
-    return tagged_frame
-
-
-def get_checkpoint_loader(checkpoint_opts: CheckpointOpts) -> Callable:
-    if checkpoint_opts.content_type == ContentType.TAGGED_FRAME:
-        if checkpoint_opts.feather_folder:
-            return load_feathered_tagged_frame
-        return load_tagged_frame
-
-    raise NotImplementedError("Loader so far only implemented for TAGGED FRAME")
-
-
 def load_payload(
-    zip_or_filename: str, filename: str, checkpoint_opts: CheckpointOpts, serializer: IContentSerializer
+    zip_or_filename: str, filename: str, opts: SerializeOpts, serializer: IContentSerializer
 ) -> DocumentPayload:
     payload: DocumentPayload = DocumentPayload(
-        content_type=checkpoint_opts.content_type,
-        content=get_checkpoint_loader(checkpoint_opts)(
+        content_type=opts.content_type,
+        content=LoaderRegistry.get_loader(opts)(
             zip_or_filename=zip_or_filename,
             filename=filename,
-            checkpoint_opts=checkpoint_opts,
+            opts=opts,
             serializer=serializer,
         ),
         filename=filename,
     )
-    tfs: dict = serializer.compute_term_frequency(content=payload.content, options=checkpoint_opts)
+    tfs: dict = serializer.compute_term_frequency(content=payload.content, options=opts)
     if tfs:
         payload.remember(**tfs)
     return payload
 
 
 def load_payloads_singleprocess(
-    *, zip_or_filename: Union[str, zipfile.ZipFile], checkpoint_opts: CheckpointOpts, filenames: list[str]
+    *, zip_or_filename: Union[str, zipfile.ZipFile], opts: SerializeOpts, filenames: list[str]
 ) -> Iterable[DocumentPayload]:
     """Yields a deserialized payload stream read from given source"""
 
     logger.debug("Using sequential deserialization")
-    if checkpoint_opts.feather_folder:
-        logger.debug(f"Using feather checkpoint folder {checkpoint_opts.feather_folder}.")
+    if opts.feather_folder:
+        logger.debug(f"Using feather checkpoint folder {opts.feather_folder}.")
 
-    serializer: IContentSerializer = create_serializer(checkpoint_opts)
-    return (load_payload(zip_or_filename, filename, checkpoint_opts, serializer) for filename in filenames)
+    serializer: IContentSerializer = SerializerRegistry.create(opts)
+    return (load_payload(zip_or_filename, filename, opts, serializer) for filename in filenames)
 
 
 def _multiprocess_load_task(args: tuple) -> DocumentPayload:
-    filename, zip_or_filename, serializer, checkpoint_opts = args
+    filename, zip_or_filename, serializer, opts = args
     try:
-        payload = load_payload(zip_or_filename, filename, checkpoint_opts, serializer)
+        payload = load_payload(zip_or_filename, filename, opts, serializer)
         return payload
     except Exception as ex:
         logger.error(f"Filename: {filename}")
@@ -113,25 +68,25 @@ def _multiprocess_load_task(args: tuple) -> DocumentPayload:
 def load_payloads_multiprocess(
     *,
     zip_or_filename: str,
-    checkpoint_opts: CheckpointOpts,
+    opts: SerializeOpts,
     filenames: list[str],
     ordered: bool = False,
 ) -> Iterable[DocumentPayload]:
     try:
-        logger.trace(f"Using parallel deserialization with {checkpoint_opts.deserialize_processes} processes.")
-        if checkpoint_opts.feather_folder:
-            logger.trace(f"Using feather checkpoint folder {checkpoint_opts.feather_folder}.")
+        logger.trace(f"Using parallel deserialization with {opts.deserialize_processes} processes.")
+        if opts.feather_folder:
+            logger.trace(f"Using feather checkpoint folder {opts.feather_folder}.")
 
-        serializer: IContentSerializer = create_serializer(checkpoint_opts)
+        serializer: IContentSerializer = SerializerRegistry.create(opts)
 
         args: Iterable[tuple] = tqdm(
-            [(filename, zip_or_filename, serializer, checkpoint_opts) for filename in filenames], desc="read"
+            [(filename, zip_or_filename, serializer, opts) for filename in filenames], desc="read"
         )
 
-        with get_context("spawn").Pool(processes=checkpoint_opts.deserialize_processes) as executor:
+        with get_context("spawn").Pool(processes=opts.deserialize_processes) as executor:
             mapper = executor.imap_unordered if not ordered else executor.imap
             payloads_futures: Iterable[DocumentPayload] = mapper(
-                _multiprocess_load_task, args, chunksize=checkpoint_opts.deserialize_chunksize
+                _multiprocess_load_task, args, chunksize=opts.deserialize_chunksize
             )
 
             for payload in payloads_futures:
