@@ -38,6 +38,7 @@ from .readers import (
     PhraseSubstitutions,
     TextReader,
     TextReaderOpts,
+    TextSource,
     TokenizeTextReader,
     ZipCorpusReader,
     streamify_text_source,
