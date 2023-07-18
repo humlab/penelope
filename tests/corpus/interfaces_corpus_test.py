@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock
+
 import penelope.corpus.readers as readers
 from penelope.corpus import (
     ICorpus,
@@ -81,10 +82,12 @@ def test_sparv3_xml_corpus_interface():
 def test_sparv3_csv_corpus_interface():
     assert issubclass(SparvTokenizedCsvCorpus, ITokenizedCorpus)
 
-    instance = SparvTokenizedCsvCorpus('./tests/test_data/sparv_data/sparv_zipped_csv_export.zip',
+    instance = SparvTokenizedCsvCorpus(
+        './tests/test_data/sparv_data/sparv_zipped_csv_export.zip',
         transform_opts=MagicMock(),
         reader_opts=MagicMock(),
-        extract_opts=MagicMock(),)
+        extract_opts=MagicMock(),
+    )
     assert isinstance(instance, ITokenizedCorpus)
 
 

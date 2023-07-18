@@ -2,11 +2,11 @@ import os
 import uuid
 
 import pytest
-from penelope.corpus.readers.interfaces import TextReaderOpts
 
 import penelope.corpus.sparv.sparv_corpus as sparv_corpus
 import penelope.utility.zip_utils as zip_utils
 from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts
+from penelope.corpus.readers.interfaces import TextReaderOpts
 from tests.utils import OUTPUT_FOLDER
 
 SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_data/sparv_xml_export.xml'

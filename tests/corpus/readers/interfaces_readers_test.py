@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock
+
 import pandas as pd
 
 from penelope import corpus as pc

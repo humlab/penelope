@@ -121,11 +121,13 @@ def test_replace_folder():
     assert pu.replace_folder(["abc.txt"], None) == ["abc.txt"]
     assert pu.replace_folder("tmp/abc.txt", None) == "abc.txt"
 
+
 def test_replace_extension():
-    assert pu.replace_extension("abc.txt", "csv") == "abc.csv"  
+    assert pu.replace_extension("abc.txt", "csv") == "abc.csv"
     assert pu.replace_extension(["abc.txt"], "csv") == ["abc.csv"]
     assert pu.replace_extension("abc.txt", None) == "abc"
     assert pu.replace_extension(["abc.txt"], None) == ["abc"]
+
 
 def test_replace_folder_and_extension():
     assert pu.replace_folder_and_extension("abc.txt", "tmp", "csv") == "tmp/abc.csv"
