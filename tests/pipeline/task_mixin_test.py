@@ -3,8 +3,8 @@ import pytest
 
 from penelope import corpus as pc
 from penelope import utility
-from penelope.pipeline import checkpoint, sparv
-from penelope.pipeline.tasks_mixin import PoSCountMixIn, TokenCountMixIn
+from penelope.corpus.serialize import SerializeOpts
+from penelope.pipeline import PoSCountMixIn, TokenCountMixIn, sparv
 
 from ..fixtures import TEST_CSV_POS_DOCUMENT
 
@@ -26,7 +26,7 @@ B.txt;2019;2;B;1;Night;59
 def tagged_frame() -> pd.DataFrame:
     tf: pd.DataFrame = sparv.SparvCsvSerializer().deserialize(
         content=TEST_CSV_POS_DOCUMENT,
-        options=checkpoint.CheckpointOpts(text_column='token', lemma_column='baseform', pos_column='pos'),
+        options=SerializeOpts(text_column='token', lemma_column='baseform', pos_column='pos'),
     )
     return tf
 
@@ -85,31 +85,3 @@ def test_PoSTokenMixIn(document_index: pd.DataFrame):
 
     assert document_index.n_tokens['A'] == 100
     assert document_index.n_tokens['B'] == 0
-
-
-# def test_load_data_frame_succeeds():
-#     pipeline = Mock(
-#         spec=CorpusPipeline,
-#         **{
-#             'payload.set_reader_index': monkey_patch,
-#         },
-#     )
-#     prior = MagicMock(spec=ITask, outstream=lambda: fake_data_frame_stream(1))
-
-#     task: tasks.LoadTaggedCSV = tasks.LoadTaggedCSV(
-#         pipeline=pipeline,
-#         filename="dummy.zip",
-#         prior=prior,
-#         extra_reader_opts=TextReaderOpts(),
-#         checkpoint_opts=CheckpointOpts(feather_folder=None),
-#     )
-
-#     task.register_pos_counts = lambda _: task
-#     fake_data: CheckpointData = patch_load_archive()
-#     fake_data.create_stream = lambda: fake_data_frame_stream(2)
-#     task.load_archive = lambda: fake_data
-
-#     task.setup()
-
-#     for payload in task.outstream():
-#         assert payload.content_type == ContentType.TAGGED_FRAME

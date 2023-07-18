@@ -139,7 +139,7 @@ def test_bug():
     corpus_config = pp.CorpusConfig.load(config_filename)  # .folders(DATA_FOLDER)
 
     corpus_config.pipeline_payload.files(source=input_filename, document_index_source=None)
-    corpus_config.checkpoint_opts.deserialize_processes = 1
+    corpus_config.serialize_opts.deserialize_processes = 1
 
     compute_opts = ComputeOpts(
         corpus_type=pp.CorpusType.SparvCSV,
@@ -255,7 +255,7 @@ def test_process_co_ocurrence():
     if filename_pattern is not None:
         text_reader_opts.filename_pattern = filename_pattern
 
-    corpus_config.checkpoint_opts.deserialize_processes = max(1, deserialize_processes)
+    corpus_config.serialize_opts.deserialize_processes = max(1, deserialize_processes)
 
     tagged_columns: dict = corpus_config.pipeline_payload.tagged_columns_names
     args: ComputeOpts = ComputeOpts(

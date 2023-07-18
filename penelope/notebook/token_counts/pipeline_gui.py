@@ -210,7 +210,7 @@ def probe_checkpoint_document_index(pipe: pipeline.CorpusPipeline) -> pd.DataFra
     with contextlib.suppress(Exception):
         task = pipe.find(tasks.LoadTaggedCSV)
         if task:
-            return cp.feather.read_document_index(task.checkpoint_opts.feather_folder)
+            return cp.feather.read_document_index(task.serialize_opts.feather_folder)
 
     return None
 

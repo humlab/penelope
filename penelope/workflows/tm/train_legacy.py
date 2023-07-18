@@ -72,7 +72,7 @@ def compute(
             corpus_name=target_name,
             corpus_type=pp.CorpusType.Text,
             corpus_pattern=None,
-            checkpoint_opts=None,
+            serialize_opts=None,
             text_reader_opts=reader_opts,
             text_transform_opts=text_transform_opts,
             pipelines=None,

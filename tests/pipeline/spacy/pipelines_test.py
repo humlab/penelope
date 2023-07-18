@@ -80,7 +80,7 @@ def test_spaCy_co_occurrence_workflow(config: pipeline.CorpusConfig):
 
     config.pipeline_payload.source = './tests/test_data/SSI/legal_instrument_five_docs_test.zip'
     config.pipeline_payload.document_index_source = './tests/test_data/SSI/legal_instrument_five_docs_test.csv'
-    config.checkpoint_opts.feather_folder = f'tests/output/{uuid.uuid1()}'
+    config.serialize_opts.feather_folder = f'tests/output/{uuid.uuid1()}'
     corpus_tag: str = 'VENUS'
     target_folder: str = f'./tests/output/{uuid.uuid1()}'
 
@@ -116,7 +116,7 @@ def test_spaCy_co_occurrence_workflow(config: pipeline.CorpusConfig):
 
     shutil.rmtree(bundle.folder, ignore_errors=True)
     shutil.rmtree(tagged_corpus_source, ignore_errors=True)
-    shutil.rmtree(config.checkpoint_opts.feather_folder, ignore_errors=True)
+    shutil.rmtree(config.serialize_opts.feather_folder, ignore_errors=True)
 
 
 @pytest.mark.long_running

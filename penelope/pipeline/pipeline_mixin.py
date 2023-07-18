@@ -8,10 +8,10 @@ from penelope.utility import PoS_Tag_Scheme, deprecated
 from . import tagged_frame, tasks
 
 if TYPE_CHECKING:
-    from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
+    from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts
+    from penelope.corpus.serialize import SerializeOpts
 
     from . import interfaces, pipelines
-    from .checkpoint import CheckpointOpts
 
 # pylint: disable=too-many-public-methods, no-member
 
@@ -40,19 +40,19 @@ class PipelineShortcutMixIn:
         return self.add(tasks.ReadFeather(folder=folder))
 
     def save_tagged_frame(
-        self: pipelines.CorpusPipeline, filename: str, checkpoint_opts: CheckpointOpts
+        self: pipelines.CorpusPipeline, filename: str, serialize_opts: SerializeOpts
     ) -> pipelines.CorpusPipeline:
-        return self.add(tasks.SaveTaggedCSV(filename=filename, checkpoint_opts=checkpoint_opts))
+        return self.add(tasks.SaveTaggedCSV(filename=filename, serialize_opts=serialize_opts))
 
     def load_tagged_frame(
         self: pipelines.CorpusPipeline,
         filename: str,
-        checkpoint_opts: CheckpointOpts,
+        serialize_opts: SerializeOpts,
         extra_reader_opts: TextReaderOpts = None,
     ) -> pipelines.CorpusPipeline:
         """_ => DATAFRAME"""
         return self.add(
-            tasks.LoadTaggedCSV(filename=filename, checkpoint_opts=checkpoint_opts, extra_reader_opts=extra_reader_opts)
+            tasks.LoadTaggedCSV(filename=filename, serialize_opts=serialize_opts, extra_reader_opts=extra_reader_opts)
         )
 
     def load_id_tagged_frame(
@@ -96,12 +96,12 @@ class PipelineShortcutMixIn:
     def checkpoint(
         self: pipelines.CorpusPipeline,
         filename: str,
-        checkpoint_opts: CheckpointOpts = None,
+        serialize_opts: SerializeOpts = None,
         force_checkpoint: bool = False,
     ) -> pipelines.CorpusPipeline:
         """[DATAFRAME,TEXT,TOKENS] => [CHECKPOINT] => PASSTHROUGH"""
         return self.add(
-            tasks.Checkpoint(filename=filename, checkpoint_opts=checkpoint_opts, force_checkpoint=force_checkpoint)
+            tasks.Checkpoint(filename=filename, serialize_opts=serialize_opts, force_checkpoint=force_checkpoint)
         )
 
     def checkpoint_feather(

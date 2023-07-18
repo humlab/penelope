@@ -3,15 +3,14 @@ from io import StringIO
 
 import pandas as pd
 
+from penelope.corpus.serialize import CsvContentSerializer, SerializeOpts
 from penelope.type_alias import TaggedFrame
 from penelope.utility import deprecated
-
-from ..checkpoint import CheckpointOpts, CsvContentSerializer
 
 TRANSLATE_TABLE = " :".maketrans({" ": "_", ":": "|"})
 
 
-def deserialize_lemma_form(tagged_frame: pd.DataFrame, options: CheckpointOpts) -> pd.Series:
+def deserialize_lemma_form(tagged_frame: pd.DataFrame, options: SerializeOpts) -> pd.Series:
     """Extracts first part of baseform (format of baseform is `|lemma|xyz|`
 
     Note that lemmas are always lower cased
@@ -44,7 +43,7 @@ def to_lemma_form(token: str, baseform: str) -> str:
 
 
 class SparvCsvSerializer(CsvContentSerializer):
-    def deserialize(self, *, content: str, options: CheckpointOpts) -> TaggedFrame:
+    def deserialize(self, *, content: str, options: SerializeOpts) -> TaggedFrame:
         tagged_frame: TaggedFrame = pd.read_csv(
             StringIO(content),
             sep=options.sep,

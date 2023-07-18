@@ -40,7 +40,7 @@ def transtromer_topic_model_payload(method: str, target_folder: str, target_name
         CorpusPipeline(config=config)
         .load_tagged_frame(
             filename=corpus_source,
-            checkpoint_opts=config.checkpoint_opts,
+            serialize_opts=config.serialize_opts,
             extra_reader_opts=config.text_reader_opts,
         )
         .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
@@ -86,14 +86,14 @@ def test_predict_topics(method: str):
         lemmatize=True,
         pos_includes='',
         pos_excludes='MAD|MID|PAD',
-        **config.checkpoint_opts.tagged_columns,
+        **config.serialize_opts.tagged_columns,
     )
     vectorize_opts: VectorizeOpts = VectorizeOpts(already_tokenized=True)
     payload: DocumentPayload = (
         CorpusPipeline(config=config)
         .load_tagged_frame(
             filename=corpus_source,
-            checkpoint_opts=config.checkpoint_opts,
+            serialize_opts=config.serialize_opts,
             extra_reader_opts=config.text_reader_opts,
         )
         .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)

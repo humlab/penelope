@@ -143,7 +143,7 @@ class PipelinePayload:
 
     @property
     def _memory_store_props(self) -> dict[str, Any] | None:
-        ignores: list[str] = ['text_reader_opts', 'checkpoint_opts', 'reader_opts']
+        ignores: list[str] = ['text_reader_opts', 'serialize_opts', 'reader_opts']
         memory_store: dict[str, Any] = {k: v for k, v in self.memory_store.items() if k not in ignores}
         data: dict = dictify(memory_store, default_value=None)
         return data

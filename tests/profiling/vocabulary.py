@@ -18,8 +18,8 @@ def run_workflow():
     config_filename: str = jj(corpus_folder, "riksprot-parlaclarin.yml")
     corpus_config = pipeline.CorpusConfig.load(config_filename).folders(corpus_folder)
     corpus_config.pipeline_payload.files(source=CORPUS_FILENAME, document_index_source=None)
-    corpus_config.checkpoint_opts.deserialize_processes = 3
-    corpus_config.checkpoint_opts.feather_folder = None
+    corpus_config.serialize_opts.deserialize_processes = 3
+    corpus_config.serialize_opts.feather_folder = None
 
     (
         corpus_config.get_pipeline(

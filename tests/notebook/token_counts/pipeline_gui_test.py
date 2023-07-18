@@ -60,7 +60,7 @@ def test_create_token_count_gui_display_succeeds():
 def test_load_document_index(config: corpus_config.CorpusConfig):
     config.pipeline_payload.source = 'riksdagens-protokoll.1920-2019.9files.sparv4.csv.zip'
     config.pipeline_payload.folders('./tests/test_data/riksdagens_protokoll')
-    config.checkpoint_opts.feather_folder = None
+    config.serialize_opts.feather_folder = None
 
     document_index: pd.DataFrame = pipeline_gui.load_document_index(config)
 

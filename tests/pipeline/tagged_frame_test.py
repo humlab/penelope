@@ -6,7 +6,8 @@ import pytest
 
 from penelope import pipeline as pp
 from penelope import utility
-from penelope.pipeline import checkpoint, interfaces, pipelines, sparv, tasks
+from penelope.corpus.serialize import SerializeOpts
+from penelope.pipeline import interfaces, pipelines, sparv, tasks
 from penelope.pipeline.tagged_frame import IngestVocabType, ToIdTaggedFrame
 
 from ..fixtures import TEST_CSV_POS_DOCUMENT
@@ -70,7 +71,7 @@ def test_id_tagged_frame_process_payload(
 
     tagged_frame: pd.DataFrame = sparv.SparvCsvSerializer().deserialize(
         content=TEST_CSV_POS_DOCUMENT,
-        options=checkpoint.CheckpointOpts(**memory_store),
+        options=SerializeOpts(**memory_store),
     )
 
     payload = interfaces.DocumentPayload(content_type=interfaces.ContentType.TAGGED_FRAME, content=tagged_frame)
@@ -126,7 +127,7 @@ def test_store_id_tagged_frame():
         pp.CorpusPipeline(config=config)
         .load_tagged_frame(
             filename=corpus_source,
-            checkpoint_opts=config.checkpoint_opts,
+            serialize_opts=config.serialize_opts,
             extra_reader_opts=config.text_reader_opts,
         )
         .to_id_tagged_frame(ingest_vocab_type=IngestVocabType.Incremental)
