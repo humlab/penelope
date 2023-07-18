@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 from ..readers.tokenize_reader import TokenizeTextReader
 from ..sparv.sparv_csv_to_text import SparvCsvToText
-from ..transform import TextTransformOpts
 
 if TYPE_CHECKING:
     from ..readers import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
