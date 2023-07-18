@@ -40,7 +40,7 @@ def test_task_vocabulary_token2id():
     assert expected_tokens == [x for x in task._payload_to_token_stream(payload)]  # pylint: disable=protected-access
 
 
-def test_CheckpointFeather_write_document_index():
+def test_feather_write_document_index():
     folder = './tests/output'
 
     os.makedirs(folder, exist_ok=True)
