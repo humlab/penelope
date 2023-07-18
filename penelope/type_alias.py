@@ -1,5 +1,5 @@
-from typing import Callable, Iterable, Iterator, List, Mapping, Optional, Tuple, Union
 import zipfile
+from typing import Callable, Iterable, Iterator, List, Mapping, Optional, Tuple, Union
 
 import pandas as pd
 import scipy.sparse as sp
