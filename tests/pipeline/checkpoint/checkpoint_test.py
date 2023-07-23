@@ -72,6 +72,6 @@ def test_python_list_merge():
 
 
 def test_registry():
-    assert LoaderRegistry.get('csv').__name__ == 'load_tagged_frame'
-    assert LoaderRegistry.get('feather').__name__ == 'load_feathered_tagged_frame'
+    assert LoaderRegistry.get('tagged_frame').__name__ == 'load_tagged_frame'
+    assert LoaderRegistry.get('tagged_frame_feather').__name__ == 'load_feathered_tagged_frame'
     assert len(LoaderRegistry._items) > 0  # pylint: disable=protected-access

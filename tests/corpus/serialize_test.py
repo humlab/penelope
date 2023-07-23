@@ -2,11 +2,11 @@ from penelope.corpus.serialize import ContentType, SerializeOpts, SerializerRegi
 
 
 def test_serializer_registry():
-    assert SerializerRegistry.get('text') is not None
-    assert SerializerRegistry.get('tokens') is not None
-    assert SerializerRegistry.get('tagged_frame') is not None
+    assert SerializerRegistry.get(ContentType.TEXT) is not None
+    assert SerializerRegistry.get(ContentType.TAGGED_FRAME) is not None
+    assert SerializerRegistry.get(ContentType.TOKENS) is not None
 
 
 def test_serialize_opts():
     assert SerializeOpts.create({'content_type': ContentType.TAGGED_FRAME}).content_type == ContentType.TAGGED_FRAME
-    assert SerializeOpts().content_type == 'text'
+    assert SerializeOpts().content_type == ContentType.NONE
