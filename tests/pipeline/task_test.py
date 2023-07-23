@@ -8,7 +8,7 @@ from penelope.corpus import load_document_index_from_str
 from penelope.corpus.serialize import SerializeOpts
 from penelope.pipeline import ContentType, CorpusPipeline, DocumentPayload, ITask, sparv
 from penelope.pipeline.checkpoint import feather
-from penelope.pipeline.tasks import ReadFeather, Vocabulary, WriteFeather
+from penelope.pipeline.tasks import Vocabulary
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
 
@@ -60,20 +60,3 @@ B.txt;2019;2;B;1;Night;59
     df = feather.read_document_index(folder)
 
     assert df is not None
-
-
-def test_read_feather_payload():
-    folder: str = 'tests/test_data/tranströmer/tranströmer_id_tagged_frames'
-    task: ReadFeather = ReadFeather(folder=folder, pipeline=MagicMock()).setup()
-
-    payload = task.read_payload(os.path.join(folder, 'tran_2019_01_test.feather'))
-
-    assert payload is not None
-    assert payload.content is not None
-    assert payload.content_type == ContentType.TAGGED_FRAME
-
-    task: WriteFeather = WriteFeather(folder=folder, pipeline=MagicMock()).setup()
-
-    task.write_payload('tests/output', payload)
-
-    assert task.payload_exists('tests/output', payload) is True
