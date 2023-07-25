@@ -3,6 +3,7 @@ import glob
 import os
 import shutil
 from typing import Any, Callable
+import uuid
 
 import numpy as np
 import pandas as pd
@@ -46,6 +47,18 @@ class inline_code:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         ...
+
+
+class output_folder:
+    def __init__(self, folder: str = None):
+        self.folder: str = folder or str(uuid.uuid4())[:6]
+
+    def __enter__(self):
+        os.makedirs(self.folder, exist_ok=True)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        shutil.rmtree(self.folder)
 
 
 def create_abc_corpus(
