@@ -87,8 +87,13 @@ class ComplexTrendsGUI:
         self.gui_trends.display(trends_service=self.trends_service)
 
 
-def create_simple_dtm_gui(folder: str) -> pfg.PickFileGUI:
-    def display_callback(filename: str, sender: pfg.PickFileGUI):
+class SimpleTrendsGUI:
+    def __init__(self, folder: str):
+        self.folder: str = folder
+        self.gui_pick: pfg.PickFileGUI = None
+        self.gui_trends: TrendsGUI = None
+
+    def display_callback(self, filename: str, sender: pfg.PickFileGUI):
         if not pc.VectorizedCorpus.is_dump(filename):
             raise ValueError(f"Expected a DTM file, got {filename or 'None'}")
 
@@ -98,14 +103,18 @@ def create_simple_dtm_gui(folder: str) -> pfg.PickFileGUI:
         sender.payload.pivot_key_specs = pu.PivotKeys.load(folder) if isdir(folder) else None
         sender.payload.display(trends_service=sender.payload)
 
-    gui_pick: pfg.PickFileGUI = pfg.PickFileGUI(
-        folder=folder, pattern='*_vector_data.npz', picked_callback=display_callback, kind='picker'
-    ).setup()
+    def setup(self) -> Self:
+        self.gui_pick: pfg.PickFileGUI = pfg.PickFileGUI(
+            folder=self.folder, pattern='*_vector_data.npz', picked_callback=self.display_callback, kind='picker'
+        ).setup()
 
-    gui_trends: TrendsGUI = TrendsGUI(pivot_key_specs=None).setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS)
-    gui_trends.trends_service = TrendsService(corpus=None, n_top=25000)
+        self.gui_trends: TrendsGUI = TrendsGUI(pivot_key_specs=None).setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS)
+        self.gui_trends.trends_service = TrendsService(corpus=None, n_top=25000)
 
-    gui_pick.payload = gui_trends
-    gui_pick.add(gui_trends.layout())
+        self.gui_pick.payload = self.gui_trends
+        self.gui_pick.add(self.gui_trends.layout())
 
-    return gui_pick
+        return self
+
+    def layout(self) -> w.CoreWidget:
+        return self.gui_pick.layout()

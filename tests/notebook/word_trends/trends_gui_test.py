@@ -41,19 +41,19 @@ def monkey_patch(*_, **__):
 
 def test_create_simple_gui():
     folder: str = "tests/test_data/tranströmer/dtm"
-    gui: pfg.PickFileGUI = main_gui.create_simple_dtm_gui(folder=folder)
+    gui: main_gui.SimpleTrendsGUI = main_gui.SimpleTrendsGUI(folder=folder)
     gui.setup()
     gui.layout()
 
-    assert isinstance(gui, pfg.PickFileGUI)
-    assert isinstance(gui.payload, TrendsGUI)
-    assert isinstance(gui.payload.trends_service, TrendsService)
+    assert isinstance(gui.gui_pick, pfg.PickFileGUI)
+    assert isinstance(gui.gui_pick.payload, TrendsGUI)
+    assert isinstance(gui.gui_pick.payload.trends_service, TrendsService)
 
-    assert gui.payload.trends_service.corpus is None
+    assert gui.gui_pick.payload.trends_service.corpus is None
 
-    gui._load_button.click()
+    gui.gui_pick._load_button.click()
 
-    assert gui.payload.trends_service.corpus is not None
+    assert gui.gui_pick.payload.trends_service.corpus is not None
 
 
 def test_advanced_gui():
