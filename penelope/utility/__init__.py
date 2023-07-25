@@ -66,7 +66,8 @@ from .filename_utils import (
     path_add_timestamp,
     path_of,
     replace_extension,
-    replace_path,
+    replace_folder,
+    replace_folder_and_extension,
     strip_extensions,
     strip_path_and_add_counter,
     strip_path_and_extension,
@@ -186,7 +187,14 @@ from .utils import (
     tuple_of_lists_to_list_of_tuples,
     uniquify,
 )
-from .zip_utils import compress, list_filenames, read_file_content, store, unpack  # , read_dataframe, read_json
+from .zip_utils import (  # , read_dataframe, read_json
+    compress,
+    list_filenames,
+    read_file_content,
+    store,
+    unpack,
+    zipfile_or_filename,
+)
 
 T = t.TypeVar('T')
 

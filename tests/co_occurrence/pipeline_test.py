@@ -76,7 +76,7 @@ def test_pipeline_to_co_occurrence_can_create_co_occurrence_bundle():
         corpus_name=uuid.uuid1(),
         corpus_type=CorpusType.Tokenized,
         corpus_pattern=None,
-        checkpoint_opts=None,
+        serialize_opts=None,
         text_reader_opts=None,
         pipelines=None,
         pipeline_payload=PipelinePayload(),

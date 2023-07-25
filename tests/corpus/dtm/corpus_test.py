@@ -11,7 +11,7 @@ from penelope.corpus import (
     VectorizedCorpus,
     find_matching_words_in_vocabulary,
 )
-from tests.utils import OUTPUT_FOLDER, create_abc_corpus, create_tokens_reader, create_vectorized_corpus
+from tests.utils import OUTPUT_FOLDER, create_abc_corpus, create_test_corpus_tokens_reader, simple_vectorized_abc_corpus
 
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
@@ -21,7 +21,9 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 @pytest.fixture
 def text_corpus() -> TokenizedCorpus:
     filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-    reader = create_tokens_reader(filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace")
+    reader = create_test_corpus_tokens_reader(
+        filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace"
+    )
     transform_opts = TokensTransformOpts(
         transforms={
             'only-any-alphanumeric': True,
@@ -36,12 +38,12 @@ def text_corpus() -> TokenizedCorpus:
 
 @pytest.fixture
 def corpus() -> VectorizedCorpus:
-    return create_vectorized_corpus()
+    return simple_vectorized_abc_corpus()
 
 
 @pytest.fixture
 def slice_corpus() -> VectorizedCorpus:
-    return create_vectorized_corpus()
+    return simple_vectorized_abc_corpus()
 
 
 def test_vocabulary(corpus: VectorizedCorpus):

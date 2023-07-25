@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
-import logging
 
+from ..readers.interfaces import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
+from ..readers.tokenize_reader import TokenizeTextReader
 from ..sparv.sparv_xml_to_text import XSLT_FILENAME_V3, SparvXml2Text
-from ..transformer import TextTransformOpts
-from .interfaces import ExtractTaggedTokensOpts, TextReaderOpts, TextSource
-from .text_tokenizer import TextTokenizer
-
-logger = logging.getLogger(__name__)
+from ..transform import TextTransformOpts
 
 # pylint: disable=too-many-arguments, super-with-arguments, too-many-instance-attributes
 
 
 # FIXME: Implement pos_paddings
-class SparvXmlReader(TextTokenizer):
+class SparvXmlReader(TokenizeTextReader):
     def __init__(
         self,
         source: TextSource,

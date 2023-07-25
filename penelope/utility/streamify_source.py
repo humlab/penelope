@@ -9,7 +9,7 @@ from typing import Any, AnyStr, Callable, Iterable, Iterator, Optional, Union
 
 from . import zip_utils
 from .file_utility import read_textfile, read_textfile2
-from .filename_utils import filename_satisfied_by, replace_paths
+from .filename_utils import filename_satisfied_by, replace_folder
 
 
 def _read_file_in_zip(args: tuple) -> tuple[str, AnyStr]:
@@ -60,7 +60,7 @@ def streamify_folder_source(
     if filenames is None:
         filenames = list_any_source(path, filename_pattern=filename_pattern, filename_filter=filename_filter)
 
-    filenames: list[str] = replace_paths(path, filenames)
+    filenames: list[str] = replace_folder(filenames, path)
 
     if n_processes == 1:
         for filename in filenames:

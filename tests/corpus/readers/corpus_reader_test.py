@@ -8,7 +8,7 @@ import pytest
 
 import penelope.corpus.readers.tng.reader as cr
 import penelope.corpus.readers.tng.sources as cs
-import penelope.corpus.transformer as tt
+import penelope.corpus.transform as tt
 from penelope.corpus.readers.interfaces import TextReaderOpts
 from penelope.utility import streamify_zip_source, strip_path_and_extension, strip_paths, zip_utils
 from tests.utils import OUTPUT_FOLDER, TEST_CORPUS_FILENAME

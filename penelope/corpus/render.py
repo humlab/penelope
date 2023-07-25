@@ -11,7 +11,7 @@ import pandas as pd
 from jinja2 import Template
 
 from penelope.corpus import TextTransformOpts
-from penelope.corpus.transforms import normalize_whitespace
+from penelope.corpus.transform import normalize_whitespace
 from penelope.utility import path_add_suffix, replace_extension
 
 # pylint: disable=unused-argument

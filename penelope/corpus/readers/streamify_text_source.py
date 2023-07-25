@@ -6,7 +6,7 @@ from penelope.utility import streamify_any_source
 
 from .interfaces import TextSource
 from .text_reader import TextReaderOpts
-from .zip_iterator import ZipTextIterator
+from .zip_reader import ZipCorpusReader
 
 
 # pylint: disable=too-many-return-statements
@@ -37,7 +37,7 @@ def streamify_text_source(
     """
 
     if isfile(text_source) and zipfile.is_zipfile(text_source):
-        return ZipTextIterator(
+        return ZipCorpusReader(
             text_source,
             reader_opts=TextReaderOpts(
                 filename_pattern=filename_pattern,

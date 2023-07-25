@@ -3,7 +3,8 @@ import os
 import pytest
 
 import penelope.pipeline.checkpoint as checkpoint
-from penelope.corpus.readers.interfaces import TextReaderOpts
+from penelope.corpus import TextReaderOpts
+from penelope.corpus.serialize import LoaderRegistry, SerializeOpts
 
 
 @pytest.mark.long_running
@@ -14,8 +15,8 @@ def test_load_tagged_frame_checkpoint():
 
     tagged_corpus_source: str = "./tests/test_data/SSI/legal_instrument_five_docs_test_pos_csv.zip"
 
-    checkpoint_opts: checkpoint.CheckpointOpts = None  # CheckpointOpts()
-    data = checkpoint.load_archive(source_name=tagged_corpus_source, checkpoint_opts=checkpoint_opts, reader_opts=None)
+    opts: SerializeOpts = None
+    data = checkpoint.load_archive(source_name=tagged_corpus_source, opts=opts, reader_opts=None)
 
     assert data is not None
 
@@ -30,7 +31,7 @@ def test_load_tagged_frame_checkpoint():
     whitelist = {'RECOMMENDATION_0201_049455_2017.txt', 'DECLARATION_0201_013178_1997.txt'}
     data = checkpoint.load_archive(
         source_name=tagged_corpus_source,
-        checkpoint_opts=checkpoint_opts,
+        opts=opts,
         reader_opts=TextReaderOpts(filename_filter=whitelist),
     )
     assert {x.filename for x in data.create_stream()} == whitelist
@@ -42,7 +43,7 @@ def test_load_tagged_frame_checkpoint():
     whitelister = lambda x: x.split('_')[3] in map(str, years)
     data = checkpoint.load_archive(
         source_name=tagged_corpus_source,
-        checkpoint_opts=checkpoint_opts,
+        opts=opts,
         reader_opts=TextReaderOpts(filename_filter=whitelister),
     )
     assert {x.filename for x in data.create_stream()} == expected_documents
@@ -68,3 +69,9 @@ def test_python_list_merge():
     tokens = tokens_str.split()
 
     assert tokens == ['a', 'b', 'c', 'd_e_f', 'g', 'h', 'i', 'j']
+
+
+def test_registry():
+    assert LoaderRegistry.get('tagged_frame').__name__ == 'load_tagged_frame'
+    assert LoaderRegistry.get('tagged_frame_feather').__name__ == 'load_feathered_tagged_frame'
+    assert len(LoaderRegistry._items) > 0  # pylint: disable=protected-access

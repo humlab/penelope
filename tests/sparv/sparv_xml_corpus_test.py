@@ -3,10 +3,10 @@ import uuid
 
 import pytest
 
-import penelope.corpus.sparv_corpus as sparv_corpus
+import penelope.corpus.sparv.sparv_corpus as sparv_corpus
 import penelope.utility.zip_utils as zip_utils
-from penelope.corpus import TokensTransformOpts
-from penelope.corpus.readers import ExtractTaggedTokensOpts
+from penelope.corpus import ExtractTaggedTokensOpts, TokensTransformOpts
+from penelope.corpus.readers.interfaces import TextReaderOpts
 from tests.utils import OUTPUT_FOLDER
 
 SPARV_XML_EXPORT_FILENAME = './tests/test_data/sparv_data/sparv_xml_export.xml'
@@ -30,6 +30,7 @@ def test_reader_store_result():
         SPARV_ZIPPED_XML_EXPORT_FILENAME,
         target_filename,
         version=4,
+        reader_opts=TextReaderOpts(),
         extract_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', pos_paddings=None, lemmatize=True),
         transform_opts=TokensTransformOpts({'to-lower': True}),
     )
@@ -55,6 +56,7 @@ def test_sparv_extract_and_store_when_only_nouns_and_source_is_sparv3_succeeds()
         SPARV3_ZIPPED_XML_EXPORT_FILENAME,
         target_filename,
         version=3,
+        reader_opts=TextReaderOpts(),
         extract_opts=ExtractTaggedTokensOpts(pos_includes='|NN|', pos_paddings=None, lemmatize=False),
         transform_opts=TokensTransformOpts(transforms={'to-lower': True, 'min-chars': 2}, extra_stopwords=['<text>']),
     )

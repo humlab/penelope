@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-import logging
 from typing import Any, AnyStr, Iterable, List, Mapping, Tuple
 
 from penelope.utility import extract_filenames_metadata, list_any_source, streamify_zip_source
@@ -8,10 +6,8 @@ from ..document_index import DocumentIndex, metadata_to_document_index
 from .interfaces import ICorpusReader
 from .text_reader import TextReaderOpts
 
-logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 
-
-class ZipTextIterator(ICorpusReader):
+class ZipCorpusReader(ICorpusReader):
     """Iterator that returns filename and content for each matching file in archive."""
 
     def __init__(self, source_path: str, reader_opts: TextReaderOpts):

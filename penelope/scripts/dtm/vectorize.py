@@ -142,7 +142,7 @@ def process(
         if filename_pattern is not None:
             text_reader_opts.filename_pattern = filename_pattern
 
-        corpus_config.checkpoint_opts.deserialize_processes = max(1, deserialize_processes)
+        corpus_config.serialize_opts.deserialize_processes = max(1, deserialize_processes)
 
         tagged_columns: dict = corpus_config.pipeline_payload.tagged_columns_names
         args: interface.ComputeOpts = interface.ComputeOpts(
@@ -187,7 +187,7 @@ def process(
             ),
         )
 
-        workflow.compute(args=args, corpus_config=corpus_config)
+        workflow.compute(opts=args, config=corpus_config)
 
         logger.info('Done!')
 

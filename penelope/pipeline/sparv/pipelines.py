@@ -26,7 +26,7 @@ def to_tagged_frame_pipeline(
     if corpus_config.corpus_type == config.CorpusType.SparvCSV:
         task: ITask = tasks.LoadTaggedCSV(
             filename=corpus_source,
-            checkpoint_opts=corpus_config.checkpoint_opts,
+            serialize_opts=corpus_config.serialize_opts,
             extra_reader_opts=corpus_config.text_reader_opts,
             stop_at_index=stop_at_index,
             enable_counts=enable_pos_counts,
@@ -40,8 +40,8 @@ def to_tagged_frame_pipeline(
     p.add(task)
 
     if enable_checkpoint:
-        """NOTE! If self.checkpoint_opts.feather_folder is set then LoadTaggedCSV handles feather files"""
-        if not corpus_config.checkpoint_opts.feather_folder:
+        """NOTE! If self.serialize_opts.feather_folder is set then LoadTaggedCSV handles feather files"""
+        if not corpus_config.serialize_opts.feather_folder:
             p = p.checkpoint_feather(folder=corpus_config.get_feather_folder(corpus_source), force=force_checkpoint)
 
     return p

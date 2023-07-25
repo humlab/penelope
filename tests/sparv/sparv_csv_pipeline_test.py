@@ -1,8 +1,8 @@
 import pytest
 
 from penelope import pipeline
+from penelope.corpus import ExtractTaggedTokensOpts
 from penelope.corpus.readers import tng
-from penelope.corpus.readers.interfaces import ExtractTaggedTokensOpts
 from penelope.pipeline import tagged_frame, tasks
 
 # pylint: disable=redefined-outer-name
@@ -44,10 +44,10 @@ def test_read_sparv_csv_zip_using_tng_reader_and_zip_source(corpus_config: pipel
 @pytest.mark.long_running
 def test_sparv_tagged_frame_to_tokens(corpus_config: pipeline.CorpusConfig):
     p = pipeline.CorpusPipeline(config=corpus_config)
-    corpus_config.checkpoint_opts.feather_folder = None
+    corpus_config.serialize_opts.feather_folder = None
     load = tasks.LoadTaggedCSV(
         filename=corpus_config.pipeline_payload.source,
-        checkpoint_opts=corpus_config.checkpoint_opts,
+        serialize_opts=corpus_config.serialize_opts,
         extra_reader_opts=corpus_config.text_reader_opts,
     )
 

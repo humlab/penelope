@@ -44,7 +44,7 @@ def test_workflow_to_dtm():
         tf_threshold_mask=True,
     )
 
-    corpus = workflow.compute(args=args, corpus_config=config)
+    corpus = workflow.compute(opts=args, config=config)
 
     corpus.remove(tag=args.corpus_tag, folder=args.target_folder)
     corpus.dump(tag=args.corpus_tag, folder=args.target_folder)

@@ -2,14 +2,13 @@ import contextlib
 import glob
 import os
 import shutil
-from typing import Any, Callable, List
+import uuid
+from typing import Any, Callable
 
 import numpy as np
 import pandas as pd
 
-from penelope.co_occurrence import Bundle, to_filename
-from penelope.corpus import TextTransformOpts, VectorizedCorpus
-from penelope.corpus.readers import TextReader, TextReaderOpts, TextTokenizer
+from penelope.corpus import TextReaderOpts, TextTransformOpts, TokenizeTextReader, VectorizedCorpus
 
 OUTPUT_FOLDER = './tests/output'
 TEST_DATA_FOLDER = './tests/test_data'
@@ -20,9 +19,6 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 # pylint: disable=too-many-arguments
 
 TEST_CORPUS_FILENAME = os.path.join(TEST_DATA_FOLDER, 'test_corpus.zip')
-TRANSTRÖMMER_ZIPPED_CSV_EXPORT_FILENAME = os.path.join(
-    TEST_DATA_FOLDER, 'tranströmer/tranströmer_corpus_export.sparv4.csv.zip'
-)
 PERSISTED_INFERRED_MODEL_SOURCE_FOLDER: str = './tests/test_data/tranströmer/tranströmer_inferred_model'
 
 
@@ -30,9 +26,6 @@ if __file__ in globals():
     this_file = os.path.dirname(__file__)
     this_path = os.path.abspath(this_file)
     TEST_CORPUS_FILENAME = os.path.join(this_path, TEST_CORPUS_FILENAME)
-
-# http://www.nltk.org/howto/collocations.html
-# PMI
 
 
 def clear_output(path: str = './tests/output'):
@@ -56,13 +49,25 @@ class inline_code:
         ...
 
 
+class output_folder:
+    def __init__(self, folder: str = None):
+        self.folder: str = folder or str(uuid.uuid4())[:6]
+
+    def __enter__(self):
+        os.makedirs(self.folder, exist_ok=True)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        shutil.rmtree(self.folder)
+
+
 def create_abc_corpus(
-    dtm: List[List[int]], document_years: List[int] = None, token2id: dict = None
+    dtm: list[list[int]], document_years: list[int] = None, token2id: dict = None
 ) -> VectorizedCorpus:
     bag_term_matrix = np.array(dtm)
     token2id = token2id or {chr(ord('a') + i): i for i in range(0, bag_term_matrix.shape[1])}
 
-    years: List[int] = (
+    years: list[int] = (
         document_years if document_years is not None else [2000 + i for i in range(0, bag_term_matrix.shape[0])]
     )
 
@@ -77,7 +82,7 @@ def create_abc_corpus(
     return corpus
 
 
-def create_vectorized_corpus() -> VectorizedCorpus:
+def simple_vectorized_abc_corpus() -> VectorizedCorpus:
     return create_abc_corpus(
         dtm=[
             [2, 1, 4, 1],
@@ -90,28 +95,7 @@ def create_vectorized_corpus() -> VectorizedCorpus:
     )
 
 
-def create_text_reader(
-    source_path=TEST_CORPUS_FILENAME,
-    as_binary: bool = False,
-    filename_fields=None,
-    index_field=None,
-    filename_filter: str = None,
-    filename_pattern: str = "*.txt",
-    text_transforms: str = "dehyphen,normalize-whitespace",
-) -> TextReader:
-    reader_opts = TextReaderOpts(
-        filename_pattern=filename_pattern,
-        filename_filter=filename_filter,
-        filename_fields=filename_fields,
-        index_field=index_field,
-        as_binary=as_binary,
-    )
-    transform_opts = TextTransformOpts(transforms=text_transforms)
-    reader = TextReader(source=source_path, reader_opts=reader_opts, transform_opts=transform_opts)
-    return reader
-
-
-def create_tokens_reader(
+def create_test_corpus_tokens_reader(
     source_path=TEST_CORPUS_FILENAME,
     as_binary: bool = False,
     filename_fields=None,
@@ -121,7 +105,7 @@ def create_tokens_reader(
     text_transforms: str = "dehyphen,normalize-whitespace",
     chunk_size: int = None,
     tokenize: Callable = None,
-) -> TextTokenizer:
+) -> TokenizeTextReader:
     reader_opts = TextReaderOpts(
         filename_pattern=filename_pattern,
         filename_filter=filename_filter,
@@ -131,7 +115,7 @@ def create_tokens_reader(
     )
     transform_opts = TextTransformOpts(transforms=text_transforms)
 
-    reader = TextTokenizer(
+    reader = TokenizeTextReader(
         source_path,
         reader_opts=reader_opts,
         transform_opts=transform_opts,
@@ -139,10 +123,3 @@ def create_tokens_reader(
         chunk_size=chunk_size,
     )
     return reader
-
-
-def create_bundle(tag: str = 'DUMMY') -> Bundle:
-    folder = f'./tests/test_data/{tag}'
-    filename = to_filename(folder=folder, tag=tag)
-    bundle: Bundle = Bundle.load(filename, compute_frame=False)
-    return bundle

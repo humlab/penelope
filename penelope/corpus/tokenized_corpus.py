@@ -3,17 +3,16 @@ from __future__ import annotations
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Tuple, Union
 
 from penelope import utility
+from penelope.type_alias import PartitionKeys
 
-from .corpus_mixins import PartitionMixIn
 from .document_index import DocumentIndex, metadata_to_document_index, update_document_index_token_counts
 from .interfaces import ITokenizedCorpus
 from .readers.interfaces import ICorpusReader
-from .tokens_transformer import TokensTransformOpts
-from .transforms import Transform
+from .transform import TokensTransformOpts, Transform
 from .utils import generate_token2id
 
 
-class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn):
+class TokenizedCorpus(ITokenizedCorpus):
     def __init__(self, reader: ICorpusReader, *, transform_opts: TokensTransformOpts = None):
         """[summary]
 
@@ -119,6 +118,18 @@ class TokenizedCorpus(ITokenizedCorpus, PartitionMixIn):
         t2id = self.token2id
         for tokens in self.terms:
             yield (t2id[token] for token in tokens)
+
+    def group_documents_by_key(self, by: PartitionKeys) -> Dict[Any, List[str]]:
+        if 'document_name' not in self.document_index.columns:
+            raise ValueError("`document_name` columns missing")
+
+        if isinstance(by, (list, tuple)):
+            raise NotImplementedError("multi column partitions is currently not implemented")
+            # by = '_'.join(by)
+
+        groups = self.document_index.groupby(by=by)['document_name'].aggregate(list).to_dict()
+
+        return groups
 
 
 class ReiterableTerms:

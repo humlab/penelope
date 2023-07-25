@@ -23,7 +23,7 @@ CORPUS_FILENAME = jj(DATA_FOLDER, "riksdagens-protokoll.1970.sparv4.csv.zip")
 def run_workflow():
     corpus_config = pipeline.CorpusConfig.load(CONFIG_FILENAME).folders(DATA_FOLDER)
     corpus_config.pipeline_payload.files(source=CORPUS_FILENAME, document_index_source=None)
-    corpus_config.checkpoint_opts.deserialize_processes = 4
+    corpus_config.serialize_opts.deserialize_processes = 4
 
     compute_opts = ComputeOpts(
         corpus_type=pipeline.CorpusType.SparvCSV,

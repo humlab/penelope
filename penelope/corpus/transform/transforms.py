@@ -2,7 +2,7 @@ import functools
 import re
 import string
 import unicodedata
-from typing import Any, Callable, Iterable
+from typing import Any, Iterable, Protocol
 
 import ftfy
 import nltk
@@ -76,9 +76,17 @@ def normalize_characters(text: str, groups: str = None) -> str:
     return text
 
 
-Transform = Callable[..., Any]
-TokensTransform = Callable[[Iterable[str]], Iterable[str]]
-TextTransform = Callable[[str], str]
+class TokensTransform(Protocol):
+    def __call__(self, _: Iterable[str]) -> Iterable[str]:
+        ...
+
+
+class TextTransform(Protocol):
+    def __call__(self, _: str) -> str:
+        ...
+
+
+Transform = TokensTransform | TextTransform
 
 
 class TransformRegistry:
@@ -145,7 +153,7 @@ class TransformRegistry:
 
     @classmethod
     def getfx(cls, *keys: tuple[str], extras: list = None) -> Transform:
-        fxs: list[Callable[..., Any]] = [cls.get(k) for key in keys for k in key.split(',') if k]
+        fxs: list[Transform] = [cls.get(k) for key in keys for k in key.split(',') if k]
         if extras:
             fxs.extend(extras)
         if not fxs:

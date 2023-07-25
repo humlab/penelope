@@ -1,14 +1,16 @@
+from __future__ import annotations
+
 import gzip
-import logging
 import shutil
+from typing import TYPE_CHECKING
 
 from penelope.vendor.nltk import sent_tokenize, word_tokenize
 
-from .readers.interfaces import ICorpusReader
-from .tokenized_corpus import TokenizedCorpus
-from .tokens_transformer import TokensTransformOpts
+from ..readers.interfaces import ICorpusReader
+from ..tokenized_corpus import TokenizedCorpus
 
-logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
+if TYPE_CHECKING:
+    from ..transform import TokensTransformOpts
 
 
 def compress(filename):

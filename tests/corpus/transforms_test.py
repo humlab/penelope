@@ -2,8 +2,7 @@ from typing import Callable, Iterable
 
 import pytest
 
-from penelope.corpus import transforms as tr
-from penelope.corpus.tokens_transformer import TokensTransformOpts
+from penelope.corpus import transform as tr
 from penelope.utility.utils import CommaStr
 from penelope.vendor.nltk import STOPWORDS_CACHE, extended_stopwords, get_stopwords, load_stopwords
 
@@ -164,7 +163,7 @@ def cfx(
     extras: list[Callable] = None,
     extra_stopwords: list[str] = None,
 ) -> Callable[[list[str]], list[str]]:
-    opts = TokensTransformOpts(transforms=transforms, extras=extras, extra_stopwords=extra_stopwords)
+    opts = tr.TokensTransformOpts(transforms=transforms, extras=extras, extra_stopwords=extra_stopwords)
     return lambda tokens: list(opts.getfx()(tokens))
 
 
@@ -190,13 +189,13 @@ def test_transform_opts_extras_stopwords():
 
 
 def test_transform_property_descriptor():
-    assert TokensTransformOpts({'to-lower': True}).to_lower
-    assert TokensTransformOpts({'to_lower': True}).to_lower
-    assert TokensTransformOpts('to-lower').to_lower
-    assert TokensTransformOpts('to_lower').to_lower
+    assert tr.TokensTransformOpts({'to-lower': True}).to_lower
+    assert tr.TokensTransformOpts({'to_lower': True}).to_lower
+    assert tr.TokensTransformOpts('to-lower').to_lower
+    assert tr.TokensTransformOpts('to_lower').to_lower
 
-    assert TokensTransformOpts('to_lower?True').to_lower
-    assert TokensTransformOpts('to_lower?False').to_lower is False
+    assert tr.TokensTransformOpts('to_lower?True').to_lower
+    assert tr.TokensTransformOpts('to_lower?False').to_lower is False
 
-    assert TokensTransformOpts('max-chars?1').max_len == 1
-    assert TokensTransformOpts('remove-stopwords?swedish').remove_stopwords == 'swedish'
+    assert tr.TokensTransformOpts('max-chars?1').max_len == 1
+    assert tr.TokensTransformOpts('remove-stopwords?swedish').remove_stopwords == 'swedish'

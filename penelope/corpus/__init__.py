@@ -28,34 +28,37 @@ from .dtm import (
     store_metadata,
 )
 from .interfaces import ICorpus, ITokenizedCorpus
-from .readers.interfaces import ExtractTaggedTokensOpts, FilenameFilterSpec, PhraseSubstitutions, TextReaderOpts
-from .segmented_text_corpus import ChunkSegmenter, DocumentSegmenter, SegmentedTextCorpus, SentenceSegmenter
-from .sparv_corpus import (
+from .purgatory.segmented_text_corpus import ChunkSegmenter, DocumentSegmenter, SegmentedTextCorpus, SentenceSegmenter
+from .purgatory.text_lines_corpus import SimpleTextLinesCorpus
+from .readers import (
+    ExtractTaggedTokensOpts,
+    FilenameFilterSpec,
+    ICorpusReader,
+    PandasCorpusReader,
+    PhraseSubstitutions,
+    TextReader,
+    TextReaderOpts,
+    TextSource,
+    TokenizeTextReader,
+    ZipCorpusReader,
+    streamify_text_source,
+)
+from .sparv.sparv_corpus import (
     SparvTokenizedCsvCorpus,
     SparvTokenizedXmlCorpus,
     sparv_csv_extract_and_store,
     sparv_xml_extract_and_store,
 )
-from .text_lines_corpus import SimpleTextLinesCorpus
 from .token2id import ClosedVocabularyError, Token2Id, id2token2token2id
 from .tokenized_corpus import ReiterableTerms, TokenizedCorpus
-from .tokens_transformer import TokensTransformOpts
-from .transformer import TextTransformer, TextTransformOpts
-from .transforms import (
+from .transform import (
+    TextTransformer,
+    TextTransformOpts,
+    TokensTransformOpts,
     Transform,
     TransformRegistry,
     default_tokenizer,
     dehyphen,
-    has_alphabetic,
-    max_chars_factory,
-    min_chars_factory,
-    normalize_whitespace,
-    only_alphabetic,
-    only_any_alphanumeric,
-    remove_empty,
-    remove_numerals,
-    remove_symbols,
-    to_lower,
-    to_upper,
+    tokens_transformer,
 )
 from .utils import bow2text, csr2bow, generate_token2id, term_frequency

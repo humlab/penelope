@@ -5,19 +5,19 @@ import itertools
 import os
 import shutil
 import zipfile
-from contextlib import suppress
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Any, Callable, Container, Iterable, List, Optional, Sequence, Union
+from os.path import isdir, isfile
+from typing import Any, Callable, Container, Iterable, Optional, Sequence, Union
 
 import pandas as pd
 from loguru import logger
 from tqdm.auto import tqdm
 
-from penelope import utility
-from penelope.corpus import ITokenizedCorpus, TextTransformer, TextTransformOpts, Token2Id, default_tokenizer
-from penelope.corpus.readers import TextReader, TextReaderOpts, TextSource
+from penelope import corpus as pc
+from penelope import utility as pu
 from penelope.corpus.readers.tng import CorpusReader, create_sparv_xml_corpus_reader
+from penelope.corpus.serialize import SerializeOpts
 
 from . import checkpoint as cp
 from .interfaces import ContentType, DocumentPayload, ITask, PipelineError
@@ -35,10 +35,10 @@ class LoadText(DefaultResolveMixIn, ITask):
     Also loads a document_index, and/or extracts value fields from filenames
     """
 
-    source: TextSource = None
-    reader_opts: TextReaderOpts = None
-    transform_opts: TextTransformOpts = None
-    text_reader: TextReader = field(init=False, default=None)
+    source: pc.TextSource = None
+    reader_opts: pc.TextReaderOpts = None
+    transform_opts: pc.TextTransformOpts = None
+    text_reader: pc.TextReader = field(init=False, default=None)
 
     def __post_init__(self):
         self.in_content_type = ContentType.NONE
@@ -47,12 +47,12 @@ class LoadText(DefaultResolveMixIn, ITask):
     def setup(self) -> ITask:
         super().setup()
 
-        self.transform_opts = self.transform_opts or TextTransformOpts()
+        self.transform_opts = self.transform_opts or pc.TextTransformOpts()
 
         if self.source is not None:
             self.pipeline.payload.source = self.source
 
-        self.text_reader: TextReader = TextReader.create(
+        self.text_reader: pc.TextReader = pc.TextReader.create(
             source=self.pipeline.payload.source,
             reader_opts=self.reader_opts,
             transform_opts=self.transform_opts,
@@ -81,7 +81,7 @@ class LoadText(DefaultResolveMixIn, ITask):
             for filename, text in self.text_reader
         )
 
-    def get_filenames(self) -> List[str]:
+    def get_filenames(self) -> list[str]:
         return self.document_index['filename'].tolist()
 
 
@@ -159,14 +159,14 @@ class Checkpoint(DefaultResolveMixIn, ITask):
     """Checkpoints stream to a single files archive"""
 
     filename: str = None
-    checkpoint_opts: cp.CheckpointOpts = None
+    serialize_opts: SerializeOpts = None
     force_checkpoint: bool = False
 
     def setup(self) -> ITask:
         super().setup()
         self.pipeline.put("tagged_corpus_source", self.filename)
-        self.checkpoint_opts = self.checkpoint_opts or self.pipeline.config.checkpoint_opts
-        self.pipeline.put("checkpoint_opts", self.checkpoint_opts)
+        self.serialize_opts = self.serialize_opts or self.pipeline.config.serialize_opts
+        self.pipeline.put("serialize_opts", self.serialize_opts)
         return self
 
     def __post_init__(self):
@@ -175,26 +175,26 @@ class Checkpoint(DefaultResolveMixIn, ITask):
 
     def enter(self):
         if self.force_checkpoint:
-            if os.path.isfile(self.filename):
+            if isfile(self.filename):
                 os.remove(self.filename)
             self.force_checkpoint = False
 
         return super().enter()
 
     def create_instream(self) -> Iterable[DocumentPayload]:
-        return self._load_payload_stream() if os.path.isfile(self.filename) else self._store_payload_stream()
+        return self._load_payload_stream() if isfile(self.filename) else self._store_payload_stream()
 
     def _load_payload_stream(self):
-        checkpoint_data: cp.CheckpointData = cp.load_archive(self.filename, checkpoint_opts=self.checkpoint_opts)
+        checkpoint_data: cp.CorpusCheckpoint = cp.load_archive(self.filename, opts=self.serialize_opts)
         self.pipeline.payload.effective_document_index = checkpoint_data.document_index
         self.out_content_type = checkpoint_data.content_type
         return checkpoint_data.create_stream()
 
     def _store_payload_stream(self):
         self.out_content_type = self.get_out_content_type()
-        checkpoint_opts = self.checkpoint_opts.as_type(self.out_content_type)
+        serialize_opts = self.serialize_opts.as_type(self.out_content_type)
         return cp.store_archive(
-            checkpoint_opts=checkpoint_opts,
+            opts=serialize_opts,
             target_filename=self.filename,
             document_index=self.document_index,
             payload_stream=self.prior.outstream(),
@@ -214,7 +214,7 @@ class SaveTaggedCSV(Checkpoint):
     """Stores sequence of tagged data frame to archive and optionally to FEATHER files."""
 
     filename: str = None
-    checkpoint_opts: cp.CheckpointOpts = None
+    serialize_opts: SerializeOpts = None
 
     def __post_init__(self):
         self.in_content_type = ContentType.TAGGED_FRAME
@@ -232,9 +232,9 @@ class LoadTaggedCSV(PoSCountMixIn, ITask):
     """Load Pandas data frames from folder (CSV, feather), ZIP archive."""
 
     filename: str = None
-    checkpoint_opts: Optional[cp.CheckpointOpts] = None
-    extra_reader_opts: Optional[TextReaderOpts] = None
-    checkpoint_data: cp.CheckpointData = field(default=None, init=None, repr=None)
+    serialize_opts: Optional[SerializeOpts] = None
+    extra_reader_opts: Optional[pc.TextReaderOpts] = None
+    checkpoint_data: cp.CorpusCheckpoint = field(default=None, init=None, repr=None)
     stop_at_index: int = None
 
     def __post_init__(self):
@@ -242,29 +242,36 @@ class LoadTaggedCSV(PoSCountMixIn, ITask):
         self.out_content_type = ContentType.TAGGED_FRAME
 
     def enter(self):
-        if self.checkpoint_opts.feather_folder:
-            os.makedirs(self.checkpoint_opts.feather_folder, exist_ok=True)
+        if self.serialize_opts.feather_folder:
+            os.makedirs(self.serialize_opts.feather_folder, exist_ok=True)
 
     def exit(self):
         super().exit()
         # self.flush_pos_counts()
-        if self.checkpoint_opts.feather_folder:
-            cp.feather.write_document_index(self.checkpoint_opts.feather_folder, self.document_index)
+        if self.serialize_opts.feather_folder:
+            cp.feather.write_document_index(self.serialize_opts.feather_folder, self.document_index)
 
     def setup(self) -> ITask:
         super().setup()
 
-        self.checkpoint_opts = self.checkpoint_opts or self.pipeline.config.checkpoint_opts
-        self.checkpoint_data: cp.CheckpointData = self.load_archive()
+        self.serialize_opts = self.serialize_opts or self.pipeline.config.serialize_opts
+        self.checkpoint_data: cp.CorpusCheckpoint = self.load_archive()
 
-        document_index: pd.DataFrame = cp.feather.get_document_index(
-            self.checkpoint_opts.feather_folder, self.checkpoint_data.document_index
-        )
+        document_index: pd.DataFrame = cp.feather.read_document_index(self.serialize_opts.feather_folder)
+
+        if document_index is not None:
+            if len(document_index or []) != len(self.checkpoint_data.document_index):
+                raise PipelineError(
+                    "Document index in feather folder is out of sync with checkpoint archive (use --force-checkpoint)"
+                )
+
+        if document_index is None:
+            document_index = self.checkpoint_data.document_index
 
         self.pipeline.payload.set_reader_index(document_index)
 
         self.pipeline.put("reader_opts", self.extra_reader_opts.props)
-        self.pipeline.put("checkpoint_opts", self.checkpoint_opts.props)
+        self.pipeline.put("serialize_opts", self.serialize_opts.props)
 
         return self
 
@@ -275,18 +282,14 @@ class LoadTaggedCSV(PoSCountMixIn, ITask):
 
         return self.checkpoint_data.create_stream()
 
-    def load_archive(self) -> cp.CheckpointData:
-        return cp.load_archive(
-            self.filename,
-            checkpoint_opts=self.checkpoint_opts,
-            reader_opts=self.extra_reader_opts,
-        )
+    def load_archive(self) -> cp.CorpusCheckpoint:
+        return cp.load_archive(self.filename, opts=self.serialize_opts, reader_opts=self.extra_reader_opts)
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
         self.register_pos_counts(payload)
         return payload
 
-    def get_filenames(self) -> List[str]:
+    def get_filenames(self) -> list[str]:
         return self.checkpoint_data.filenames if bool(self.checkpoint_data) else []
 
 
@@ -304,7 +307,7 @@ class CheckpointFeather(DefaultResolveMixIn, ITask):
     def enter(self):
         if self.force:
             with contextlib.suppress(Exception):
-                if os.path.isdir(self.folder):
+                if isdir(self.folder):
                     shutil.rmtree(self.folder, ignore_errors=True)
         self.force = False
 
@@ -331,8 +334,9 @@ class WriteFeather(ITask):
         os.makedirs(self.folder, exist_ok=True)
 
     def process_payload(self, payload: DocumentPayload) -> Iterable[DocumentPayload]:
-        if self.force or not cp.feather.payload_exists(folder=self.folder, payload=payload):
-            cp.feather.write_payload(folder=self.folder, payload=payload)
+        cp.feather.write_document(
+            payload.content, cp.feather.to_document_filename(self.folder, payload.filename), force=self.force
+        )
         return payload
 
     def exit(self):
@@ -341,7 +345,7 @@ class WriteFeather(ITask):
 
 @dataclass
 class ReadFeather(DefaultResolveMixIn, ITask):
-    """Stores sequence of tagged data frame documents to archive."""
+    """Reads PoS tagged VRT documents from archive."""
 
     folder: str = None
 
@@ -354,7 +358,11 @@ class ReadFeather(DefaultResolveMixIn, ITask):
 
     def process_stream(self) -> Iterable[DocumentPayload]:
         return (
-            cp.feather.read_payload(os.path.join(self.folder, filename))
+            DocumentPayload(
+                content_type=ContentType.TAGGED_FRAME,
+                content=pd.read_feather(cp.feather.to_document_filename(self.folder, filename)),
+                filename=pu.replace_extension(filename, ".csv"),
+            )
             for filename in self.document_index.filename.tolist()
         )
 
@@ -364,7 +372,7 @@ class LoadTaggedXML(PoSCountMixIn, ITask):
     """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames."""
 
     filename: str = None
-    reader_opts: TextReaderOpts = None
+    reader_opts: pc.TextReaderOpts = None
     corpus_reader: CorpusReader = field(default=None, init=None, repr=None)
 
     def __post_init__(self):
@@ -397,7 +405,7 @@ class LoadTaggedXML(PoSCountMixIn, ITask):
         self.register_pos_counts(payload)
         return payload
 
-    def get_filenames(self) -> List[str]:
+    def get_filenames(self) -> list[str]:
         return self.document_index['filename'].tolist()
 
 
@@ -405,9 +413,9 @@ class LoadTaggedXML(PoSCountMixIn, ITask):
 class TextToTokens(TransformTokensMixIn, ITask):
     """Extracts tokens from payload.content, optionally transforming"""
 
-    tokenize: Callable[[str], List[str]] = None
-    text_transform_opts: TextTransformOpts = None
-    _text_transformer: TextTransformer = field(init=False)
+    tokenize: Callable[[str], list[str]] = None
+    text_transform_opts: pc.TextTransformOpts = None
+    _text_transformer: pc.TextTransformer = field(init=False)
 
     def setup(self) -> ITask:
         super().setup()
@@ -417,10 +425,10 @@ class TextToTokens(TransformTokensMixIn, ITask):
     def __post_init__(self):
         self.in_content_type = [ContentType.TEXT, ContentType.TOKENS]
         self.out_content_type = ContentType.TOKENS
-        self.tokenize = self.tokenize or default_tokenizer
+        self.tokenize = self.tokenize or pc.default_tokenizer
 
         if self.text_transform_opts is not None:
-            self._text_transformer = TextTransformer(transform_opts=self.text_transform_opts)
+            self._text_transformer = pc.TextTransformer(transform_opts=self.text_transform_opts)
 
         self.setup_transform()
 
@@ -460,7 +468,7 @@ class TapStream(ITask):
         self.zink.close()
 
     def store(self, payload: DocumentPayload) -> DocumentPayload:
-        with suppress(Exception):
+        with contextlib.suppress(Exception):
             content: str = somewhat_generic_serializer(payload.content)
             if content is not None:
                 self.zink.writestr(f"{self.tag}__{payload.filename}", content)
@@ -593,7 +601,7 @@ class TokensToText(ITask):
         self.out_content_type = ContentType.TEXT
 
     def process_payload(self, payload: DocumentPayload) -> DocumentPayload:
-        return payload.update(self.out_content_type, utility.to_text(payload.content))
+        return payload.update(self.out_content_type, pu.to_text(payload.content))
 
 
 @dataclass
@@ -603,7 +611,7 @@ class Vocabulary(ITask):
         Lemma = 2
         LowerText = 3
 
-    token2id: Token2Id = None
+    token2id: pc.Token2Id = None
     token_type: Optional[TokenType] = None
     progress: bool = False
     close: bool = True
@@ -625,7 +633,7 @@ class Vocabulary(ITask):
         #     if self.token_type is None:
         #         raise ValueError("token_type text or lemma not specfied")
 
-        self.token2id: Token2Id = self.token2id or Token2Id()
+        self.token2id: pc.Token2Id = self.token2id or pc.Token2Id()
         self.pipeline.payload.token2id = self.token2id
         return self
 
@@ -755,7 +763,7 @@ class WildcardTask(ITask):
 class LoadTokenizedCorpus(TokenCountMixIn, DefaultResolveMixIn, ITask):
     """Loads Sparv export documents stored as individual XML files in a ZIP-archive into a Pandas data frames."""
 
-    corpus: ITokenizedCorpus = None
+    corpus: pc.ITokenizedCorpus = None
 
     def __post_init__(self):
         self.in_content_type = ContentType.NONE

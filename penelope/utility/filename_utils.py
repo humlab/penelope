@@ -1,8 +1,8 @@
 import fnmatch
-import os
 import string
 import time
-from typing import Callable, List, Union
+from os.path import basename, isdir, join, split, splitext
+from typing import Callable, Union
 
 from .utils import now_timestamp
 
@@ -10,24 +10,16 @@ VALID_CHARS = "-_.() " + string.ascii_letters + string.digits
 
 
 def path_of(path: str):
-    return os.path.split(path)[0]
+    return split(path)[0]
 
 
 def assert_that_path_exists(path: str):
-    if path and not os.path.isdir(path):
+    if path and not isdir(path):
         raise FileNotFoundError(f"folder {path} does not exist")
 
 
-def replace_path(filepath: str, path: str) -> str:
-    return os.path.join(path, strip_paths(filepath))
-
-
-def replace_paths(folder: str, filenames: List[str]) -> List[str]:
-    return [os.path.join(folder, name) for name in strip_paths(filenames)]
-
-
 def filename_satisfied_by(
-    filename: str, filename_filter: Union[List[str], Callable], filename_pattern: str = None
+    filename: str, filename_filter: Union[list[str], Callable], filename_pattern: str = None
 ) -> bool:
     """Returns true if filename is satisfied by filename filter, and matches pattern"""
 
@@ -40,12 +32,7 @@ def filename_satisfied_by(
 
     if isinstance(
         filename_filter,
-        (
-            list,
-            set,
-            tuple,
-            dict,
-        ),
+        (list, set, tuple, dict),
     ):
         # Try both with and without extension
         if filename not in filename_filter and strip_path_and_extension(filename) not in filename_filter:
@@ -59,20 +46,20 @@ def filename_satisfied_by(
 
 
 def filenames_satisfied_by(
-    filenames: List[str], filename_filter: Union[List[str], Callable] = None, filename_pattern: str = None, sort=True
-) -> List[str]:
+    filenames: list[str], filename_filter: Union[list[str], Callable] = None, filename_pattern: str = None, sort=True
+) -> list[str]:
     """Filters list of filenames based on `filename_pattern` and `filename_filter`
 
     Args:
-        filenames (List[str]): Filenames to filter
-        filename_filter (Union[List[str], Callable]): Predicate or list of filenames
+        filenames (list[str]): Filenames to filter
+        filename_filter (Union[list[str], Callable]): Predicate or list of filenames
         filename_pattern (str, optional): Glob pattern. Defaults to None.
 
     Returns:
-        List[str]: [description]
+        list[str]: [description]
     """
 
-    satisfied_filenames: List[str] = (
+    satisfied_filenames: list[str] = (
         filenames
         if filename_filter is None and filename_pattern is None
         else [
@@ -95,9 +82,16 @@ def filename_whitelist(filename: str) -> str:
     return filename
 
 
+def split_parts(path: str) -> tuple[str, str, str]:
+    """Splits path into folder, filename and extension"""
+    folder, filename = split(path)
+    base, extension = splitext(filename)
+    return folder, base, extension
+
+
 def path_add_suffix(path: str, suffix: str, new_extension: str = None) -> str:
-    basename, extension = os.path.splitext(path)
-    return f'{basename}{suffix}{extension if new_extension is None else new_extension}'
+    base, ext = splitext(path)
+    return f'{base}{suffix}{ext if new_extension is None else new_extension}'
 
 
 def path_add_timestamp(path: str, fmt: str = "%Y%m%d%H%M") -> str:
@@ -109,12 +103,12 @@ def path_add_date(path: str, fmt: str = "%Y%m%d") -> str:
 
 
 def ts_data_path(directory: str, filename: str):
-    return os.path.join(directory, f'{time.strftime("%Y%m%d%H%M")}_{filename}')
+    return join(directory, f'{time.strftime("%Y%m%d%H%M")}_{filename}')
 
 
 def data_path_ts(directory: str, path: str):
-    name, extension = os.path.splitext(path)
-    return os.path.join(directory, '{}_{}{}'.format(name, time.strftime("%Y%m%d%H%M"), extension))
+    name, extension = splitext(path)
+    return join(directory, '{}_{}{}'.format(name, time.strftime("%Y%m%d%H%M"), extension))
 
 
 def path_add_sequence(path: str, i: int, j: int = 0) -> str:
@@ -122,44 +116,55 @@ def path_add_sequence(path: str, i: int, j: int = 0) -> str:
 
 
 def strip_path_and_add_counter(filename: str, i: int, n_zfill: int = 3):
-    return f'{os.path.basename(strip_extensions(filename))}_{str(i).zfill(n_zfill)}.txt'
+    return f'{basename(strip_extensions(filename))}_{str(i).zfill(n_zfill)}.txt'
 
 
-def strip_paths(filenames: Union[str, List[str]]) -> Union[str, List[str]]:
+def strip_paths(filenames: Union[str, list[str]]) -> Union[str, list[str]]:
     if isinstance(filenames, str):
-        return os.path.basename(filenames)
-    return [os.path.basename(filename) for filename in filenames]
+        return basename(filenames)
+    return [basename(filename) for filename in filenames]
 
 
-def strip_path_and_extension(filename: str) -> str:
-    return os.path.splitext(os.path.basename(filename))[0]
+def strip_path_and_extension(filename: str | list[str]) -> str | list[str]:
+    return strip_extensions(strip_paths(filename))
 
 
-def strip_extensions(filename: Union[str, List[str]]) -> List[str]:
+def strip_extensions(filename: Union[str, list[str]]) -> list[str]:
     if isinstance(filename, str):
-        return os.path.splitext(filename)[0]
-    return [os.path.splitext(x)[0] for x in filename]
+        return splitext(filename)[0]
+    return [splitext(x)[0] for x in filename]
 
 
 def suffix_filename(filename: str, suffix: str) -> str:
-    output_path, output_file = os.path.split(filename)
-    output_base, output_ext = os.path.splitext(output_file)
-    suffixed_filename = os.path.join(output_path, f"{output_base}_{suffix}{output_ext}")
-    return suffixed_filename
+    folder, base, extension = split_parts(filename)
+    return join(folder, f"{base}_{suffix}{extension}")
 
 
-def replace_extension(filename: str, extension: str) -> str:
-    if filename.endswith(extension):
-        return filename
-    base, _ = os.path.splitext(filename)
-    return f"{base}{'' if extension.startswith('.') else '.'}{extension}"
+def replace_extension(filename: str | list[str], extension: str) -> str:
+    extension = '' if extension is None else '.' + extension if not extension.startswith('.') else extension
+    if isinstance(filename, list):
+        return [f"{splitext(f)[0]}{extension}" for f in filename]
+    return f"{splitext(filename)[0]}{extension}"
+
+
+def replace_folder(filename: str | list[str], folder: str) -> str:
+    """Replaces folder in filename"""
+    if folder is None:
+        folder = ''
+    if isinstance(filename, list):
+        return [join(folder, basename(name)) for name in filename]
+    return join(folder or '', basename(filename))
+
+
+def replace_folder_and_extension(filename: str | list[str], folder: str, extension: str) -> str:
+    return replace_extension(replace_folder(filename, folder), extension)
 
 
 def timestamp_filename(filename: str) -> str:
     return suffix_filename(filename, now_timestamp())
 
 
-def filter_names_by_pattern(filenames: List[str], filename_pattern: str) -> List[str]:
+def filter_names_by_pattern(filenames: list[str], filename_pattern: str) -> list[str]:
     return [
         filename for filename in filenames if (filename_pattern is None or fnmatch.fnmatch(filename, filename_pattern))
     ]

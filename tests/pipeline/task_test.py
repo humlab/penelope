@@ -4,11 +4,10 @@ from unittest.mock import MagicMock, Mock
 
 import pandas as pd
 
-from penelope.corpus.document_index import load_document_index_from_str
-from penelope.pipeline import checkpoint, sparv
+from penelope.corpus import load_document_index_from_str
+from penelope.corpus.serialize import SerializeOpts
+from penelope.pipeline import ContentType, CorpusPipeline, DocumentPayload, ITask, sparv
 from penelope.pipeline.checkpoint import feather
-from penelope.pipeline.interfaces import ContentType, DocumentPayload, ITask
-from penelope.pipeline.pipelines import CorpusPipeline
 from penelope.pipeline.tasks import Vocabulary
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
@@ -32,7 +31,7 @@ def test_task_vocabulary_token2id():
 
     tagged_frame: pd.DataFrame = sparv.SparvCsvSerializer().deserialize(
         content=content,
-        options=checkpoint.CheckpointOpts(**SPARV_TAGGED_COLUMNS),
+        options=SerializeOpts(**SPARV_TAGGED_COLUMNS),
     )
 
     payload = DocumentPayload(content_type=ContentType.TAGGED_FRAME, content=tagged_frame)
@@ -41,9 +40,8 @@ def test_task_vocabulary_token2id():
     assert expected_tokens == [x for x in task._payload_to_token_stream(payload)]  # pylint: disable=protected-access
 
 
-def test_CheckpointFeather_write_document_index():
+def test_feather_write_document_index():
     folder = './tests/output'
-    expected_filename = os.path.join(folder, feather.FEATHER_DOCUMENT_INDEX_NAME)
 
     os.makedirs(folder, exist_ok=True)
 
@@ -57,7 +55,7 @@ B.txt;2019;2;B;1;Night;59
 
     feather.write_document_index(folder, document_index)
 
-    assert os.path.isfile(expected_filename)
+    assert os.path.isfile(os.path.join(folder, 'document_index.feathering'))
 
     df = feather.read_document_index(folder)
 

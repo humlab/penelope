@@ -4,7 +4,7 @@ import click
 
 import penelope.corpus.sparv_corpus as sparv_corpus
 from penelope.corpus.readers import ExtractTaggedTokensOpts
-from penelope.corpus.tokens_transformer import TokensTransformOpts
+from penelope.corpus.transform import TokensTransformOpts
 from penelope.utility import replace_extension, suffix_filename, timestamp_filename
 
 

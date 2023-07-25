@@ -133,6 +133,7 @@ filterwarnings = [
     "ignore::UserWarning",
 ]
 # timeout = 300
+basetemp="tests/output/tmp"
 
 [tool.black]
 line-length = 120

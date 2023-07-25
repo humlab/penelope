@@ -1,5 +1,4 @@
-from penelope.corpus.readers import ExtractTaggedTokensOpts
-from penelope.corpus.sparv.sparv_csv_to_text import SparvCsvToText
+from penelope.corpus import ExtractTaggedTokensOpts, sparv
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
 SPARV_CSV_EXPORT_FILENAME_SMALL = './tests/test_data/sparv_data/sparv_csv_export_small.csv'
@@ -14,7 +13,7 @@ TEST_DATA = sparv_csv_export_small_text()
 
 
 def test_reader_when_no_transforms_returns_source_tokens():
-    reader = SparvCsvToText(
+    reader = sparv.SparvCsvToText(
         extract_tokens_opts=ExtractTaggedTokensOpts(
             pos_includes=None, pos_paddings=None, pos_excludes=None, lemmatize=False, **SPARV_TAGGED_COLUMNS
         )
@@ -28,7 +27,7 @@ def test_reader_when_no_transforms_returns_source_tokens():
 
 
 def test_reader_when_only_nn_returns_only_nn():
-    reader = SparvCsvToText(
+    reader = sparv.SparvCsvToText(
         extract_tokens_opts=ExtractTaggedTokensOpts(
             pos_includes='NN', pos_paddings='VB', pos_excludes=None, lemmatize=False, **SPARV_TAGGED_COLUMNS
         )
@@ -42,7 +41,7 @@ def test_reader_when_only_nn_returns_only_nn():
 
 
 def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
-    reader = SparvCsvToText(
+    reader = sparv.SparvCsvToText(
         extract_tokens_opts=ExtractTaggedTokensOpts(
             pos_includes='NN', pos_paddings='VB', pos_excludes=None, lemmatize=True, **SPARV_TAGGED_COLUMNS
         )
@@ -56,7 +55,7 @@ def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
 
 
 def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
-    reader = SparvCsvToText(
+    reader = sparv.SparvCsvToText(
         extract_tokens_opts=ExtractTaggedTokensOpts(
             pos_includes='NN|VB', pos_paddings='JJ', pos_excludes='', lemmatize=True, **SPARV_TAGGED_COLUMNS
         )
@@ -70,7 +69,7 @@ def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
 
 
 def test_reader_when_lemmatized_nn_vb_pos_appended_returns_lemmatized_nn_vb_pos():
-    reader = SparvCsvToText(
+    reader = sparv.SparvCsvToText(
         extract_tokens_opts=ExtractTaggedTokensOpts(
             pos_includes='NN|VB',
             pos_paddings='JJ',

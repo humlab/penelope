@@ -1,106 +1,58 @@
 import glob
-import os
+from os.path import isfile
 from os.path import join as jj
-from typing import List, Optional
 
 import pandas as pd
 
-from penelope.utility import replace_extension, strip_paths
-
-from ..interfaces import ContentType, DocumentPayload, PipelineError
-
-FEATHER_DOCUMENT_INDEX_NAME = 'document_index.feathering'
+from penelope.utility import replace_extension, strip_path_and_extension
 
 
-def write_payload(folder: str, payload: DocumentPayload) -> DocumentPayload:
-    filename: str = jj(folder, replace_extension(payload.filename, ".feather"))
-
-    payload.content.reset_index(drop=True).to_feather(filename, compression="lz4")
-
-    return payload
+def to_document_filename(folder: str, document_name: str) -> str:
+    """Returns document filename"""
+    return jj(folder, replace_extension(document_name, '.feather'))
 
 
-def payload_exists(folder: str, payload: DocumentPayload) -> DocumentPayload:
-    filename = jj(folder, replace_extension(payload.filename, ".feather"))
-    return os.path.isfile(filename)
+def get_document_filenames(*, folder: str) -> list[str]:
+    """Returns list of document filenames in folder"""
+    return [
+        x
+        for x in sorted(glob.glob(jj(folder, "**", "*.feather"), recursive=True))
+        if not strip_path_and_extension(x) in ('document_index', 'token2id')
+    ]
 
 
-def read_payload(filename: str) -> DocumentPayload:
-    filename = replace_extension(filename, ".feather")
-    return DocumentPayload(
-        content_type=ContentType.TAGGED_FRAME,
-        content=pd.read_feather(filename),
-        filename=replace_extension(strip_paths(filename), ".csv"),
-    )
-
-
-def get_matching_paths(*, folder: str) -> List[str]:
-    pattern: str = jj(folder, "*.feather")
-    paths: List[str] = sorted(glob.glob(pattern))
-    return paths
-
-
-def document_index_exists(folder: Optional[str]) -> bool:
+def get_document_index_filename(folder: str) -> str:
+    """Returns document index filename if exists, otherwise None"""
     if folder is None:
-        return False
-    return os.path.isfile(jj(folder, FEATHER_DOCUMENT_INDEX_NAME))
+        return None
+    return next((x for x in glob.glob(jj(folder, "document_index.feather*"))), None)
+
+
+def document_index_exists(folder: str | None) -> bool:
+    """Returns True if document index exists in folder"""
+    return get_document_index_filename(folder) is not None
 
 
 def read_document_index(folder: str) -> pd.DataFrame:
-    filename = jj(folder, FEATHER_DOCUMENT_INDEX_NAME)
+    """Reads document index from feather file"""
 
-    if os.path.isfile(filename):
-        document_index: pd.DataFrame = pd.read_feather(filename).set_index('document_name', drop=False)
-        _sanitize_document_index(document_index)
-        return document_index
+    if filename := get_document_index_filename(folder):
+        di: pd.DataFrame = pd.read_feather(filename).set_index('document_name', drop=False)
+        sanitize_document_index(di)
+        return di
 
-    raise PipelineError("Feather checkpoint is missing document index. Please force new checkpoint!")
-
-
-def drop_document_index(folder: str) -> None:
-    filename = jj(folder, FEATHER_DOCUMENT_INDEX_NAME)
-    if os.path.isfile(filename):
-        os.remove(filename)
-
-
-def get_document_index(folder: str, document_index: pd.DataFrame) -> pd.DataFrame:
-    if not document_index_exists(folder):
-        return document_index
-
-    stored_document_index: pd.DataFrame = read_document_index(folder)
-
-    # if is_invalidated_document_index(stored_document_index, document_index):
-    if len(stored_document_index) != len(document_index):
-        drop_document_index(folder)
-        return document_index
-
-    return stored_document_index
-
-
-def is_invalidated_document_index(stored_document_index: pd.DataFrame, document_index: pd.DataFrame) -> bool:
-    # FIXME Add tests and use in get_document_index
-    if len(stored_document_index) != len(document_index):
-        return True
-
-    if stored_document_index.document_name.isna().any():
-        return True
-
-    # if not stored_document_index.document_name.equals(document_index.index):
-    #     return True
-
-    return False
+    return None
 
 
 def write_document_index(folder: str, document_index: pd.DataFrame):
     if document_index is None:
         return
 
-    _sanitize_document_index(document_index)
-    filename = jj(folder, FEATHER_DOCUMENT_INDEX_NAME)
-    document_index.reset_index(drop=True).to_feather(filename, compression="lz4")
+    sanitize_document_index(document_index)
+    document_index.reset_index(drop=True).to_feather(jj(folder, 'document_index.feathering'), compression="lz4")
 
 
-def _sanitize_document_index(document_index: pd.DataFrame):
+def sanitize_document_index(document_index: pd.DataFrame):
     if document_index is None:
         return
 
@@ -109,3 +61,21 @@ def _sanitize_document_index(document_index: pd.DataFrame):
 
     if document_index.index.name in document_index.columns:
         document_index.rename_axis('', inplace=True)
+
+
+def write_document(document: pd.DataFrame, filename: str, force: bool = False):
+    if force or not isfile(filename):
+        document.reset_index(drop=True).to_feather(filename, compression="lz4")
+
+
+def is_complete(folder: str, di: pd.DataFrame = None) -> bool:
+    """Returns True if all documents in folder are indexed in document index"""
+    if di is None:
+        di: pd.DataFrame = read_document_index(folder)
+
+    if di is None:
+        return False
+
+    on_disk: set[str] = set(strip_path_and_extension(get_document_filenames(folder=folder)))
+    in_memory: set[str] = set(strip_path_and_extension(di.document_name))
+    return on_disk == in_memory

@@ -1,3 +1,4 @@
+import zipfile
 from typing import Callable, Iterable, Iterator, List, Mapping, Optional, Tuple, Union
 
 import pandas as pd
@@ -26,5 +27,6 @@ VocabularyMapping = Optional[Mapping[Tuple[int, int], int]]
 SparseMatrix = sp.spmatrix
 
 SerializableContent = Union[str, Iterable[str], TaggedFrame]
+TaggedFrameStore = Union[str, zipfile.ZipFile]
 
 DocumentTopicsWeightsIter = Iterable[Tuple[int, Iterable[Tuple[int, float]]]]

@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import penelope.utility.zip_utils as zip_util
 
-from . import readers
-from .readers import ExtractTaggedTokensOpts, TextReaderOpts
-from .tokenized_corpus import TokenizedCorpus
-from .tokens_transformer import TokensTransformOpts
+from .. import sparv
+from ..readers.interfaces import ExtractTaggedTokensOpts, TextReaderOpts
+from ..tokenized_corpus import TokenizedCorpus
+
+if TYPE_CHECKING:
+    from ..transform import TokensTransformOpts
 
 
 class SparvTokenizedXmlCorpus(TokenizedCorpus):
@@ -14,19 +18,17 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
         source,
         version,
         *,
-        reader_opts: TextReaderOpts = None,
-        extract_opts: ExtractTaggedTokensOpts = None,
-        transform_opts: TokensTransformOpts = None,
+        reader_opts: TextReaderOpts,
+        extract_opts: ExtractTaggedTokensOpts,
+        transform_opts: TokensTransformOpts,
         chunk_size: int = None,
     ):
-        reader_opts = reader_opts or TextReaderOpts()
-
-        if isinstance(source, readers.SparvXmlReader):
+        if isinstance(source, sparv.SparvXmlReader):
             tokens_reader = source
         else:
-            tokens_reader = readers.SparvXmlReader(
+            tokens_reader = sparv.SparvXmlReader(
                 source,
-                extract_opts=extract_opts or ExtractTaggedTokensOpts(lemmatize=True),
+                extract_opts=extract_opts,
                 xslt_filename=None,
                 version=version,
                 reader_opts=reader_opts,
@@ -49,16 +51,15 @@ class SparvTokenizedCsvCorpus(TokenizedCorpus):
         self,
         source,
         *,
-        reader_opts: TextReaderOpts = None,
-        extract_opts: ExtractTaggedTokensOpts = None,
-        transform_opts: TokensTransformOpts = None,
+        reader_opts: TextReaderOpts,
+        extract_opts: ExtractTaggedTokensOpts,
+        transform_opts: TokensTransformOpts,
         chunk_size: int = None,
     ):
-        reader_opts = reader_opts or TextReaderOpts()
-        if isinstance(source, readers.SparvCsvTokenizer):
+        if isinstance(source, sparv.SparvCsvReader):
             tokens_reader = source
         else:
-            tokens_reader = readers.SparvCsvTokenizer(
+            tokens_reader = sparv.SparvCsvReader(
                 source,
                 extract_opts=extract_opts,
                 reader_opts=reader_opts,
@@ -71,9 +72,9 @@ def sparv_xml_extract_and_store(
     source: str,
     target: str,
     version: int,
-    extract_opts: ExtractTaggedTokensOpts = None,
-    reader_opts: TextReaderOpts = None,
-    transform_opts: TokensTransformOpts = None,
+    extract_opts: ExtractTaggedTokensOpts,
+    reader_opts: TextReaderOpts,
+    transform_opts: TokensTransformOpts,
     chunk_size: int = None,
 ):
     """[summary]

@@ -6,7 +6,7 @@ from scipy.cluster.hierarchy import linkage  # pylint: disable=unused-import
 
 import penelope.corpus.tokenized_corpus as corpora
 from penelope.corpus import CorpusVectorizer
-from tests.utils import create_tokens_reader
+from tests.utils import create_test_corpus_tokens_reader
 
 unittest.main(argv=['first-arg-is-ignored'], exit=False)
 
@@ -19,7 +19,9 @@ class Test_ChiSquare(unittest.TestCase):
 
     def create_reader(self):
         filename_fields = dict(year=r".{5}(\d{4})_.*", serial_no=r".{9}_(\d+).*")
-        reader = create_tokens_reader(filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace")
+        reader = create_test_corpus_tokens_reader(
+            filename_fields=filename_fields, text_transforms="dehyphen,normalize-whitespace"
+        )
         return reader
 
     def create_corpus(self):

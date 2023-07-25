@@ -71,16 +71,26 @@ class TabularCompiler:
 
 
 class TrendsServiceBase(abc.ABC):
-    def __init__(self, corpus: pc.VectorizedCorpus, n_top: int = 100000):
-        self.corpus: pc.VectorizedCorpus = corpus
+    def __init__(self, corpus: pc.VectorizedCorpus = None, n_top: int = 100000):
         self.n_top: int = n_top
-        self._gof_data: gof.GofData = None
 
-        self._transformed_corpus: pc.VectorizedCorpus = None
         self._transform_opts: TrendsComputeOpts = TrendsComputeOpts(
             normalize=False, keyness=pk.KeynessMetric.TF, temporal_key='year'
         )
         self.tabular_compiler: TabularCompiler = TabularCompiler()
+
+        self._corpus: pc.VectorizedCorpus = None
+        self.corpus = corpus
+
+    @property
+    def corpus(self) -> pc.VectorizedCorpus:
+        return self._corpus
+
+    @corpus.setter
+    def corpus(self, corpus: pc.VectorizedCorpus):
+        self._corpus = corpus
+        self._transformed_corpus = None
+        self._gof_data = None
 
     @abc.abstractmethod
     def _transform_corpus(self, opts: TrendsComputeOpts) -> pc.VectorizedCorpus:
@@ -232,7 +242,7 @@ class TrendsServiceBase(abc.ABC):
 
 
 class TrendsService(TrendsServiceBase):
-    def __init__(self, corpus: pc.VectorizedCorpus, n_top: int = 100000):
+    def __init__(self, corpus: pc.VectorizedCorpus = None, n_top: int = 100000):
         super().__init__(corpus=corpus, n_top=n_top)
 
     def _transform_corpus(self, opts: TrendsComputeOpts) -> pc.VectorizedCorpus:
@@ -262,10 +272,21 @@ class TrendsService(TrendsServiceBase):
 class BundleTrendsService(TrendsServiceBase):
     def __init__(self, bundle: Bundle = None, n_top: int = 100000, category_column: str = 'category'):
         super().__init__(corpus=bundle.corpus, n_top=n_top)
-        self.bundle = bundle
         self.keyness_source: pk.KeynessMetricSource = pk.KeynessMetricSource.Full
         self.tf_threshold: int = 1
         self.category_column: str = category_column
+
+        self._bundle: Bundle = None
+        self.bundle = bundle
+
+    @property
+    def bundle(self) -> Bundle:
+        return self._bundle
+
+    @bundle.setter
+    def bundle(self, bundle: Bundle):
+        self._bundle = bundle
+        self.corpus = bundle.corpus if bundle else None
 
     def _transform_corpus(self, opts: TrendsComputeOpts) -> pc.VectorizedCorpus:
         transformed_corpus: pc.VectorizedCorpus = self.bundle.keyness_transform(

@@ -10,13 +10,13 @@ from penelope.pipeline import ContentType, CorpusConfig, CorpusPipeline, Documen
 from penelope.pipeline.interfaces import ContentStream
 from penelope.pipeline.topic_model.tasks import ToTopicModel
 from penelope.topic_modelling.utility import ModelFolder, find_models
-from tests.fixtures import TranströmerCorpus  # pylint: disable=non-ascii-module-import
+from tests.fixtures import TranstromerCorpus  # pylint: disable=non-ascii-module-import
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
 # pylint: disable=redefined-outer-name, non-ascii-name
 
 
-def tranströmer_topic_model_payload(method: str, target_folder: str, target_name: str) -> DocumentPayload:
+def transtromer_topic_model_payload(method: str, target_folder: str, target_name: str) -> DocumentPayload:
     transform_opts: TokensTransformOpts = TokensTransformOpts()
     extract_opts: ExtractTaggedTokensOpts = ExtractTaggedTokensOpts(
         lemmatize=True,
@@ -40,7 +40,7 @@ def tranströmer_topic_model_payload(method: str, target_folder: str, target_nam
         CorpusPipeline(config=config)
         .load_tagged_frame(
             filename=corpus_source,
-            checkpoint_opts=config.checkpoint_opts,
+            serialize_opts=config.serialize_opts,
             extra_reader_opts=config.text_reader_opts,
         )
         .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
@@ -69,7 +69,7 @@ def test_predict_topics(method: str):
 
     target_folder: str = './tests/output'
     train_target_name: str = f'train_{str(uuid.uuid1())[:8]}'
-    payload: DocumentPayload = tranströmer_topic_model_payload(
+    payload: DocumentPayload = transtromer_topic_model_payload(
         method=method, target_folder=target_folder, target_name=train_target_name
     )
     model_folder: str = os.path.join(payload.content.get("target_folder"), payload.content.get("target_name"))
@@ -86,14 +86,14 @@ def test_predict_topics(method: str):
         lemmatize=True,
         pos_includes='',
         pos_excludes='MAD|MID|PAD',
-        **config.checkpoint_opts.tagged_columns,
+        **config.serialize_opts.tagged_columns,
     )
     vectorize_opts: VectorizeOpts = VectorizeOpts(already_tokenized=True)
     payload: DocumentPayload = (
         CorpusPipeline(config=config)
         .load_tagged_frame(
             filename=corpus_source,
-            checkpoint_opts=config.checkpoint_opts,
+            serialize_opts=config.serialize_opts,
             extra_reader_opts=config.text_reader_opts,
         )
         .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
@@ -122,7 +122,7 @@ def test_topic_model_task_with_token_stream_and_document_index(method):
 
     target_folder: str = './tests/output'
     target_name: str = f'{str(uuid.uuid1())[:8]}'
-    corpus: TranströmerCorpus = TranströmerCorpus()
+    corpus: TranstromerCorpus = TranstromerCorpus()
     default_engine_args: dict = {
         'n_topics': 4,
         'passes': 1,

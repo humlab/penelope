@@ -1,7 +1,7 @@
 import os
 
-import penelope.corpus.readers as readers
-from penelope.corpus.readers import ExtractTaggedTokensOpts, TextReaderOpts
+import penelope.corpus.sparv as sparv
+from penelope import corpus as pc
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
 
 SPARV_CSV_EXPORT_FILENAME = './tests/test_data/sparv_data/prot_197677__27.tsv'
@@ -20,10 +20,10 @@ def sparv_csv_export_small_text():
 
 
 def test_reader_when_no_transforms_returns_source_tokens():
-    tokens_reader = readers.SparvCsvTokenizer(
+    tokens_reader = sparv.SparvCsvReader(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
-        reader_opts=TextReaderOpts(),
-        extract_opts=ExtractTaggedTokensOpts(
+        reader_opts=pc.TextReaderOpts(),
+        extract_opts=pc.ExtractTaggedTokensOpts(
             pos_includes=None, pos_paddings=None, pos_excludes=None, lemmatize=False, **SPARV_TAGGED_COLUMNS
         ),
     )
@@ -37,10 +37,10 @@ def test_reader_when_no_transforms_returns_source_tokens():
 
 
 def test_reader_when_only_nn_returns_only_nn():
-    tokens_reader = readers.SparvCsvTokenizer(
+    tokens_reader = sparv.SparvCsvReader(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
-        reader_opts=TextReaderOpts(),
-        extract_opts=ExtractTaggedTokensOpts(
+        reader_opts=pc.TextReaderOpts(),
+        extract_opts=pc.ExtractTaggedTokensOpts(
             pos_includes='NN', pos_paddings=None, pos_excludes=None, lemmatize=False, **SPARV_TAGGED_COLUMNS
         ),
     )
@@ -54,10 +54,10 @@ def test_reader_when_only_nn_returns_only_nn():
 
 
 def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
-    tokens_reader = readers.SparvCsvTokenizer(
+    tokens_reader = sparv.SparvCsvReader(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
-        reader_opts=TextReaderOpts(),
-        extract_opts=ExtractTaggedTokensOpts(
+        reader_opts=pc.TextReaderOpts(),
+        extract_opts=pc.ExtractTaggedTokensOpts(
             pos_includes='NN', pos_paddings=None, pos_excludes=None, lemmatize=True, **SPARV_TAGGED_COLUMNS
         ),
     )
@@ -71,10 +71,10 @@ def test_reader_when_lemmatized_nn_returns_lemmatized_nn():
 
 
 def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
-    tokens_reader = readers.SparvCsvTokenizer(
+    tokens_reader = sparv.SparvCsvReader(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
-        reader_opts=TextReaderOpts(),
-        extract_opts=ExtractTaggedTokensOpts(
+        reader_opts=pc.TextReaderOpts(),
+        extract_opts=pc.ExtractTaggedTokensOpts(
             pos_includes='NN|VB', pos_paddings=None, pos_excludes=None, lemmatize=True, **SPARV_TAGGED_COLUMNS
         ),
     )
@@ -88,10 +88,10 @@ def test_reader_when_lemmatized_nn_vb_returns_lemmatized_nn_vb():
 
 
 def test_reader_when_lemmatized_nnvb_pos_appended_returns_lemmatized_nn_vb_pos():
-    tokens_reader = readers.SparvCsvTokenizer(
+    tokens_reader = sparv.SparvCsvReader(
         source=SPARV_CSV_EXPORT_FILENAME_SMALL,
-        reader_opts=TextReaderOpts(),
-        extract_opts=ExtractTaggedTokensOpts(
+        reader_opts=pc.TextReaderOpts(),
+        extract_opts=pc.ExtractTaggedTokensOpts(
             pos_includes='NN|VB',
             pos_paddings=None,
             pos_excludes=None,
@@ -115,10 +115,10 @@ def test_reader_when_source_is_zipped_archive_succeeds():
     ]
     expected_names = ["sparv_1978_001.txt"]
 
-    tokens_reader = readers.SparvCsvTokenizer(
+    tokens_reader = sparv.SparvCsvReader(
         SPARV_ZIPPED_CSV_EXPORT_FILENAME,
-        reader_opts=TextReaderOpts(),
-        extract_opts=ExtractTaggedTokensOpts(
+        reader_opts=pc.TextReaderOpts(),
+        extract_opts=pc.ExtractTaggedTokensOpts(
             pos_includes='|NN|',
             pos_paddings=None,
             lemmatize=True,

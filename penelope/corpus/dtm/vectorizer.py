@@ -127,11 +127,12 @@ class CorpusVectorizer:
             Iterator[VectorizedCorpus]: [description]
         """
         tokenizer: Callable[[str], Iterable[str]] = None
+
         if vocabulary is None:
-            if hasattr(corpus, 'vocabulary'):
-                vocabulary = corpus.vocabulary
-            elif hasattr(corpus, 'token2id'):
-                vocabulary = corpus.token2id
+            vocabulary = probe_attrs(corpus, ['token2id', 'vocabulary'])
+
+        if document_index is None:
+            document_index = probe_attrs(corpus, ['document_index', 'documents'])
 
         if already_tokenized:
             heads, corpus = more_itertools.spy(corpus, n=1)
@@ -184,10 +185,21 @@ class CorpusVectorizer:
         return dtm_corpus
 
 
+def probe_attrs(obj: Any, attributes: str | list[str]) -> list[str]:
+    if attributes is None:
+        return None
+    if not isinstance(attributes, list):
+        attributes = [attributes]
+    for attr in attributes:
+        if hasattr(obj, attr) and getattr(obj, attr) is not None:
+            return getattr(obj, attr)
+    return None
+
+
 def resolve_document_index(
     source: Union[TokenizedCorpus, DocumentTermsStream],
     document_index: Union[Callable[[], DocumentIndex], DocumentIndex],
-    seen_document_names: List[str],
+    seen_document_names: list[str],
 ) -> DocumentIndex:
     if document_index is None:
         for attr in ['documents', 'document_index']:

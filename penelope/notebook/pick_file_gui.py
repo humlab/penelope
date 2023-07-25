@@ -1,6 +1,6 @@
 from glob import glob
 from os.path import basename, join
-from typing import Any, Callable, Literal, Protocol
+from typing import Any, Literal, Protocol
 
 import ipyfilechooser
 import ipywidgets as w
@@ -29,7 +29,7 @@ class PickFileGUI:
         self.folder: str = folder
         self.kind: Literal['chooser', 'picker'] = kind
         self.pattern: str = pattern or '*_vector_data.npz'
-        self.picked_callback: Callable[[str, str], None] = picked_callback
+        self.picked_callback: PickedCallback = picked_callback
         self._filename_picker: ipyfilechooser.FileChooser | w.Dropdown = None
         self._alert: w.HTML = w.HTML('.')
         self._load_button = w.Button(
@@ -85,7 +85,7 @@ class PickFileGUI:
         self._load_button.on_click(self._load_handler)
         return self
 
-    def layout(self):
+    def layout(self) -> w.CoreWidget:
         ctrls: list[w.CoreWidget] = (
             [w.VBox([self._alert, self._load_button])] if self.kind == 'chooser' else [self._load_button, self._alert]
         )

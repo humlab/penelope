@@ -1,5 +1,3 @@
-from typing import Dict
-
 from penelope.utility import (
     FilenameFieldSpecs,
     extract_filenames_metadata,
@@ -7,9 +5,9 @@ from penelope.utility import (
     tuple_of_lists_to_list_of_tuples,
 )
 
-from .document_index import metadata_to_document_index
-from .interfaces import ITokenizedCorpus
-from .tokenized_corpus import ReiterableTerms
+from ..document_index import metadata_to_document_index
+from ..interfaces import ITokenizedCorpus
+from ..tokenized_corpus import ReiterableTerms
 
 
 class SimpleTextLinesCorpus(ITokenizedCorpus):
@@ -18,7 +16,7 @@ class SimpleTextLinesCorpus(ITokenizedCorpus):
     def __init__(
         self,
         filename: str,
-        fields: Dict[str, int],
+        fields: dict[str, int],
         filename_fields: FilenameFieldSpecs = None,
         index_field: str = None,
         sep: str = ' # ',

@@ -1,5 +1,5 @@
 from os.path import dirname, isdir, isfile
-from typing import Any, Union
+from typing import Any, Self, Union
 
 import ipywidgets as w
 
@@ -17,82 +17,104 @@ from .trends_gui import TrendsGUI
 # pylint: disable=unused-argument
 
 
-def create_advanced_dtm_gui(
-    *,
-    corpus_folder: str,
-    data_folder: str,
-    resources_folder: str = None,
-    corpus_config: Union[pp.CorpusConfig, str] = None,
-) -> w.CoreWidget:
-    content_placeholder: w.VBox = w.VBox()
+class ComplexTrendsGUI:
+    def __init__(
+        self,
+        *,
+        corpus_folder: str,
+        data_folder: str,
+        resources_folder: str = None,
+        corpus_config: Union[pp.CorpusConfig, str] = None,
+        n_top: int = 25000,
+    ) -> w.CoreWidget:
+        self.content_placeholder: w.VBox = w.VBox()
+        resources_folder = resources_folder or corpus_folder
+        self.config: pp.CorpusConfig = (
+            None
+            if corpus_config is None
+            else pp.CorpusConfig.find(corpus_config, resources_folder).folders(corpus_folder)
+            if isinstance(corpus_config, str)
+            else corpus_config
+        )
+        self.gui_compute: dtm_gui.ComputeGUI = dtm_gui.ComputeGUI(
+            default_corpus_path=corpus_folder,
+            default_data_folder=data_folder,
+        )
+        self.gui_load: pfg.PickFileGUI = pfg.PickFileGUI(
+            folder=data_folder, pattern='*_vector_data.npz', picked_callback=self.picked_callback
+        )
+        self.gui_trends: TrendsGUI = TrendsGUI(pivot_key_specs={})
+        self.trends_service: TrendsService = TrendsService(corpus=None, n_top=n_top)
 
-    def display_trends(*, result: str | pc.VectorizedCorpus, folder: str = None, sender: Any = None, **args) -> None:
-        nonlocal content_placeholder
-        corpus: pc.VectorizedCorpus = pc.VectorizedCorpus.load(filename=result) if isinstance(result, str) else result
+    def setup(self) -> Self:
+        self.gui_compute.setup(
+            config=self.config,
+            compute_callback=workflow.compute,
+            done_callback=self.display_trends,
+        )
+        self.gui_load.setup()
+        self.gui_trends.setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS)
+        return self
 
-        trends_service: TrendsService = TrendsService(corpus=corpus, n_top=25000)
-        # gui: GofTrendsGUI = GofTrendsGUI(
-        #     gofs_gui=GoFsGUI().setup(),
-        #     trends_gui=TrendsGUI().setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS),
-        # )
-        pivot_keys: pu.PivotKeys = pu.PivotKeys.load(folder) if isfile(folder) else None
-        gui: TrendsGUI = TrendsGUI(pivot_key_specs=pivot_keys).setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS)
-        content_placeholder.children = [gui.layout()]
-        gui.display(trends_service=trends_service)
+    def layout(self) -> w.CoreWidget:
+        accordion = w.Accordion(
+            children=[
+                w.VBox(
+                    [self.gui_load.layout()],
+                    layout={'border': '1px solid black', 'padding': '16px', 'margin': '4px'},
+                ),
+                w.VBox(
+                    [self.gui_compute.layout()],
+                    layout={'border': '1px solid black', 'padding': '16px', 'margin': '4px'},
+                ),
+            ]
+        )
 
-    resources_folder = resources_folder or corpus_folder
-    config: pp.CorpusConfig = (
-        None
-        if corpus_config is None
-        else pp.CorpusConfig.find(corpus_config, resources_folder).folders(corpus_folder)
-        if isinstance(corpus_config, str)
-        else corpus_config
-    )
-    gui_compute: dtm_gui.ComputeGUI = dtm_gui.create_compute_gui(
-        corpus_folder=corpus_folder,
-        data_folder=data_folder,
-        config=config,
-        compute_callback=workflow.compute,
-        done_callback=display_trends,
-    )
+        accordion.set_title(0, "LOAD AN EXISTING DOCUMENT-TERM MATRIX")
+        accordion.set_title(1, '...OR COMPUTE A NEW DOCUMENT-TERM MATRIX')
 
-    gui_load: pfg.PickFileGUI = pfg.PickFileGUI(
-        folder=data_folder, pattern='*_vector_data.npz', picked_callback=display_trends
-    )
+        return w.VBox([accordion, self.content_placeholder])
 
-    accordion = w.Accordion(
-        children=[
-            w.VBox(
-                [gui_load.layout()],
-                layout={'border': '1px solid black', 'padding': '16px', 'margin': '4px'},
-            ),
-            w.VBox(
-                [gui_compute.layout()],
-                layout={'border': '1px solid black', 'padding': '16px', 'margin': '4px'},
-            ),
-        ]
-    )
+    def picked_callback(self, filename: str, sender: Any = None, **args) -> None:
+        self.display_trends(result=filename, folder=dirname(filename), sender=sender, **args)
 
-    accordion.set_title(0, "LOAD AN EXISTING DOCUMENT-TERM MATRIX")
-    accordion.set_title(1, '...OR COMPUTE A NEW DOCUMENT-TERM MATRIX')
-
-    return w.VBox([accordion, content_placeholder])
+    def display_trends(
+        self, *, result: str | pc.VectorizedCorpus, folder: str = None, sender: Any = None, **args
+    ) -> None:
+        self.trends_service.corpus = pc.VectorizedCorpus.load(filename=result) if isinstance(result, str) else result
+        self.gui_trends.pivot_keys = pu.PivotKeys.load(folder) if isfile(folder) else None
+        self.content_placeholder.children = [self.gui_trends.layout()]
+        self.gui_trends.display(trends_service=self.trends_service)
 
 
-def create_simple_dtm_gui(folder: str) -> pfg.PickFileGUI:
-    def display_callback(filename: str, sender: pfg.PickFileGUI):
+class SimpleTrendsGUI:
+    def __init__(self, folder: str):
+        self.folder: str = folder
+        self.gui_pick: pfg.PickFileGUI = None
+        self.gui_trends: TrendsGUI = None
+
+    def display_callback(self, filename: str, sender: pfg.PickFileGUI):
         if not pc.VectorizedCorpus.is_dump(filename):
             raise ValueError(f"Expected a DTM file, got {filename or 'None'}")
 
-        corpus: pc.VectorizedCorpus = pc.VectorizedCorpus.load(filename=filename)
         folder: str = dirname(filename)
-        trends_service: TrendsService = TrendsService(corpus=corpus, n_top=25000)
-        pivot_keys: pu.PivotKeys = pu.PivotKeys.load(folder) if isdir(folder) else None
-        gui: TrendsGUI = TrendsGUI(pivot_key_specs=pivot_keys).setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS)
-        sender.add(gui.layout())
-        gui.display(trends_service=trends_service)
 
-    gui: pfg.PickFileGUI = pfg.PickFileGUI(
-        folder=folder, pattern='*_vector_data.npz', picked_callback=display_callback, kind='picker'
-    ).setup()
-    return gui
+        sender.payload.corpus = pc.VectorizedCorpus.load(filename=filename)
+        sender.payload.pivot_key_specs = pu.PivotKeys.load(folder) if isdir(folder) else None
+        sender.payload.display(trends_service=sender.payload)
+
+    def setup(self) -> Self:
+        self.gui_pick: pfg.PickFileGUI = pfg.PickFileGUI(
+            folder=self.folder, pattern='*_vector_data.npz', picked_callback=self.display_callback, kind='picker'
+        ).setup()
+
+        self.gui_trends: TrendsGUI = TrendsGUI(pivot_key_specs=None).setup(displayers=DEFAULT_WORD_TREND_DISPLAYERS)
+        self.gui_trends.trends_service = TrendsService(corpus=None, n_top=25000)
+
+        self.gui_pick.payload = self.gui_trends
+        self.gui_pick.add(self.gui_trends.layout())
+
+        return self
+
+    def layout(self) -> w.CoreWidget:
+        return self.gui_pick.layout()

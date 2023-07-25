@@ -2,11 +2,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from penelope.co_occurrence import Bundle
+from penelope.co_occurrence import Bundle, to_filename
 from penelope.corpus import DocumentIndexHelper, VectorizedCorpus
 from penelope.utility import is_strictly_increasing
 
-from ...utils import create_bundle, create_vectorized_corpus
+from ...utils import simple_vectorized_abc_corpus
 
 try:
     from sklearn.feature_extraction.text import CountVectorizer
@@ -16,14 +16,21 @@ except ImportError:
 #  # pylint: disable=redefined-outer-name
 
 
+def _load_test_bundle(tag: str = 'VENUS') -> Bundle:
+    folder: str = f'./tests/test_data/{tag}'
+    filename: str = to_filename(folder=folder, tag=tag)
+    bundle: Bundle = Bundle.load(filename, compute_frame=False)
+    return bundle
+
+
 @pytest.fixture
 def corpus() -> VectorizedCorpus:
-    return create_vectorized_corpus()
+    return simple_vectorized_abc_corpus()
 
 
 @pytest.fixture(scope="module")
 def bundle() -> Bundle:
-    return create_bundle('VENUS')
+    return _load_test_bundle('VENUS')
 
 
 def test_categorize_document_index(bundle: Bundle):

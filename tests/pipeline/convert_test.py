@@ -9,7 +9,7 @@ import pytest
 import penelope.utility.pos_tags as pos_tags
 from penelope.corpus import ExtractTaggedTokensOpts, Token2Id, TokensTransformOpts
 from penelope.corpus.readers import GLOBAL_TF_THRESHOLD_MASK_TOKEN
-from penelope.pipeline import CheckpointOpts
+from penelope.corpus.serialize import SerializeOpts
 from penelope.pipeline.convert import (
     PoSTagSchemaMissingError,
     Token2IdMissingError,
@@ -52,8 +52,8 @@ fladdrade	VB	|fladdra omkring:10|
 """
 
 
-def create_checkpoint_opts() -> CheckpointOpts:
-    options: CheckpointOpts = CheckpointOpts(
+def create_checkpoint_opts() -> SerializeOpts:
+    options: SerializeOpts = SerializeOpts(
         content_type_code=1,
         document_index_name=None,
         document_index_sep=None,
@@ -73,14 +73,14 @@ def create_checkpoint_opts() -> CheckpointOpts:
 
 
 @pytest.fixture(scope='module')
-def checkpoint_opts() -> CheckpointOpts:
-    options: CheckpointOpts = create_checkpoint_opts()
+def serialize_opts() -> SerializeOpts:
+    options: SerializeOpts = create_checkpoint_opts()
     return options
 
 
 def create_tagged_frame():
     deserializer: SparvCsvSerializer = SparvCsvSerializer()
-    options: CheckpointOpts = create_checkpoint_opts()
+    options: SerializeOpts = create_checkpoint_opts()
     tagged_frame: pd.DataFrame = deserializer.deserialize(content=TEST_CSV_POS_DOCUMENT, options=options)
     return tagged_frame
 

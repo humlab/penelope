@@ -12,10 +12,11 @@ from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Type, Union
 
 import yaml
 
+from penelope import utility as pu
 from penelope.corpus import TextReaderOpts, TextTransformOpts
-from penelope.utility import CommaStr, PoS_Tag_Scheme, create_class, get_pos_schema, replace_extension, strip_extensions
+from penelope.corpus.serialize import SerializeOpts
 
-from . import checkpoint, interfaces
+from . import interfaces
 
 if TYPE_CHECKING:
     from .pipelines import CorpusPipeline
@@ -29,7 +30,7 @@ def create_pipeline_factory(
     class_or_function_name: str,
 ) -> Union[Callable[[CorpusConfig], CorpusPipeline], Type[CorpusPipeline]]:
     """Returns a CorpusPipeline type (class or callable that return instance) by name"""
-    factory = create_class(class_or_function_name)
+    factory = pu.create_class(class_or_function_name)
     return factory
 
 
@@ -53,7 +54,7 @@ class CorpusConfig:
     corpus_name: str
     corpus_type: CorpusType
     corpus_pattern: str
-    checkpoint_opts: Optional[checkpoint.CheckpointOpts]
+    serialize_opts: Optional[SerializeOpts]
     text_reader_opts: TextReaderOpts
     text_transform_opts: TextTransformOpts
     pipelines: dict
@@ -101,9 +102,9 @@ class CorpusConfig:
         return ctor(corpus_config=self, **opts, **kwargs)
 
     @property
-    def pos_schema(self) -> PoS_Tag_Scheme:
+    def pos_schema(self) -> pu.PoS_Tag_Scheme:
         """Returns the part-of-speech schema"""
-        return get_pos_schema(self.pipeline_payload.pos_schema_name)
+        return pu.get_pos_schema(self.pipeline_payload.pos_schema_name)
 
     @property
     def props(self) -> dict[str, Any]:
@@ -111,7 +112,7 @@ class CorpusConfig:
             corpus_name=self.corpus_name,
             corpus_type=int(self.corpus_type),
             corpus_pattern=self.corpus_pattern,
-            checkpoint_opts=asdict(self.checkpoint_opts) if self.checkpoint_opts else None,
+            serialize_opts=asdict(self.serialize_opts) if self.serialize_opts else None,
             text_reader_opts=asdict(self.text_reader_opts) if self.text_reader_opts else None,
             text_transform_opts=str(self.text_transform_opts.transforms) if self.text_transform_opts else None,
             pipeline_payload=self.pipeline_payload.props,
@@ -153,7 +154,7 @@ class CorpusConfig:
     def decode_transform_opts(transform_opts: dict) -> TextTransformOpts:
         if transform_opts is None:
             return None
-        if isinstance(transform_opts, (str, CommaStr, dict)):
+        if isinstance(transform_opts, (str, pu.CommaStr, dict)):
             return TextTransformOpts(transforms=transform_opts)
         return None
 
@@ -164,10 +165,6 @@ class CorpusConfig:
         if 'corpus_name' not in config_dict:
             raise ValueError("CorpusConfig load failed. Mandatory key 'corpus_name' is missing.")
 
-        """FIXME: Remove deprecated key"""
-        if 'filter_opts' in config_dict:
-            del config_dict['filter_opts']
-
         if config_dict.get('text_reader_opts', None) is not None:
             config_dict['text_reader_opts'] = TextReaderOpts(**config_dict['text_reader_opts'])
 
@@ -176,10 +173,15 @@ class CorpusConfig:
             config_dict['text_transform_opts'] = CorpusConfig.decode_transform_opts(transform_opts)
 
         config_dict['pipeline_payload'] = interfaces.PipelinePayload(**config_dict['pipeline_payload'])
-        config_dict['checkpoint_opts'] = checkpoint.CheckpointOpts(**(config_dict.get('checkpoint_opts', {}) or {}))
+        config_dict['serialize_opts'] = SerializeOpts(
+            **(config_dict.get('serialize_opts', {}) or config_dict.get('checkpoint_opts', {}) or {})
+        )
         config_dict['pipelines'] = config_dict.get('pipelines', {})
         config_dict['dependencies'] = config_dict.get('dependencies', {})
         config_dict['extra_opts'] = config_dict.get('extra_opts', {})
+
+        keys_to_keep: list[str] = pu.get_func_args(CorpusConfig.create)
+        config_dict = {k: v for k, v in config_dict.items() if k in keys_to_keep}
 
         deserialized_config: CorpusConfig = CorpusConfig.create(**config_dict)
         deserialized_config.corpus_type = CorpusType(deserialized_config.corpus_type)
@@ -196,7 +198,7 @@ class CorpusConfig:
             raise FileNotFoundError(folder)
 
         for extension in ['', '.yml', '.yaml', '.json']:
-            try_name: str = filename if not extension else replace_extension(filename, extension=extension)
+            try_name: str = filename if not extension else pu.replace_extension(filename, extension=extension)
             candidates: list[pathlib.Path] = list(pathlib.Path(folder).rglob(try_name))
             try:
                 for candidate in candidates:
@@ -255,7 +257,7 @@ class CorpusConfig:
             corpus_name=uuid.uuid1(),
             corpus_type=CorpusType.Tokenized,
             corpus_pattern=None,
-            checkpoint_opts=None,
+            serialize_opts=None,
             text_reader_opts=None,
             text_transform_opts=None,
             pipelines=None,
@@ -267,8 +269,8 @@ class CorpusConfig:
         return config
 
     def get_feather_folder(self, corpus_source: str | None) -> str | None:
-        if self.checkpoint_opts.feather_folder is not None:
-            return self.checkpoint_opts.feather_folder
+        if self.serialize_opts.feather_folder is not None:
+            return self.serialize_opts.feather_folder
 
         corpus_source: str = corpus_source or self.pipeline_payload.source
 
@@ -276,7 +278,7 @@ class CorpusConfig:
             return None
 
         folder, filename = os.path.split(corpus_source)
-        return jj(folder, "shared", "checkpoints", f'{strip_extensions(filename)}_feather')
+        return jj(folder, "shared", "checkpoints", f'{pu.strip_extensions(filename)}_feather')
 
     def corpus_source_exists(self):
         if self.pipeline_payload.source is None:
@@ -288,7 +290,7 @@ class CorpusConfig:
         corpus_name: str = None,
         corpus_type: CorpusType = CorpusType.Undefined,
         corpus_pattern: str = "*.zip",
-        checkpoint_opts: Optional[checkpoint.CheckpointOpts] = None,
+        serialize_opts: Optional[SerializeOpts] = None,
         text_reader_opts: TextReaderOpts = None,
         text_transform_opts: TextTransformOpts = None,
         pipelines: dict = None,
@@ -301,7 +303,7 @@ class CorpusConfig:
             corpus_name=corpus_name,
             corpus_type=corpus_type,
             corpus_pattern=corpus_pattern,
-            checkpoint_opts=checkpoint_opts,
+            serialize_opts=serialize_opts,
             text_reader_opts=text_reader_opts,
             text_transform_opts=text_transform_opts,
             pipelines=pipelines,
@@ -367,7 +369,7 @@ class DependencyResolver:
 
         cls.resolve_arguments(options, ('config@', store), ('local@', local_store))
 
-        return create_class(class_name)(*arguments, **options, **kwargs)
+        return pu.create_class(class_name)(*arguments, **options, **kwargs)
 
     @classmethod
     def resolve_arguments(cls, options: dict[str, Any], *stores: list[tuple[str, dict]]):

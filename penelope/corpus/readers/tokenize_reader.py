@@ -1,20 +1,21 @@
-import logging
-from typing import Callable, Iterable, List, Sequence, Tuple, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable, Iterable, List, Sequence, Tuple, Union
 
 from penelope.utility import path_add_sequence, strip_path_and_extension
 from penelope.vendor.nltk import word_tokenize
 
-from ..transformer import TextTransformOpts
 from .text_reader import TextReader, TextReaderOpts, TextSource
 
-logger = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from ..transform import TextTransformOpts
 
 # pylint: disable=too-many-arguments,too-many-instance-attributes
 
 FilenameFilterSpec = Union[Callable, Sequence[str]]
 
 
-class TextTokenizer(TextReader):
+class TokenizeTextReader(TextReader):
     """Reads a text corpus from `source` and applies given transforms.
     Derived classes can override `preprocess` as an initial step before transforms are applied.
     The `preprocess` is applied on the entire document, and the transforms on each token.

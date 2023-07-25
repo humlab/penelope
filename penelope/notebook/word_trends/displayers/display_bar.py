@@ -4,7 +4,6 @@ from typing import Iterable, List, Sequence
 import bokeh.models as bm
 import bokeh.plotting as bp
 import pandas as pd
-from bokeh.io import show
 
 from penelope.plot.utility import generate_colors, generate_temporal_ticks
 
@@ -71,4 +70,4 @@ class BarDisplayer(ITrendDisplayer):
         p.legend.location = "top_left"
 
         with self.output:
-            show(p)
+            bp.show(p)

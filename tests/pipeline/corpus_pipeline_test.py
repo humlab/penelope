@@ -10,10 +10,10 @@ import pytest
 import penelope.pipeline.spacy.tasks as spacy_tasks
 import penelope.pipeline.tasks as tasks
 from penelope.corpus import ExtractTaggedTokensOpts, TextReaderOpts, TextTransformOpts, load_document_index
+from penelope.corpus.serialize import SerializeOpts
 from penelope.pipeline import (
-    CheckpointData,
-    CheckpointOpts,
     ContentType,
+    CorpusCheckpoint,
     CorpusConfig,
     CorpusPipeline,
     DocumentPayload,
@@ -101,8 +101,8 @@ def patch_spacy_load(*x, **y):  # pylint: disable=unused-argument
 
 
 @pytest.fixture(scope="module")
-def checkpoint_opts() -> CheckpointOpts:
-    opts = CheckpointOpts(
+def serialize_opts() -> SerializeOpts:
+    opts = SerializeOpts(
         content_type_code=1,
         document_index_name='document_index.csv',
         document_index_sep='\t',
@@ -251,28 +251,26 @@ def test_tagged_frame_to_tokens_succeeds():
     assert next_payload.content_type == ContentType.TOKENS
 
 
-def patch_store_archive(
-    *, checkpoint_opts, target_filename, document_index, payload_stream  # pylint: disable=unused-argument
-):
+def patch_store_archive(*, opts, target_filename, document_index, payload_stream):  # pylint: disable=unused-argument
     for p in payload_stream:
         yield p
 
 
-def patch_load_archive(*_, **__) -> CheckpointData:
-    return CheckpointData(
+def patch_load_archive(*_, **__) -> CorpusCheckpoint:
+    return CorpusCheckpoint(
         source_name="source-name",
         filenames=['dummy_1.csv'],
         document_index=None,
-        checkpoint_opts=CheckpointOpts().as_type(ContentType.TAGGED_FRAME),
+        serialize_opts=SerializeOpts().as_type(ContentType.TAGGED_FRAME),
     )
 
 
 @patch('penelope.pipeline.checkpoint.store_archive', patch_store_archive)
 def test_save_data_frame_succeeds():
     pipeline = Mock(spec=CorpusPipeline, **{'payload.set_reader_index': monkey_patch})
-    opts = Mock(spec=CheckpointOpts)
+    opts = Mock(spec=SerializeOpts)
     prior = MagicMock(spec=ITask, outstream=lambda: fake_data_frame_stream(1))
-    task = tasks.SaveTaggedCSV(pipeline=pipeline, prior=prior, filename="dummy.zip", checkpoint_opts=opts)
+    task = tasks.SaveTaggedCSV(pipeline=pipeline, prior=prior, filename="dummy.zip", serialize_opts=opts)
     for payload in task.outstream():
         assert payload.content_type == ContentType.TAGGED_FRAME
 
@@ -291,11 +289,11 @@ def test_load_data_frame_succeeds():
         filename="dummy.zip",
         prior=prior,
         extra_reader_opts=TextReaderOpts(),
-        checkpoint_opts=CheckpointOpts(feather_folder=None),
+        serialize_opts=SerializeOpts(feather_folder=None),
     )
 
     task.register_pos_counts = lambda _: task
-    fake_data: CheckpointData = patch_load_archive()
+    fake_data: CorpusCheckpoint = patch_load_archive()
     fake_data.create_stream = lambda: fake_data_frame_stream(2)
     task.load_archive = lambda: fake_data
 
@@ -332,7 +330,7 @@ def test_tokens_to_text_when_text_instream_succeeds():
 @pytest.mark.skipif(not spacy_api.SPACY_INSTALLED, reason="spaCy not installed")
 @patch('spacy.load', patch_spacy_load)
 @pytest.mark.long_running
-def test_spacy_pipeline(checkpoint_opts: CheckpointOpts, tagger: SpacyTagger):
+def test_spacy_pipeline(serialize_opts: SerializeOpts, tagger: SpacyTagger):
     tagged_corpus_source = os.path.join(TEST_OUTPUT_FOLDER, "checkpoint_mary_lamb_pos_csv.zip")
 
     pathlib.Path(tagged_corpus_source).unlink(missing_ok=True)
@@ -358,7 +356,7 @@ def test_spacy_pipeline(checkpoint_opts: CheckpointOpts, tagger: SpacyTagger):
         .text_to_spacy(tagger=tagger)
         .passthrough()
         .to_tagged_frame()
-        .checkpoint(tagged_corpus_source, checkpoint_opts=checkpoint_opts, force_checkpoint=True)
+        .checkpoint(tagged_corpus_source, serialize_opts=serialize_opts, force_checkpoint=True)
         .to_content()
     )
 
@@ -369,7 +367,7 @@ def test_spacy_pipeline(checkpoint_opts: CheckpointOpts, tagger: SpacyTagger):
     # pathlib.Path(tagged_corpus_source).unlink(missing_ok=True)
 
 
-def test_spacy_pipeline_load_checkpoint_archive(checkpoint_opts: CheckpointOpts):
+def test_spacy_pipeline_load_checkpoint_archive(serialize_opts: SerializeOpts):
     tagged_corpus_source = os.path.join(TEST_DATA_FOLDER, "checkpoint_mary_lamb_pos_csv.zip")
 
     pipeline_payload = PipelinePayload(
@@ -383,7 +381,7 @@ def test_spacy_pipeline_load_checkpoint_archive(checkpoint_opts: CheckpointOpts)
         CorpusPipeline(config=config)
         .checkpoint(
             tagged_corpus_source,
-            checkpoint_opts=checkpoint_opts,
+            serialize_opts=serialize_opts,
             force_checkpoint=False,
         )
         .to_content()

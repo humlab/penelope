@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import penelope.corpus.readers as readers
 from penelope.corpus import (
     ICorpus,
@@ -36,7 +38,7 @@ def test_corpus_interface_subclassed():
 def test_tokenized_corpus_interface():
     assert issubclass(TokenizedCorpus, ITokenizedCorpus)
 
-    source = readers.TextTokenizer(source=["a b c", "e f g"])
+    source = readers.TokenizeTextReader(source=["a b c", "e f g"])
     instance = TokenizedCorpus(source)
     assert isinstance(instance, ITokenizedCorpus)
 
@@ -46,7 +48,7 @@ def test_tokenized_corpus_interface():
 def test_segmented_stokenized_corpus_interface():
     assert issubclass(SegmentedTextCorpus, ITokenizedCorpus)
 
-    source = readers.TextTokenizer(source=["a b c", "e f g"])
+    source = readers.TokenizeTextReader(source=["a b c", "e f g"])
     instance = SegmentedTextCorpus(source, segment_strategy="sentence")
     assert isinstance(instance, ITokenizedCorpus)
 
@@ -54,21 +56,38 @@ def test_segmented_stokenized_corpus_interface():
 def test_sparv_xml_corpus_interface():
     assert issubclass(SparvTokenizedXmlCorpus, ITokenizedCorpus)
 
-    instance = SparvTokenizedXmlCorpus(SPARV_XML_EXPORT_FILENAME_SMALL, version=4)
+    instance = SparvTokenizedXmlCorpus(
+        SPARV_XML_EXPORT_FILENAME_SMALL,
+        version=4,
+        transform_opts=MagicMock(),
+        reader_opts=MagicMock(),
+        extract_opts=MagicMock(),
+    )
     assert isinstance(instance, ITokenizedCorpus)
 
 
 def test_sparv3_xml_corpus_interface():
     assert issubclass(SparvTokenizedXmlCorpus, ITokenizedCorpus)
 
-    instance = SparvTokenizedXmlCorpus('./tests/test_data/sparv_data/sou_test_sparv3_xml.zip', version=3)
+    instance = SparvTokenizedXmlCorpus(
+        './tests/test_data/sparv_data/sou_test_sparv3_xml.zip',
+        version=3,
+        transform_opts=MagicMock(),
+        reader_opts=MagicMock(),
+        extract_opts=MagicMock(),
+    )
     assert isinstance(instance, ITokenizedCorpus)
 
 
 def test_sparv3_csv_corpus_interface():
     assert issubclass(SparvTokenizedCsvCorpus, ITokenizedCorpus)
 
-    instance = SparvTokenizedCsvCorpus('./tests/test_data/sparv_data/sparv_zipped_csv_export.zip')
+    instance = SparvTokenizedCsvCorpus(
+        './tests/test_data/sparv_data/sparv_zipped_csv_export.zip',
+        transform_opts=MagicMock(),
+        reader_opts=MagicMock(),
+        extract_opts=MagicMock(),
+    )
     assert isinstance(instance, ITokenizedCorpus)
 
 

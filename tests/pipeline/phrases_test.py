@@ -2,7 +2,8 @@ import os
 
 import pytest
 
-from penelope.corpus.readers import ExtractTaggedTokensOpts
+from penelope.corpus import ExtractTaggedTokensOpts
+from penelope.corpus.serialize import SerializeOpts
 from penelope.pipeline import checkpoint
 from penelope.pipeline.convert import tagged_frame_to_tokens
 from tests.pipeline.fixtures import SPARV_TAGGED_COLUMNS
@@ -13,8 +14,8 @@ def test_phrased_tagged_frame():
     os.makedirs('./tests/output', exist_ok=True)
 
     tagged_corpus_source: str = "./tests/test_data/tranströmer/tranströmer_corpus_export.sparv4.csv.zip"
-    checkpoint_opts: checkpoint.CheckpointOpts = None
-    data = checkpoint.load_archive(source_name=tagged_corpus_source, checkpoint_opts=checkpoint_opts, reader_opts=None)
+    opts: SerializeOpts = None
+    data = checkpoint.load_archive(source_name=tagged_corpus_source, opts=opts, reader_opts=None)
     payload = next(data.create_stream())
 
     tokens = tagged_frame_to_tokens(
