@@ -252,7 +252,7 @@ def test_tagged_frame_to_tokens_succeeds():
 
 
 def patch_store_archive(
-    *, checkpoint_opts, target_filename, document_index, payload_stream  # pylint: disable=unused-argument
+    *, opts, target_filename, document_index, payload_stream  # pylint: disable=unused-argument
 ):
     for p in payload_stream:
         yield p
