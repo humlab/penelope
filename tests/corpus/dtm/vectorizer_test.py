@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 import pandas as pd
 
@@ -176,31 +174,19 @@ def test_fit_transform_when_given_a_vocabulary_returns_same_vocabulary():
     assert expected_vocabulary_reversed == vocabulary
 
 
-def test_dump_of_transtromer_text_corpus():
-    folder: str = 'tests/output/tranströmer'
-    os.makedirs(folder, exist_ok=True)
+def test_dump_of_transtromer_text_corpus(tmpdir):
+    source: TranstromerCorpus = TranstromerCorpus()
+    corpus: pc.VectorizedCorpus = pc.CorpusVectorizer().fit_transform(source)  # , document_index=source.document_index)
+    assert corpus is not None
+    corpus.dump(tag='tranströmer', folder=tmpdir)
+    assert corpus.dump_exists(tag='tranströmer', folder=tmpdir)
+
+
+def test_dump_of_transtromer_pos_csv_corpus(tmpdir):
     corpus: pc.VectorizedCorpus = pc.CorpusVectorizer().fit_transform(TranstromerCorpus())
     assert corpus is not None
-    corpus.dump(tag='tranströmer', folder=folder)
-    assert corpus.dump_exists(tag='tranströmer', folder=folder)
-
-
-def test_dump_of_transtromer_pos_csv_corpus():
-    folder: str = 'tests/output/tranströmer'
-    os.makedirs(folder, exist_ok=True)
-
-    # tagged_frame_to_tokens(  # pylint: disable=too-many-arguments, too-many-statements
-    #     doc,
-    #     extract_opts=ExtractTaggedTokensOpts(),
-    #     token2id=None,
-    #     transform_opts = TokensTransformOpts(),
-    #     pos_schema = PoS_Tag_Schemes.SUC,
-    # )
-
-    corpus: pc.VectorizedCorpus = pc.CorpusVectorizer().fit_transform(TranstromerCorpus())
-    assert corpus is not None
-    corpus.dump(tag='tranströmer', folder=folder)
-    assert corpus.dump_exists(tag='tranströmer', folder=folder)
+    corpus.dump(tag='tranströmer', folder=tmpdir)
+    assert corpus.dump_exists(tag='tranströmer', folder=tmpdir)
 
 
 def test_from_token_ids_stream():
