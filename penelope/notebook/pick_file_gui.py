@@ -85,7 +85,7 @@ class PickFileGUI:
         self._load_button.on_click(self._load_handler)
         return self
 
-    def layout(self):
+    def layout(self) -> w.CoreWidget:
         ctrls: list[w.CoreWidget] = (
             [w.VBox([self._alert, self._load_button])] if self.kind == 'chooser' else [self._load_button, self._alert]
         )
