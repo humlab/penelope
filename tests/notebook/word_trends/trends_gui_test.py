@@ -77,9 +77,9 @@ def test_advanced_gui():
     gui.gui_trends._compute.click()
 
     assert gui.gui_load._alert.value == "<span style='color: green; font-weight: bold;'>✔</span>"
-    
-    #assert gui.gui_trends._alert.value == "🙃 Please specify tokens to plot"
-    #assert gui.gui_trends._alert.value == "🙂"
+
+    # assert gui.gui_trends._alert.value == "🙃 Please specify tokens to plot"
+    # assert gui.gui_trends._alert.value == "🙂"
 
     # gui.gui_compute._config_chooser.reset(path='tests/test_data/tranströmer', filename='tranströmer.yml')
     # gui.gui_compute._config_chooser_changed()

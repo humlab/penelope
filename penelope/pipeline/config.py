@@ -12,9 +12,9 @@ from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Type, Union
 
 import yaml
 
+from penelope import utility as pu
 from penelope.corpus import TextReaderOpts, TextTransformOpts
 from penelope.corpus.serialize import SerializeOpts
-from penelope import utility as pu
 
 from . import interfaces
 

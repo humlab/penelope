@@ -251,9 +251,7 @@ def test_tagged_frame_to_tokens_succeeds():
     assert next_payload.content_type == ContentType.TOKENS
 
 
-def patch_store_archive(
-    *, opts, target_filename, document_index, payload_stream  # pylint: disable=unused-argument
-):
+def patch_store_archive(*, opts, target_filename, document_index, payload_stream):  # pylint: disable=unused-argument
     for p in payload_stream:
         yield p
 
