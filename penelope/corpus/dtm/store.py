@@ -8,7 +8,7 @@ import pickle
 import time
 from collections import defaultdict
 from os.path import join as jj
-from typing import Dict, List, Literal, Optional
+from typing import Literal, Optional
 
 import numpy as np
 import pandas as pd
@@ -31,9 +31,9 @@ BASENAMES: list[str] = [
 
 def create_corpus_instance(
     bag_term_matrix: scipy.sparse.csr_matrix,
-    token2id: Dict[str, int],
+    token2id: dict[str, int],
     document_index: pd.DataFrame,
-    overridden_term_frequency: Dict[str, int] = None,
+    overridden_term_frequency: dict[str, int] = None,
 ) -> "IVectorizedCorpus":
     """Creates a corpus instance using importlib to avoid cyclic references"""
     module = importlib.import_module(name="penelope.corpus.dtm.corpus")
@@ -177,9 +177,9 @@ class StoreMixIn:
         return filename and os.path.isfile(filename) and any(filename.endswith(suffix) for suffix in DATA_SUFFIXES)
 
     @staticmethod
-    def find_tags(folder: str) -> List[str]:
+    def find_tags(folder: str) -> list[str]:
         """Return dump tags in specified folder."""
-        tags: List[str] = list(
+        tags: list[str] = list(
             {
                 x[0 : len(x) - len(suffix)]
                 for suffix in DATA_SUFFIXES
@@ -270,12 +270,12 @@ class StoreMixIn:
         )
 
     @staticmethod
-    def dump_options(*, tag: str, folder: str, options: Dict):
+    def dump_options(*, tag: str, folder: str, options: dict):
         json_filename = jj(folder, f"{tag}_vectorizer_data.json")
         write_json(json_filename, options, default=lambda _: "<not serializable>")
 
     @staticmethod
-    def load_options(*, tag: str, folder: str) -> Dict:
+    def load_options(*, tag: str, folder: str) -> dict:
         """Loads vectrize options if they exists"""
         json_filename = jj(folder, f"{tag}_vectorizer_data.json")
         if os.path.isfile(json_filename):
