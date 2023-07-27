@@ -46,11 +46,6 @@ def create_corpus_instance(
     )
 
 
-def matrix_filename(tag: str, folder: str, extension: str = '') -> str:
-    """Returns BoW matrix basename for given tag and folder"""
-    return jj(folder, f"{tag}_vector_data{extension}")
-
-
 def load_metadata(*, tag: str, folder: str) -> dict:
     pickle_filename: str = jj(folder, f"{tag}_vectorizer_data.pickle")
     if os.path.isfile(pickle_filename):
