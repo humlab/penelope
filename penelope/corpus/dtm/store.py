@@ -8,8 +8,7 @@ import pickle
 import time
 from collections import defaultdict
 from os.path import join as jj
-from pathlib import Path
-from typing import Dict, List, Literal, Mapping, Optional
+from typing import Dict, List, Literal, Optional
 
 import numpy as np
 import pandas as pd
@@ -20,6 +19,14 @@ from penelope.utility import read_json, strip_paths, write_json
 from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
 
 DATA_SUFFIXES: list[str] = ['_vector_data.npz', '_vector_data.npy', '_vectorizer_data.pickle']
+
+BASENAMES: list[str] = [
+    'vector_data',
+    'vectorizer_data',
+    'document_index',
+    'token2id',
+    'overridden_term_frequency',
+]
 
 
 def create_corpus_instance(
@@ -197,14 +204,10 @@ class StoreMixIn:
 
     @staticmethod
     def remove(*, tag: str, folder: str):
-        with contextlib.suppress(Exception):
-            Path(jj(folder, f'{tag}_vector_data.npz')).unlink(missing_ok=True)
-            Path(jj(folder, f'{tag}_vector_data.npy')).unlink(missing_ok=True)
-            Path(jj(folder, f"{tag}_vectorizer_data.json")).unlink(missing_ok=True)
-            Path(jj(folder, f"{tag}_vectorizer_data.pickle")).unlink(missing_ok=True)
-            Path(jj(folder, f"{tag}_document_index.csv.gz")).unlink(missing_ok=True)
-            Path(jj(folder, f"{tag}_token2id.json.gz")).unlink(missing_ok=True)
-            Path(jj(folder, f"{tag}_overridden_term_frequency.npy")).unlink(missing_ok=True)
+        for suffix in BASENAMES:
+            for filename in glob.glob(jj(folder, f"{tag}_{suffix}.*")):
+                with contextlib.suppress(Exception):
+                    os.unlink(filename)
 
     @staticmethod
     def load(*, tag: str = None, folder: str = None, filename: str = None) -> IVectorizedCorpus:
@@ -245,7 +248,7 @@ class StoreMixIn:
 
         data: dict = load_metadata(tag=tag, folder=folder)
 
-        token2id: Mapping = data.get("token2id")
+        token2id: dict = data.get("token2id")
 
         """Load TF override, convert if in older (dict) format"""
         overridden_term_frequency: np.ndarray = (
