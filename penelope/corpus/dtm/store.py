@@ -161,15 +161,7 @@ class StoreMixIn:
 
     @staticmethod
     def dump_exists(*, tag: str, folder: str) -> bool:
-        """Checks if corpus with tag `tag` exists in folder `folder`
-
-        Parameters
-        ----------
-        tag : str
-            Corpus tag
-        folder : str, optional
-            Corpus folder to look in
-        """
+        """Checks if corpus with tag `tag` exists in folder `folder`"""
         return any(os.path.isfile(jj(folder, f"{tag}{suffix}")) for suffix in DATA_SUFFIXES)
 
     @staticmethod
