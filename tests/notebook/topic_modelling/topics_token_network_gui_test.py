@@ -1,5 +1,7 @@
 import io
+import os
 from unittest.mock import patch
+import uuid
 
 import ipycytoscape
 import pandas as pd
@@ -7,6 +9,7 @@ import pytest
 
 from penelope import topic_modelling as tm
 from penelope.notebook.topic_modelling import topics_token_network_gui as ttn_gui
+from penelope.utility.file_utility import touch
 
 INFERRED_TOPICS_DATA_FOLDER = './tests/test_data/tranströmer/tranströmer_inferred_model'
 
@@ -35,9 +38,25 @@ def network_widget(topics_tokens: pd.DataFrame) -> ipycytoscape.CytoscapeWidget:
 
 
 def test_find_inferred_models():
-    folders = tm.find_inferred_topics_folders(INFERRED_TOPICS_DATA_FOLDER)
+    data_folder = './tests/test_data/tranströmer'
+    folders = tm.find_inferred_topics_folders(data_folder)
     assert folders == [INFERRED_TOPICS_DATA_FOLDER]
 
+    # Two folders with inferred topics data with different extensions
+    data_folder = f'./tests/output/{str(uuid.uuid4())[:6]}'
+    for ext in ('zip', 'feather'):
+        touch(f'{data_folder}/{ext}/document_topic_weights.{ext}')
+
+    folders = tm.find_inferred_topics_folders(data_folder)
+    assert set(folders) == { f'{data_folder}/{ext}' for ext in ('zip', 'feather')}
+
+    # One folder with inferred topics two extensions
+    data_folder = f'./tests/output/{str(uuid.uuid4())[:6]}'
+    for ext in ('zip', 'feather'):
+        touch(f'{data_folder}/sub-folder/document_topic_weights.{ext}')
+    
+    folders = tm.find_inferred_topics_folders(data_folder)
+    assert folders == [f'{data_folder}/sub-folder']
 
 def test_view_model(inferred_topics_data: tm.InferredTopicsData):
     assert inferred_topics_data is not None
