@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 import pandas as pd
 
+from penelope.utility import pandas_utils as pu
+
 TEMPORAL_GROUP_BY = ['decade', 'lustrum', 'year']
 
 

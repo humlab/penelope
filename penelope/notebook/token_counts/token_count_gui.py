@@ -12,7 +12,7 @@ from penelope import utility as pu
 from penelope.plot import plot_multiline, plot_stacked_bar
 
 from ..mixins import DownloadMixIn, PivotKeysMixIn, PivotKeySpec
-from ..utility import CLEAR_OUTPUT, FileChooserExt2, OutputsTabExt
+from ..utility import FileChooserExt2, OutputsTabExt
 from ..widgets_utils import register_observer
 from .compute import TEMPORAL_GROUP_BY, ComputeOpts, compute_statistics, prepare_document_index
 
