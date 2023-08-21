@@ -1,7 +1,7 @@
 import io
 import os
-from unittest.mock import patch
 import uuid
+from unittest.mock import patch
 
 import ipycytoscape
 import pandas as pd
@@ -48,15 +48,16 @@ def test_find_inferred_models():
         touch(f'{data_folder}/{ext}/document_topic_weights.{ext}')
 
     folders = tm.find_inferred_topics_folders(data_folder)
-    assert set(folders) == { f'{data_folder}/{ext}' for ext in ('zip', 'feather')}
+    assert set(folders) == {f'{data_folder}/{ext}' for ext in ('zip', 'feather')}
 
     # One folder with inferred topics two extensions
     data_folder = f'./tests/output/{str(uuid.uuid4())[:6]}'
     for ext in ('zip', 'feather'):
         touch(f'{data_folder}/sub-folder/document_topic_weights.{ext}')
-    
+
     folders = tm.find_inferred_topics_folders(data_folder)
     assert folders == [f'{data_folder}/sub-folder']
+
 
 def test_view_model(inferred_topics_data: tm.InferredTopicsData):
     assert inferred_topics_data is not None

@@ -63,7 +63,7 @@ def plot_topic_relevance_by_year(
     titles: pd.Series,
     element_id: str,
     **figopts,
-) ->bokeh.plotting.figure:  # pylint: disable=too-many-arguments, too-many-locals
+) -> bokeh.plotting.figure:  # pylint: disable=too-many-arguments, too-many-locals
     line_height: int = 10
     if flip_axis:
         xs, ys = ys, xs

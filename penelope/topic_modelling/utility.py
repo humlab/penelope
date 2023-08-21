@@ -1,5 +1,5 @@
-from glob import glob
 from dataclasses import dataclass
+from glob import glob
 from os.path import join, split, splitext
 
 from penelope import utility as pu
@@ -42,10 +42,14 @@ def find_models(path: str) -> list[ModelFolder]:
 
 def find_inferred_topics_folders(folder: str) -> list[str]:
     """Return sub-folders to `folder` that contain inferred topics data"""
-    folders = sorted(list({
-        split(p)[0]
-        for p in glob(join(folder, "**/document_topic_weights.*"), recursive=True)
-        if splitext(p)[1] in ('.zip', '.feather')
-    }))
+    folders = sorted(
+        list(
+            {
+                split(p)[0]
+                for p in glob(join(folder, "**/document_topic_weights.*"), recursive=True)
+                if splitext(p)[1] in ('.zip', '.feather')
+            }
+        )
+    )
 
     return folders

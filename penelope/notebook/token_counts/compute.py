@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 import pandas as pd
 
 TEMPORAL_GROUP_BY = ['decade', 'lustrum', 'year']

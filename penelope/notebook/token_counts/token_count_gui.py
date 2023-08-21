@@ -14,7 +14,7 @@ from penelope.plot import plot_multiline, plot_stacked_bar
 from ..mixins import DownloadMixIn, PivotKeysMixIn, PivotKeySpec
 from ..utility import CLEAR_OUTPUT, FileChooserExt2, OutputsTabExt
 from ..widgets_utils import register_observer
-from .compute import compute_statistics, TEMPORAL_GROUP_BY, prepare_document_index, ComputeOpts
+from .compute import TEMPORAL_GROUP_BY, ComputeOpts, compute_statistics, prepare_document_index
 
 DEBUG_VIEW = Output()
 
@@ -36,7 +36,6 @@ def plot_tabular(df: pd.DataFrame, opts: ComputeOpts) -> DataGrid:
     grid.auto_fit_params = {"area": "all", "padding": 40, "numCols": 1}
     grid.auto_fit_columns = True
     return grid
-
 
 
 class BaseTokenCountGUI(DownloadMixIn):
