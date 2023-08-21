@@ -157,7 +157,7 @@ pylint_by_file:
 
 flake8:
 	@poetry run flake8 --version
-	@poetry run flake8
+	@poetry run flake8 --extend-exclude './tmp' $(SOURCE_FOLDERS)
 
 isort:
 	@poetry run isort --profile black --float-to-top --line-length 120 --py 311 $(SOURCE_FOLDERS)
