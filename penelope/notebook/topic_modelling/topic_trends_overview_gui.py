@@ -54,7 +54,7 @@ class TopicTrendsOverviewGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
             options=['Heatmap', 'Table'], value='Heatmap', layout=dict(width="140px")
         )
         self._auto_compute.layout.width = "80px"
-        self._output: w.Output = w.Output()
+        self._output: w.Output = w.Output(layout=dict(width="100%"))
         self._content_placeholder: w.Box = None
         self._extra_placeholder: w.Box = None
 
@@ -140,6 +140,7 @@ class TopicTrendsOverviewGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
                     g = gu.table_widget(weights)
                     display(g)
                 else:
+                    self.alert("Columns: " + ", ".join(weights.columns))
                     display_heatmap(
                         weights,
                         self.titles,

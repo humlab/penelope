@@ -2,6 +2,7 @@ import warnings
 from typing import List, Sequence
 
 import bokeh
+import bokeh.models
 import bokeh.plotting
 import bokeh.transform
 import pandas as pd
@@ -62,8 +63,8 @@ def plot_topic_relevance_by_year(
     titles: pd.Series,
     element_id: str,
     **figopts,
-):  # pylint: disable=too-many-arguments, too-many-locals
-    line_height: int = 7
+) ->bokeh.plotting.figure:  # pylint: disable=too-many-arguments, too-many-locals
+    line_height: int = 10
     if flip_axis:
         xs, ys = ys, xs
         line_height = 10
@@ -81,9 +82,9 @@ def plot_topic_relevance_by_year(
 
     if y_range is not None:
         figopts['y_range'] = y_range
-        figopts['height'] = max(len(y_range) * line_height, 600)
+        figopts['height'] = max(len(y_range) * line_height, 800)
 
-    p = bokeh.plotting.figure(**figopts, sizing_mode='scale_width')
+    p: bokeh.plotting.figure = bokeh.plotting.figure(**figopts, sizing_mode='scale_width')
 
     cr = p.rect(
         x=xs,
