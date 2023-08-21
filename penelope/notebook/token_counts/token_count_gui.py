@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any, Callable, Self
 
 import pandas as pd
@@ -15,25 +14,11 @@ from penelope.plot import plot_multiline, plot_stacked_bar
 from ..mixins import DownloadMixIn, PivotKeysMixIn, PivotKeySpec
 from ..utility import CLEAR_OUTPUT, FileChooserExt2, OutputsTabExt
 from ..widgets_utils import register_observer
-
-TEMPORAL_GROUP_BY = ['decade', 'lustrum', 'year']
+from .compute import compute_statistics, TEMPORAL_GROUP_BY, prepare_document_index, ComputeOpts
 
 DEBUG_VIEW = Output()
 
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
-
-
-@dataclass
-class ComputeOpts:
-    source_folder: str
-    document_index: pd.DataFrame
-    normalize: bool
-    smooth: bool
-    pos_groups: list[str]
-    temporal_key: str
-    pivot_keys_id_names: list[str] = None
-    filter_opts: pu.PropertyValueMaskingOpts = None
-    unstack_tabular: bool = None
 
 
 def plot_tabular(df: pd.DataFrame, opts: ComputeOpts) -> DataGrid:
@@ -52,57 +37,6 @@ def plot_tabular(df: pd.DataFrame, opts: ComputeOpts) -> DataGrid:
     grid.auto_fit_columns = True
     return grid
 
-
-@DEBUG_VIEW.capture(clear_output=False)
-def compute(document_index: pd.DataFrame, opts: ComputeOpts) -> pd.DataFrame:
-    di: pd.DataFrame = document_index
-
-    if opts.filter_opts is not None:
-        di = opts.filter_opts.apply(di)
-
-    pivot_keys: list[str] = [opts.temporal_key] + list(opts.pivot_keys_id_names)
-
-    count_columns: list[str] = (
-        list(opts.pos_groups)
-        if len(opts.pos_groups or []) > 0
-        else [x for x in di.columns if x not in TEMPORAL_GROUP_BY + ['Total'] + pivot_keys]
-    )
-    data: pd.DataFrame = di.groupby(pivot_keys).sum()[count_columns]
-
-    if opts.normalize:
-        total: pd.Series = di.groupby(pivot_keys)['Total'].sum()
-        data = data.div(total, axis=0)
-
-    # if opts.smooth:
-    #     method: str = 'linear' if isinstance(data, pd.MultiIndex) else 'index'
-    #     data = data.interpolate(method=method)
-
-    data = data.reset_index()[pivot_keys + count_columns]
-    return data
-
-
-@DEBUG_VIEW.capture(clear_output=CLEAR_OUTPUT)
-def prepare_document_index(document_index: str, keep_columns: list[str]) -> pd.DataFrame:
-    """Prepares document index by adding/renaming columns
-
-    Args:
-        source (str): document index source
-        columns (list[str]): PoS-groups column names
-    """
-
-    if 'n_raw_tokens' not in document_index.columns:
-        raise ValueError("expected required column `n_raw_tokens` not found")
-
-    document_index['lustrum'] = document_index.year - document_index.year % 5
-    document_index['decade'] = document_index.year - document_index.year % 10
-    document_index = document_index.rename(columns={"n_raw_tokens": "Total"}).fillna(0)
-
-    """strip away irrelevant columns"""
-    groups = TEMPORAL_GROUP_BY + ['Total'] + sorted(keep_columns)
-    keep_columns = [x for x in groups if x in document_index.columns]
-    document_index = document_index[keep_columns]
-
-    return document_index
 
 
 class BaseTokenCountGUI(DownloadMixIn):
@@ -175,7 +109,7 @@ class BaseTokenCountGUI(DownloadMixIn):
         return plot_tabular(df, opts)
 
     def compute(self) -> pd.DataFrame:
-        self.data = compute(self.document_index, self.opts)
+        self.data = compute_statistics(self.document_index, self.opts)
         return self.data
 
     @property
