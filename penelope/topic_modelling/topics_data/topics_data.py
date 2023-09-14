@@ -324,7 +324,9 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
     @staticmethod
     def load_corpus_config(folder: str) -> CorpusConfig:
         """Load CorpusConfig if exists"""
-        corpus_configs: list[CorpusConfig] = pu.create_class("penelope.pipeline.CorpusConfig").find_all(folder=folder)
+        corpus_configs: list[CorpusConfig] = pu.create_class("penelope.pipeline.CorpusConfig").find_all(
+            folder=folder, set_folder=True
+        )
 
         if len(corpus_configs) > 0:
             return corpus_configs[0]

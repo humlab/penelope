@@ -189,7 +189,7 @@ class CorpusConfig:
         return deserialized_config
 
     @staticmethod
-    def find(filename: str, folder: str) -> "CorpusConfig":
+    def find(filename: str, folder: str, set_folder: bool = False) -> "CorpusConfig":
         """Finds and returns a corpus config named `filename` in `folder`"""
         if isinstance(filename, CorpusConfig):
             return filename
@@ -202,14 +202,16 @@ class CorpusConfig:
             candidates: list[pathlib.Path] = list(pathlib.Path(folder).rglob(try_name))
             try:
                 for candidate in candidates:
-                    config = CorpusConfig.load(str(candidate))
+                    config: CorpusConfig = CorpusConfig.load(str(candidate))
+                    if set_folder:
+                        config.pipeline_payload.folders(folder)
                     return config
             except:  # pylint: disable=bare-except
                 pass
         raise FileNotFoundError(filename)
 
     @staticmethod
-    def find_all(folder: str, recursive: bool = False) -> list["CorpusConfig"]:
+    def find_all(folder: str, recursive: bool = False, set_folder: bool = False) -> list["CorpusConfig"]:
         """Finds all corpus configs in `folder`"""
 
         configs: list[CorpusConfig] = []
@@ -222,6 +224,9 @@ class CorpusConfig:
             for candidate in candidates:
                 with contextlib.suppress(Exception):
                     config = CorpusConfig.load(candidate)
+                    if set_folder:
+                        """Update pipeline_payload.source to match folder"""
+                        config.pipeline_payload.folders(os.path.dirname(candidate))
                     configs.append(config)
 
         return configs

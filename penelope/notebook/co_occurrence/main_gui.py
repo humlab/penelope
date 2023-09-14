@@ -70,7 +70,7 @@ class MainGUI:
         self.config = (
             corpus_config
             if isinstance(corpus_config, pipeline.CorpusConfig)
-            else pipeline.CorpusConfig.find(corpus_config, resources_folder).folders(corpus_folder)
+            else pipeline.CorpusConfig.find(corpus_config, resources_folder, set_folder=False).folders(corpus_folder)
         )
 
         self.gui_compute: compute_gui.ComputeGUI = compute_gui.create_compute_gui(

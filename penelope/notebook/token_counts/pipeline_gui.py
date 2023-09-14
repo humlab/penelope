@@ -256,7 +256,10 @@ def load_document_index(corpus_config: pipeline.CorpusConfig) -> pd.DataFrame:
         document_index: pd.DataFrame = load_by_pipeline(corpus_config)
 
     if 'n_raw_tokens' not in document_index.columns:
-        raise interfaces.PipelineError("expected required column `n_raw_tokens` not found")
+        if 'n_tokens' in document_index.columns:
+            document_index['n_raw_tokens'] = document_index['n_tokens']
+        else:
+            raise interfaces.PipelineError("expected required column `n_raw_tokens` not found")
 
     document_index['lustrum'] = document_index.year - document_index.year % 5
     document_index['decade'] = document_index.year - document_index.year % 10

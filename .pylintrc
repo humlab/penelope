@@ -14,6 +14,7 @@ jobs=6
 [MESSAGES CONTROL]
 
 disable=c-extension-no-member,
+        abstract-method,
         consider-using-dict-items,
         consider-using-enumerate,
         consider-using-f-string,
