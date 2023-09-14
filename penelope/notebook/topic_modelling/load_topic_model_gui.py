@@ -19,7 +19,6 @@ def _load_tm_handler(
 
     display(tt_ui.PandasTopicTitlesGUI(topics, n_tokens=n_tokens).setup().layout())
 
-
 class LoadGUI(mx.AlertMixIn):
     def __init__(
         self,
@@ -40,6 +39,8 @@ class LoadGUI(mx.AlertMixIn):
 
     def setup(self) -> "LoadGUI":
         self._model_name.options = [x.name for x in self.model_infos]
+        if self.model_name is None and self.model_infos:
+            self._model_name.value = self.model_infos[0].name
         self._load.on_click(self.load_handler)
         return self
 
@@ -55,10 +56,12 @@ class LoadGUI(mx.AlertMixIn):
             self._output.clear_output()
             try:
                 self._load.disabled = True
+                self.alert("🙃 Loading...")
                 with self._output:
                     self.load()
             finally:
                 self._load.disabled = False
+                self.alert("🙃 Done!")
         except Exception as ex:
             self.warn(f"😡 {ex}")
 
