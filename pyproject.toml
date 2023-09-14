@@ -27,13 +27,13 @@ ipywidgets = "*"
 jupyter_bokeh = "*"
 loguru = "*"
 lxml = "*"
-memoization = "^0.3.1"
-more_itertools = "^8.5.0"
+memoization = "*"
+more_itertools = ">=10.1.0"
 msgpack = "^1.0.2"
 nltk = "^3.5"
 numpy = "*"
 openpyxl = "^3.0.5"
-pandas = "<2.0.0"
+pandas = "*"
 python = "==3.11.*"
 requests = "^2.24.0"
 scipy = "*"
@@ -50,9 +50,10 @@ textacy = {version = "*", optional = true}
 wordcloud = {version = "*", optional = true}
 PyYAML = {version = "*", optional = true}
 python-louvain = {version = "*", optional = true}
-click = {version = "8.0.4", optional = true}
-smart-open = "^5.2.1"
+click = ">=8.1.*"
+smart-open = ">=6.4.*"
 python-dotenv = "^1.0.0"
+urllib3 = "*"
 
 [tool.poetry.extras]
 full = [
@@ -73,7 +74,6 @@ flake8 = "*"
 flake8-pytest-style = "*"
 isort = "*"
 memory-profiler = "*"
-mypy = "*"
 pep8-naming = "*"
 pycodestyle = "*"
 pyflakes = "*"
@@ -85,8 +85,7 @@ pytest-cov = "*"
 pytest-xdist = "*"
 recommonmark = "*"
 Sphinx = "*"
-tomlkit = "*"
-urllib3 = "1.26.15"
+
 
 [tool.poetry_bumpversion.file."penelope/__init__.py"]
 
