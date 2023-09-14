@@ -19,6 +19,7 @@ def _load_tm_handler(
 
     display(tt_ui.PandasTopicTitlesGUI(topics, n_tokens=n_tokens).setup().layout())
 
+
 class LoadGUI(mx.AlertMixIn):
     def __init__(
         self,
