@@ -40,9 +40,6 @@ scipy = "*"
 toml = "^0.10.2"
 tqdm = "^4.62.3"
 
-# Temporarily locked dependencies (JupyterLite does not support >4.09 yet)
-widgetsnbextension = "==4.0.7"
-
 gensim = {version = "*", optional = true}
 spacy = {version = "*", optional = true}
 pyarrow = {version = "*", optional = true}
