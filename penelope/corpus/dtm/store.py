@@ -9,11 +9,11 @@ import time
 from collections import defaultdict
 from os.path import join as jj
 from typing import Literal, Optional
-from loguru import logger
 
 import numpy as np
 import pandas as pd
 import scipy
+from loguru import logger
 
 from penelope.utility import read_json, strip_paths, write_json
 
@@ -69,10 +69,9 @@ def load_metadata(*, tag: str, folder: str) -> dict:
             'document_index': document_index,
             'overridden_term_frequency': term_frequency,
         }
-    
+
     pickle_filename: str = jj(folder, f"{tag}_vectorizer_data.pickle")
     if os.path.isfile(pickle_filename):
-        
         with open(pickle_filename, 'rb') as f:
             data = pickle.load(f)
 

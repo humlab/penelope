@@ -79,7 +79,7 @@ def main(root_folder: str = None):
     USAGE:
 
         PYTHONPATH=. python penelope/scripts/explode-dtm-pickle/explode-pickle.py <root_folder>
-        
+
     """
     logger.info(f"folder: {root_folder}")
     filenames: list[str] = list(find_files("*_vectorizer_data.pickle", root_folder))
