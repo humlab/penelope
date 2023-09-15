@@ -17,7 +17,7 @@ def get_document_filenames(*, folder: str) -> list[str]:
     return [
         x
         for x in sorted(glob.glob(jj(folder, "**", "*.feather"), recursive=True))
-        if not strip_path_and_extension(x) in ('document_index', 'token2id')
+        if strip_path_and_extension(x) not in ('document_index', 'token2id')
     ]
 
 

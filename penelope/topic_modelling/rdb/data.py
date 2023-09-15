@@ -4,7 +4,6 @@ import sqlite3
 import typing as t
 from os.path import join as jj
 
-import numpy as np
 import pandas as pd
 
 if t.TYPE_CHECKING:
