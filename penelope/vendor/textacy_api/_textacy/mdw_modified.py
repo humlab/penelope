@@ -19,12 +19,12 @@ limitations under the License.
 from __future__ import annotations
 
 import operator
+from functools import lru_cache
 from typing import TYPE_CHECKING, List, Sequence
 
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
-from memoization import cached
 
 try:
     from textacy.representations import get_doc_freqs
@@ -116,7 +116,7 @@ def compute_most_discriminating_terms(
 def most_discriminating_terms(dtm: sp.csr_matrix, id2term, bool_array_grp1, *, max_n_terms=1000, top_n_terms=25):
     """
     NOTE: This modified version takes a document-term-matrix and a vocubulary as arguments instead of a terms list
-    It also uses memoization to cache function call to ain improved performance.
+    It also uses memoization to cache function call for improved performance.
 
     Given a collection of documents assigned to 1 of 2 exclusive groups, get the
     ``top_n_terms`` most discriminating terms for group1-and-not-group2 and
@@ -211,7 +211,7 @@ def get_top_likelihoods(terms_likelihoods, top_n_terms):
 
 
 # https://stackoverflow.com/questions/16325988/factorial-of-a-large-number-in-python
-@cached
+@lru_cache(maxsize=None)
 def range_prod(lo, hi):
     if lo + 1 < hi:
         mid = (hi + lo) // 2

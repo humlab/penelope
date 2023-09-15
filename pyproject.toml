@@ -4,7 +4,7 @@ version = "0.7.42"
 description = "Utilities that simplify enelpeing in Jupyter Lab"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 packages = [{ include = "penelope" }]
-exclude = [ "**/.venv" ]
+exclude = ["**/.venv"]
 classifiers = [
     'License :: OSI Approved :: Apache Software License',
     'Operating System :: OS Independent',
@@ -28,7 +28,6 @@ ipywidgets = "*"
 jupyter_bokeh = "*"
 loguru = "*"
 lxml = "*"
-memoization = "^0.4.0"
 more_itertools = ">=10.1.0"
 msgpack = "^1.0.2"
 nltk = "^3.5"
@@ -40,30 +39,34 @@ scipy = "*"
 toml = "^0.10.2"
 tqdm = "^4.62.3"
 
-gensim = {version = "*", optional = true}
-spacy = {version = "*", optional = true}
-pyarrow = {version = "*", optional = true}
-textacy = {version = "*", optional = true}
-wordcloud = {version = "*", optional = true}
-PyYAML = {version = "*", optional = true}
-python-louvain = {version = "*", optional = true}
+gensim = { version = "*", optional = true }
+spacy = { version = "*", optional = true }
+pyarrow = { version = "*", optional = true }
+textacy = { version = "*", optional = true }
+wordcloud = { version = "*", optional = true }
+PyYAML = { version = "*", optional = true }
+python-louvain = { version = "*", optional = true }
 click = ">=8.1.*"
 smart-open = ">=6.4.*"
 python-dotenv = "^1.0.0"
 urllib3 = "*"
 pandas = "^2.1.0"
 
+#jupyterlite = { version = "*", optional = true }
+
 [tool.poetry.extras]
 full = [
-  "pyarrow",
-  "textacy",
-  "spacy",
-  "gensim",
-  "wordcloud",
-  "PyYAML",
-  "click",
-  "python-louvain",
+    "pyarrow",
+    "textacy",
+    "spacy",
+    "gensim",
+    "wordcloud",
+    "PyYAML",
+    "click",
+    "python-louvain",
 ]
+
+#lite = ["jupyterlite"]
 
 [tool.poetry.group.dev.dependencies]
 black = "*"
@@ -96,7 +99,9 @@ tm-predict = "penelope.scripts.tm.predict:click_main"
 tm-train-id = "penelope.scripts.tm.train_id:click_main"
 tm-train-legacy = "penelope.scripts.tm.train_legacy:click_main"
 tm-train = "penelope.scripts.tm.train:click_main"
-co-occurrence =  {callable = "penelope.scripts.co_occurrence:main", extras=["full"]}
+co-occurrence = { callable = "penelope.scripts.co_occurrence:main", extras = [
+    "full",
+] }
 pos-tag = "penelope.scripts.pos_tag:main"
 
 [tool.pytest.ini_options]
@@ -104,7 +109,7 @@ minversion = "6.0"
 addopts = [
     "-rfE",
     # "--no-cov",
-    "--durations=0"
+    "--durations=0",
     # "-q",
     # "-s",
     #"-n4",
@@ -135,7 +140,7 @@ filterwarnings = [
     "ignore::UserWarning",
 ]
 # timeout = 300
-basetemp="tests/output/tmp"
+basetemp = "tests/output/tmp"
 
 [tool.black]
 line-length = 120
@@ -203,7 +208,20 @@ sort = "Name"
 
 line-length = 140
 target-version = "py311"
-exclude =  ["__init__.py", "test_data", "output", "__pycache__", "deprecated", "penelope", "docs", ".git", ".github", ".vscode", "profile-reports", "tmp"]
+exclude = [
+    "__init__.py",
+    "test_data",
+    "output",
+    "__pycache__",
+    "deprecated",
+    "penelope",
+    "docs",
+    ".git",
+    ".github",
+    ".vscode",
+    "profile-reports",
+    "tmp",
+]
 ignore = ["E501", "E722", "E731"]
 [build-system]
 requires = ["poetry-core>=1.0.0"]
