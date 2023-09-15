@@ -99,8 +99,8 @@ def test_load_stored_metadata(mode: str, vectorized_corpus: VectorizedCorpus):
 
     shutil.rmtree(folder)
 
-
-@pytest.mark.parametrize('mode', ['bundle', 'files'])
+# NOTE: mode 'bundle' is deprecated
+@pytest.mark.parametrize('mode', ['files'])
 def test_load_dumped_corpus(mode: str, vectorized_corpus: VectorizedCorpus):
     tag: str = f'{str(uuid.uuid1())[:6]}'
     folder: str = jj(OUTPUT_FOLDER, tag)

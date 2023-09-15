@@ -9,6 +9,7 @@ import time
 from collections import defaultdict
 from os.path import join as jj
 from typing import Literal, Optional
+from loguru import logger
 
 import numpy as np
 import pandas as pd
@@ -47,11 +48,7 @@ def create_corpus_instance(
 
 
 def load_metadata(*, tag: str, folder: str) -> dict:
-    pickle_filename: str = jj(folder, f"{tag}_vectorizer_data.pickle")
-    if os.path.isfile(pickle_filename):
-        with open(pickle_filename, 'rb') as f:
-            data = pickle.load(f)
-        return data
+    """Loads metadata from disk."""
 
     if os.path.isfile(jj(folder, f"{tag}_document_index.csv.gz")):
         document_index: pd.DataFrame = pd.read_csv(
@@ -72,22 +69,35 @@ def load_metadata(*, tag: str, folder: str) -> dict:
             'document_index': document_index,
             'overridden_term_frequency': term_frequency,
         }
+    
+    pickle_filename: str = jj(folder, f"{tag}_vectorizer_data.pickle")
+    if os.path.isfile(pickle_filename):
+        
+        with open(pickle_filename, 'rb') as f:
+            data = pickle.load(f)
+
+        logger.warning(f"Loading from pickle: {pickle_filename}. Converting to individual files.")
+        store_metadata(tag=tag, folder=folder, mode='files', **data)
+
+        return data
 
     raise ValueError("No metadata in folder")
 
 
 def store_metadata(*, tag: str, folder: str, mode: Literal['bundle', 'files'] = 'files', **data) -> None:
+    """Stores metadata to disk."""
     if isinstance(data.get('token2id'), defaultdict):
         data['token2id'] = dict(
             data.get('token2id'),
         )
 
     if mode.startswith('bundle'):
-        pickle_filename: str = jj(folder, f"{tag}_vectorizer_data.pickle")
-        with open(pickle_filename, 'wb') as f:
-            pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
+        raise DeprecationWarning("Bundle mode not supported")
+        # pickle_filename: str = jj(folder, f"{tag}_vectorizer_data.pickle")
+        # with open(pickle_filename, 'wb') as f:
+        #     pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
 
-        return
+        # return
 
     if mode.startswith('files'):
         data.get('document_index').to_csv(jj(folder, f"{tag}_document_index.csv.gz"), sep=';', compression="gzip")
