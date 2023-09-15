@@ -337,18 +337,15 @@ class DocumentIndexHelper:
         if self._document_index is None:
             self._document_index = other_index
         else:
-            # self._document_index = self._document_index.append(other_index, ignore_index=False, verify_integrity=True)
-
             already_present_index = self._document_index.index.intersection(other_index.index)
             if len(already_present_index) > 0:
                 if not ignore_if_exists:
                     raise DocumentIndexError("trying to add duplicate item(s) to document index")
-                    # logger.warning("trying to add duplicate item(s) to document indext")
 
             missing_index = other_index.index.difference(self._document_index.index)
 
             if len(missing_index) > 0:
-                self._document_index = self._document_index.append(other_index.loc[missing_index, :])
+                self._document_index = pd.concat([self._document_index, other_index.loc[missing_index, :]])
                 self._document_index['document_id'] = range(0, len(self._document_index))
 
         return self

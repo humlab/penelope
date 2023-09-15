@@ -199,7 +199,7 @@ class DocumentTopicsCalculator:
             df_focus: pd.DataFrame = self.data[self.data.topic_id.isin(topic_ids)].set_index("document_id")
             df_others: pd.DataFrame = self.data[~self.data.topic_id.isin(topic_ids)].set_index("document_id")
             df_others = df_others[df_others.index.isin(df_focus.index)]
-            self.data: pd.DataFrame = df_focus.append(df_others).reset_index()
+            self.data: pd.DataFrame = pd.concat([df_focus, df_others]).reset_index()
         return self
 
     def filter_by_text(self, search_text: str, n_top: int) -> "DocumentTopicsCalculator":

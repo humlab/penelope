@@ -22,7 +22,7 @@ def topics_data() -> tm.InferredTopicsData:
 
 
 def assert_equal(d1: tm.InferredTopicsData, d2: tm.InferredTopicsData) -> bool:
-    assert_frame_equal(d1.document_index, d2.document_index)
+    assert_frame_equal(d1.document_index, d2.document_index, check_index_type=False)
     assert_frame_equal(d1.dictionary, d2.dictionary)
     assert_frame_equal(d1.topic_token_weights, d2.topic_token_weights)
     assert_frame_equal(d1.topic_token_overview, d2.topic_token_overview)
@@ -103,7 +103,9 @@ def test_store_inferred_topics_data_as_zipped_files(topics_data: tm.InferredTopi
 
     assert topics_data.dictionary.equals(loaded_data.dictionary)
 
-    pd.testing.assert_frame_equal(topics_data.document_index, loaded_data.document_index, check_dtype=False)
+    pd.testing.assert_frame_equal(
+        topics_data.document_index, loaded_data.document_index, check_index_type=False, check_dtype=False
+    )
 
     assert topics_data.topic_token_overview.tokens.tolist() == loaded_data.topic_token_overview.tokens.tolist()
     assert ((loaded_data.topic_token_weights.weight - topics_data.topic_token_weights.weight) < 0.000000005).all()

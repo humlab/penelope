@@ -351,7 +351,7 @@ def temporal_key_values_with_no_gaps(series: pd.Series, temporal_key: str):
 
 
 def fill_temporal_gaps_in_group_document_index(
-    df: pd.DataFrame, temporal_key: str, pivot_keys: list[str], aggs: dict
+    di: pd.DataFrame, temporal_key: str, pivot_keys: list[str], aggs: dict
 ) -> pd.DataFrame:
     sep: str = "_" if pivot_keys else ""
 
@@ -362,24 +362,19 @@ def fill_temporal_gaps_in_group_document_index(
         row.update(document_name=f'{temporal_value}{sep}{sep.join(["0"]*len(pivot_keys))}')
         return row
 
-    temporal_key_values: Sequence[T] = set(
-        temporal_key_values_with_no_gaps(df[temporal_key], temporal_key=temporal_key)
-    )
+    values_with_no_gaps: set[T] = set(temporal_key_values_with_no_gaps(di[temporal_key], temporal_key=temporal_key))
+    missing_values = values_with_no_gaps - set(di[temporal_key])
+    missing_documents: list[dict] = [to_row(pivot_keys, aggs, temporal_value) for temporal_value in missing_values]
 
-    missing_values = temporal_key_values - set(df[temporal_key])
-    missing_documents = [to_row(pivot_keys, aggs, temporal_value) for temporal_value in missing_values]
-    df2: pd.DataFrame = (
-        pd.DataFrame(data=None, columns=df.columns, index=[], dtype=np.int32)
-        .append(other=missing_documents, ignore_index=True)
-        .fillna(0)
-    )
-    df = pd.concat([df, df2])
-    df.sort_values(by=[temporal_key] + pivot_keys, inplace=True, ascending=True)
-    df.reset_index(inplace=True, drop=True)
-    df['document_id'] = df.index
-    df['filename'] = df.document_name
+    di_missing: pd.DataFrame = pd.DataFrame(data=missing_documents, columns=di.columns).fillna(0)
 
-    return df
+    di = pd.concat([di, di_missing], ignore_index=True)
+    di.sort_values(by=[temporal_key] + pivot_keys, inplace=True, ascending=True)
+    di.reset_index(inplace=True, drop=True)
+    di['document_id'] = di.index
+    di['filename'] = di.document_name
+
+    return di
 
 
 def group_DTM_by_category_series(
