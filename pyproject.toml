@@ -4,6 +4,7 @@ version = "0.7.41"
 description = "Utilities that simplify enelpeing in Jupyter Lab"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 packages = [{ include = "penelope" }]
+exclude = [ "**/.venv" ]
 classifiers = [
     'License :: OSI Approved :: Apache Software License',
     'Operating System :: OS Independent',
