@@ -50,7 +50,7 @@ click = ">=8.1.*"
 smart-open = ">=6.4.*"
 python-dotenv = "^1.0.0"
 urllib3 = "*"
-pandas = "^2.1.0"
+pandas = "==1.5.3"
 
 #jupyterlite = { version = "*", optional = true }
 
