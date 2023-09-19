@@ -1897,7 +1897,7 @@ files = [
 name = "networkx"
 version = "3.1"
 description = "Python package for creating and manipulating graphs and networks"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "networkx-3.1-py3-none-any.whl", hash = "sha256:4f33f68cb2afcf86f28a45f43efc27a9386b535d567d2127f8f61d51dec58d36"},
@@ -4023,4 +4023,4 @@ full = ["PyYAML", "click", "gensim", "pyarrow", "spacy", "textacy", "wordcloud"]
 [metadata]
 lock-version = "2.0"
 python-versions = "==3.11.*"
-content-hash = "cea0a562d1266aee901cd71080c18989609ea76db3db8dc9ab4203daf0aac6ac"
+content-hash = "cf2997c420f1e845091ea97e0147582da622b84aa213cec2af377bef39a071fa"

@@ -50,8 +50,7 @@ smart-open = ">=6.4.*"
 python-dotenv = "^1.0.0"
 urllib3 = "*"
 pandas = "==1.5.3"
-
-#jupyterlite = { version = "*", optional = true }
+networkx = "^3.1"
 
 [tool.poetry.extras]
 full = [
@@ -62,7 +61,6 @@ full = [
     "wordcloud",
     "PyYAML",
     "click",
-    "python-louvain",
 ]
 
 #lite = ["jupyterlite"]
