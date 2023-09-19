@@ -42,9 +42,10 @@ jobs:
 
       - run: poetry install --no-interaction
       - run: poetry run flake8 ./penelope
-      - run: make nltk_data spacy_data
+      - run: make nltk_data
       - run: make test
 
+      # - run: make spacy_data
       # # - run: safety check --bare --file ./requirements.txt
       # # - run: poetry run mypy
       # # - run: poetry run make lint
