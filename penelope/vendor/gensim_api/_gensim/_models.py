@@ -49,4 +49,5 @@ try:
     from .wrappers import LdaMallet, MalletTopicModel, STTMTopicModel
 
 except (ImportError, NameError):
-    logger.info("gensim not included in current installment")
+    # logger.info("gensim not included in current installment")
+    ...
