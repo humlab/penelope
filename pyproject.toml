@@ -45,7 +45,6 @@ pyarrow = { version = "*", optional = true }
 textacy = { version = "*", optional = true }
 wordcloud = { version = "*", optional = true }
 PyYAML = { version = "*", optional = true }
-python-louvain = { version = "*", optional = true }
 click = ">=8.1.*"
 smart-open = ">=6.4.*"
 python-dotenv = "^1.0.0"

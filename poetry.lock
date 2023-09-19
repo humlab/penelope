@@ -2823,20 +2823,6 @@ files = [
 cli = ["click (>=5.0)"]
 
 [[package]]
-name = "python-louvain"
-version = "0.16"
-description = "Louvain algorithm for community detection"
-optional = true
-python-versions = "*"
-files = [
-    {file = "python-louvain-0.16.tar.gz", hash = "sha256:b7ba2df5002fd28d3ee789a49532baad11fe648e4f2117cf0798e7520a1da56b"},
-]
-
-[package.dependencies]
-networkx = "*"
-numpy = "*"
-
-[[package]]
 name = "pytz"
 version = "2023.3.post1"
 description = "World timezone definitions, modern and historical"
@@ -4040,4 +4026,4 @@ full = ["PyYAML", "click", "gensim", "pyarrow", "python-louvain", "spacy", "text
 [metadata]
 lock-version = "2.0"
 python-versions = "==3.11.*"
-content-hash = "6290250ddcceb415fb44950c513313f554c502f9a2e146039fb5a1ae00e7b42d"
+content-hash = "cea0a562d1266aee901cd71080c18989609ea76db3db8dc9ab4203daf0aac6ac"

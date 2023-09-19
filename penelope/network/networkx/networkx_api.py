@@ -23,6 +23,9 @@ class nx(pu.DummyClass):
     circular_layout = lambda *args, **kwargs: {}
     spectral_layout = lambda *args, **kwargs: {}
 
+    class community(pu.DummyClass):
+        best_partition = lambda *args, **kwargs: []
+
 
 try:
     import networkx as nx  # pylint: disable=unused-import

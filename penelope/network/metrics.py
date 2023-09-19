@@ -1,11 +1,4 @@
-from typing import List
-
 from .networkx.networkx_api import nx
-
-try:
-    import community as community_louvain
-except ImportError:
-    ...
 
 DISTANCE_METRICS = {
     # 'Mahalanobis': 'mahalanobis',
@@ -24,7 +17,8 @@ DISTANCE_METRICS = {
 }
 
 
-def compute_centrality(network: nx.Graph):
+def compute_centrality(network: nx.Graph) -> list[float]:
+    """Computes centrality vector using betweenness centrality"""
     centrality = nx.algorithms.centrality.betweenness_centrality(network)
     _, nodes_centrality = zip(*sorted(centrality.items()))
     max_centrality = max(nodes_centrality)
@@ -32,13 +26,22 @@ def compute_centrality(network: nx.Graph):
     return centrality_vector
 
 
-def compute_partition(network):
-    partition = community_louvain.best_partition(network)  # pylint: disable=no-member
-    _, nodes_community = zip(*sorted(partition.items()))
-    return nodes_community
+# def compute_partition(network):
+#     partition = community_louvain.best_partition(network)  # pylint: disable=no-member
+#     _, nodes_community = zip(*sorted(partition.items()))
+#     return nodes_community
 
 
-def partition_colors(nodes_community, color_palette: List[str] = None):
+def compute_partition(network: nx.Graph) -> list[int]:
+    """Computes community partition using Louvain algorithm"""
+    partition: list[set[int]] = nx.community.louvain_communities(network)
+    partition_map: dict[int, int] = {n: c for c, ns in enumerate(partition) for n in ns}
+    partition_by_index = [partition_map[n] for n in sorted(partition_map.keys())]
+    return partition_by_index
+
+
+def partition_colors(nodes_community, color_palette: list[str] = None):
+    """Computes community colors"""
     if color_palette is None:
         color_palette = [
             '#e41a1c',
@@ -68,7 +71,8 @@ def partition_colors(nodes_community, color_palette: List[str] = None):
     return community_colors
 
 
-def compute_alpha_vector(value_vector: List[float]) -> List[float]:
+def compute_alpha_vector(value_vector: list[float]) -> list[float]:
+    """Computes alpha vector for node coloring"""
     max_value: float = max(value_vector)
-    alphas: List[float] = list(map(lambda h: 0.1 + 0.6 * (h / max_value), value_vector))
+    alphas: list[float] = list(map(lambda h: 0.1 + 0.6 * (h / max_value), value_vector))
     return alphas
