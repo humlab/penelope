@@ -16,13 +16,6 @@ def python_louvain_to_nx(partition):
     return {value: [n for n, c in partition.items() if c == value] for value in set(partition.values())}
 
 
-def compute_partition(network):
-    partition = nx.community.louvain_communities(network)
-    partition_map: dict = {n: c for c, ns in enumerate(partition) for n in ns}
-    partition_by_index = [partition_map[n] for n in sorted(partition_map.keys())]
-    return partition_by_index
-
-
 def test_metrics_compute_partition():
     # Test graph In this graph, with two distinct communities {1, 2, 3} and {4, 5, 6}.
     # 1 -- 2 -- 3
@@ -36,11 +29,11 @@ def test_metrics_compute_partition():
 
     expected = [0, 1, 1, 0, 2, 2]
 
-    nx_partition = nx.community.louvain_communities(G, seed=42)
+    nx_partition = compute_partition(G, seed=42)
 
-    assert nx_partition == [{1, 4}, {2, 3}, {5, 6}]
+    assert nx_partition == expected
 
-    nx_partition_map: dict = {n: c for c, ns in enumerate(nx_partition) for n in ns}
+    nx_partition_map: dict = {n + 1: partition for n, partition in enumerate(nx_partition)}
     assert nx_partition_map == {1: 0, 4: 0, 2: 1, 3: 1, 5: 2, 6: 2}
 
     nx_partition_by_index = [nx_partition_map[n] for n in sorted(nx_partition_map.keys())]

@@ -32,9 +32,9 @@ def compute_centrality(network: nx.Graph) -> list[float]:
 #     return nodes_community
 
 
-def compute_partition(network: nx.Graph) -> list[int]:
+def compute_partition(network: nx.Graph, seed: int=None) -> list[int]:
     """Computes community partition using Louvain algorithm"""
-    partition: list[set[int]] = nx.community.louvain_communities(network)
+    partition: list[set[int]] = nx.community.louvain_communities(network, seed=seed)
     partition_map: dict[int, int] = {n: c for c, ns in enumerate(partition) for n in ns}
     partition_by_index = [partition_map[n] for n in sorted(partition_map.keys())]
     return partition_by_index
