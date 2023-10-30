@@ -1,6 +1,3 @@
-import community as community_louvain
-
-# Importing libraries
 import networkx as nx
 
 from penelope.network.metrics import compute_centrality, compute_partition, partition_colors
@@ -17,12 +14,6 @@ def nx_to_python_louvain(partition):
 
 def python_louvain_to_nx(partition):
     return {value: [n for n, c in partition.items() if c == value] for value in set(partition.values())}
-
-
-def compute_partition1(network):
-    partition = community_louvain.best_partition(network)  # pylint: disable=no-member
-    _, nodes_community = zip(*sorted(partition.items()))
-    return nodes_community
 
 
 def compute_partition(network):
