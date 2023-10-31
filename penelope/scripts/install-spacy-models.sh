@@ -10,9 +10,7 @@ target_folder="/data/lib/spacy_data"
 
 declare -a MODELS=("en_core_web_sm" "en_core_web_md")
 
-# declare -a VERSIONS=("3.1.0" "3.4.1" "3.5.0")
-VERSIONS=`git ls-remote --tags git@github.com:explosion/spacy-models | grep en_core_web_sm | cut -f2 | cut -d'/' -f3 | cut -d'-' -f2 | sort | tail -3`
-echo $VERSIONS
+read -ra VERSIONS <<< $(git ls-remote --tags git@github.com:explosion/spacy-models | grep en_core_web_sm | cut -f2 | cut -d'/' -f3 | cut -d'-' -f2 | sort | tail -3 | tr '\n' ' ')
 
 # declare -a LANGUAGES=("en")
 # declare -a GENRES=("web")
@@ -38,17 +36,22 @@ function download_model {
     mv ./${model}-${version}/${model}/${model}-${version} ${model}
     rm -rf ${tarball}
 
-    echo "info: ${model}-${version} downloaded"
+    echo "info: ${model}-${version} downloaded to $target_folder/$version"
 }
 
 pushd . > /dev/null
 
+echo "models: ${MODELS[@]}"
+echo "versions: ${VERSIONS[@]}"
+
 for model in "${MODELS[@]}" ; do
+    echo "info: ${model}"
     for version in "${VERSIONS[@]}" ; do
         if [ ! -d "$target_folder/$version/${model}" ]; then
             download_model $model $version
         fi
     done
 done
+
 
 popd > /dev/null
