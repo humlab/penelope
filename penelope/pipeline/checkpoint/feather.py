@@ -49,6 +49,8 @@ def write_document_index(folder: str, document_index: pd.DataFrame):
         return
 
     sanitize_document_index(document_index)
+    # FIXME: Change filename extension to '.feather' as it should be.
+    # Add logic that separates documents and metadata in another way
     document_index.reset_index(drop=True).to_feather(jj(folder, 'document_index.feathering'), compression="lz4")
 
 

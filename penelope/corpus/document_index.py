@@ -453,7 +453,7 @@ def load_document_index(
     sep: str,
     document_id_field: str = 'document_id',
     filename_fields: FilenameFieldSpecs = None,
-    probe_extensions: str = 'csv,csv.gz,csv.zip,zip,gz,feather',
+    probe_extensions: str = 'csv,csv.gz,csv.zip,zip,gz,feather,feathering',
     **read_csv_kwargs,
 ) -> DocumentIndex:
     """Loads a document index and sets `document_name` as index column. Also adds `document_id` if missing"""
@@ -474,6 +474,8 @@ def load_document_index(
             raise FileNotFoundError(filename) from ex
     else:
         if isinstance(filename, str):
+            if 'feather' in probe_extensions and 'feathering' not in probe_extensions:
+                probe_extensions += ',feathering'
             if (probe_filename := probe_extension(filename, extensions=probe_extensions)) is None:
                 raise FileNotFoundError(f"{filename} (probed: {probe_extensions})")
             filename = probe_filename
@@ -488,7 +490,7 @@ def load_document_index(
             filename
             if isinstance(filename, DocumentIndex)
             else pd.read_feather(filename)
-            if isinstance(filename, str) and filename.endswith('feather')
+            if isinstance(filename, str) and '.feather' in filename
             else pd.read_csv(filename, sep=sep, **read_csv_kwargs)
         )
 
