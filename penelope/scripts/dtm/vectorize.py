@@ -198,6 +198,37 @@ def process(
 
 
 if __name__ == "__main__":
+    # opts: dict = {
+    #     'config_filename': './opts/inidun/dtm/curated_courier/v1.0.0/lemma_lowercase/corpus_config.yml',
+    #     'input_filename': '/data/inidun/courier/corpus/v1.0.0/article_corpus.zip',
+    #     'output_folder': '/data/inidun/courier/dtm/v1.0.0',
+    #     'output_tag': 'curated_courier_v1.0.0_lowercase',
+    #     # 'filename_pattern': '**/*.feather',
+    #     'phrase': None,
+    #     'phrase_file': None,
+    #     'create_subfolder': True,
+    #     'pos_includes': None,
+    #     'pos_paddings': None,
+    #     'pos_excludes': None,
+    #     'append_pos': False,
+    #     'max_tokens': 20000000,
+    #     'to_lower': True,
+    #     'lemmatize': False,
+    #     'remove_stopwords': None,
+    #     'min_word_length': 1,
+    #     'max_word_length': None,
+    #     'keep_symbols': True,
+    #     'keep_numerals': True,
+    #     'tf_threshold': 1,
+    #     'tf_threshold_mask': True,
+    #     'only_any_alphanumeric': False,
+    #     'only_alphabetic': False,
+    #     'enable_checkpoint': True,
+    #     'force_checkpoint': False,
+    #     'deserialize_processes': 1,
+    # }
+    # process(**opts)
+
     main.add_command(to_dtm, "args")
     main.add_command(to_dtm_opts_file_only, "opts-file")
     main()  # pylint: disable=no-value-for-parameter
