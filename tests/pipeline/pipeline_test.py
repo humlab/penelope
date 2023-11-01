@@ -154,7 +154,7 @@ def test_pipeline_tagged_frame_to_vocabulary_succeeds(config: pipeline.CorpusCon
     pipe: pipeline.CorpusPipeline = (
         pipeline.CorpusPipeline(config=config)
         .checkpoint(tagged_corpus_source, force_checkpoint=False)
-        .vocabulary(lemmatize=True, progress=False)
+        .vocabulary(lemmatize=True, to_lower=True, progress=False)
         .exhaust()
     )
 
@@ -170,7 +170,7 @@ def test_pipeline_tagged_frame_to_vocabulary_succeeds(config: pipeline.CorpusCon
     pipe: pipeline.CorpusPipeline = (
         pipeline.CorpusPipeline(config=config)
         .checkpoint(tagged_corpus_source, force_checkpoint=False)
-        .vocabulary(lemmatize=False, progress=False)
+        .vocabulary(lemmatize=False, to_lower=True, progress=False)
         .exhaust()
     )
 
