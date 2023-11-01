@@ -609,17 +609,16 @@ class Vocabulary(ITask):
     class TokenType(IntEnum):
         Text = 1
         Lemma = 2
-        LowerText = 3
 
     token2id: pc.Token2Id = None
     token_type: Optional[TokenType] = None
+    lowercase: bool = False
     progress: bool = False
     close: bool = True
     tf_threshold: int = None
     tf_keeps: Container[Union[int, str]] = field(default_factory=set)
     translation: dict[int, int] = field(default=None, init=False)
     is_built: bool = field(default=False, init=False)
-    target: str = field(init=False, default="")
 
     def __post_init__(self):
         self.in_content_type = [ContentType.TOKENS, ContentType.TAGGED_FRAME]
@@ -627,8 +626,6 @@ class Vocabulary(ITask):
         self.tf_keeps = set(self.tf_keeps or [])
 
     def setup(self) -> ITask:
-        self.target = self.get_column_name(self.token_type)
-
         # if self.pipeline.get_next_to(self).in_content_type == ContentType.TAGGED_FRAME:
         #     if self.token_type is None:
         #         raise ValueError("token_type text or lemma not specfied")
@@ -669,6 +666,7 @@ class Vocabulary(ITask):
 
     def _payload_to_token_stream(self, payload: DocumentPayload) -> Iterable[str]:
         if payload.content_type == ContentType.TOKENS:
+            # FIXME Why not lowercase here if self.lowercase is True?
             return payload.content
 
         if payload.recall('term_frequency'):
@@ -676,12 +674,13 @@ class Vocabulary(ITask):
 
         return (
             (x.lower() for x in payload.content[self.target])
-            if self.token_type in (Vocabulary.TokenType.Lemma, Vocabulary.TokenType.LowerText)
+            if self.lowercase or (self.token_type == Vocabulary.TokenType.Lemma)
             else payload.content[self.target]
         )
 
-    def get_column_name(self, token_type: TokenType) -> str:
-        if token_type == Vocabulary.TokenType.Lemma:
+    @property
+    def target(self) -> str:
+        if self.token_type == Vocabulary.TokenType.Lemma:
             return self.pipeline.payload.memory_store.get("lemma_column")
         return self.pipeline.payload.memory_store.get("text_column")
 

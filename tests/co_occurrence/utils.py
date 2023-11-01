@@ -106,7 +106,7 @@ def create_simple_bundle_by_pipeline(
     bundle: Bundle = (
         CorpusPipeline(config=config)
         .load_corpus(data)
-        .vocabulary(lemmatize=False)
+        .vocabulary(lemmatize=False, to_lower=False)
         .to_document_co_occurrence(context_opts=context_opts)
         .to_corpus_co_occurrence(context_opts=context_opts)
         .single()

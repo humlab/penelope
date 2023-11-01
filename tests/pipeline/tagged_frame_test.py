@@ -14,9 +14,10 @@ from ..fixtures import TEST_CSV_POS_DOCUMENT
 
 
 @pytest.mark.parametrize(
-    'token_type, ingest_vocab_type, expected_tokens, expected_pos, expected_vocab_count',
+    'lowercase, token_type, ingest_vocab_type, expected_tokens, expected_pos, expected_vocab_count',
     [
         (
+            False,
             tasks.Vocabulary.TokenType.Lemma,
             IngestVocabType.Incremental,
             'inne i den väldig någon ljuslåga fladdra_omkring .',
@@ -24,6 +25,7 @@ from ..fixtures import TEST_CSV_POS_DOCUMENT
             21,
         ),
         (
+            False,
             tasks.Vocabulary.TokenType.Lemma,
             IngestVocabType.Prebuild,
             'inne i den väldig någon ljuslåga fladdra_omkring .',
@@ -31,6 +33,7 @@ from ..fixtures import TEST_CSV_POS_DOCUMENT
             21,
         ),
         (
+            False,
             tasks.Vocabulary.TokenType.Text,
             IngestVocabType.Incremental,
             'Inne i den väldiga Några ljuslågor fladdrade .',
@@ -38,7 +41,8 @@ from ..fixtures import TEST_CSV_POS_DOCUMENT
             22,
         ),
         (
-            tasks.Vocabulary.TokenType.LowerText,
+            True,
+            tasks.Vocabulary.TokenType.Text,
             IngestVocabType.Incremental,
             'Inne i den väldiga Några ljuslågor fladdrade .',
             ['AB', 'RG', 'PN', 'JJ', 'DT', 'NN', 'VB', 'MAD'],
@@ -47,6 +51,7 @@ from ..fixtures import TEST_CSV_POS_DOCUMENT
     ],
 )
 def test_id_tagged_frame_process_payload(
+    lowercase: bool,
     token_type: tasks.Vocabulary.TokenType,
     ingest_vocab_type: IngestVocabType,
     expected_tokens: str,
@@ -80,6 +85,7 @@ def test_id_tagged_frame_process_payload(
     task: ToIdTaggedFrame = ToIdTaggedFrame(
         pipeline=pipeline,
         prior=prior,
+        lowercase=lowercase,
         token_type=token_type,
         close=True,
         ingest_vocab_type=ingest_vocab_type,

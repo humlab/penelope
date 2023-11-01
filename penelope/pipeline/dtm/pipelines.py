@@ -13,11 +13,12 @@ def wildcard_to_DTM_pipeline(
         p: pipelines.CorpusPipeline = (
             pipelines.wildcard()
             .vocabulary(
-                lemmatize=extract_opts,
+                lemmatize=extract_opts.lemmatize,
                 progress=True,
                 tf_threshold=extract_opts.global_tf_threshold,
                 tf_keeps=None,
                 close=True,
+                to_lower=transform_opts.to_lower,
             )
             .tagged_frame_to_tokens(extract_opts=extract_opts, transform_opts=transform_opts)
             # .tokens_transform(transform_opts=transform_opts)

@@ -54,6 +54,7 @@ def test_simple():
             tf_threshold=3,
             tf_keeps=context_opts.get_concepts(),
             close=True,
+            to_lower=True,
         )
         .tagged_frame_to_tokens(
             extract_opts=extract_opts,  # .clear_tf_threshold(),
@@ -113,6 +114,7 @@ def test_tranströmer():  # pylint: disable=non-ascii-name
             tf_threshold=tf_threshold,
             tf_keeps=context_opts.get_concepts(),
             close=True,
+            to_lower=True,
         )
         .tagged_frame_to_tokens(
             extract_opts=extract_opts,  # .clear_tf_threshold(),

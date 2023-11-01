@@ -14,6 +14,8 @@ if TYPE_CHECKING:
     from . import interfaces, pipelines
 
 # pylint: disable=too-many-public-methods, no-member
+Lemma = tasks.Vocabulary.TokenType.Lemma
+Text = tasks.Vocabulary.TokenType.Text
 
 
 class PipelineShortcutMixIn:
@@ -76,9 +78,25 @@ class PipelineShortcutMixIn:
     def to_id_tagged_frame(
         self: pipelines.CorpusPipeline,
         ingest_vocab_type: str = tagged_frame.IngestVocabType.Incremental,
+        lemmatize: bool = False,
+        progress: bool = False,
+        tf_threshold: int = None,
+        tf_keeps: Container[Union[int, str]] = None,
+        close: bool = True,
+        to_lower: bool = True,
     ) -> pipelines.CorpusPipeline:
         """TAGGED_FRAME => DATAFRAME"""
-        return self.add(tagged_frame.ToIdTaggedFrame(ingest_vocab_type=ingest_vocab_type))
+        return self.add(
+            tagged_frame.ToIdTaggedFrame(
+                token_type=Lemma if lemmatize else Text,
+                lowercase=to_lower,
+                progress=progress,
+                tf_threshold=tf_threshold,
+                tf_keeps=tf_keeps,
+                close=close,
+                ingest_vocab_type=ingest_vocab_type,
+            )
+        )
 
     def store_id_tagged_frame(
         self: pipelines.CorpusPipeline,
@@ -163,22 +181,14 @@ class PipelineShortcutMixIn:
     ) -> pipelines.CorpusPipeline:
         return self.add(
             tasks.Vocabulary(
-                token_type=self.encode_token_type(lemmatize, to_lower),
+                token_type=Lemma if lemmatize else Text,
+                lowercase=to_lower,
                 progress=progress,
                 tf_threshold=tf_threshold,
                 tf_keeps=tf_keeps,
                 close=close,
             )
         )
-
-    def encode_token_type(self, lemmatize, to_lower):
-        if lemmatize:
-            return tasks.Vocabulary.TokenType.Lemma
-
-        if to_lower:
-            return tasks.Vocabulary.TokenType.LowerText
-
-        return tasks.Vocabulary.TokenType.Text
 
     def filter_tagged_frame(
         self: pipelines.CorpusPipeline,
