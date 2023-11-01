@@ -1,3 +1,4 @@
+import os
 from unittest.mock import Mock
 
 import pandas as pd
@@ -33,6 +34,19 @@ ATTRIBUTES = [
     "is_space",
     "is_digit",
 ]
+
+
+def test_model_version_check():
+    os.environ['SPACY_DATA'] = spacy_api.spacy_version
+
+    assert spacy_api.check_model_version(load_env=False)
+
+    with pytest.raises(ValueError):
+        os.environ['SPACY_DATA'] = "/tmp/0.0.0"
+        assert not spacy_api.check_model_version(load_env=False)
+
+    os.environ['SPACY_DATA'] = ""
+    assert not spacy_api.check_model_version(load_env=False)
 
 
 def test_annotate_document_with_lemma_and_pos_strings_succeeds(en_nlp):

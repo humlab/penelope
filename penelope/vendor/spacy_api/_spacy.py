@@ -23,6 +23,7 @@ Tokenizer = pu.DummyClass
 Vocab = pu.DummyClass
 
 try:
+    from spacy import __version__ as spacy_version
     from spacy import attrs, load
     from spacy.cli.download import download
     from spacy.language import Language, Vocab
@@ -32,6 +33,7 @@ try:
 
 except ImportError:
     ...
+    spacy_version = '0.0.0'
 
 
 def keep_hyphen_tokenizer(nlp: Language) -> Tokenizer:
@@ -48,8 +50,9 @@ def keep_hyphen_tokenizer(nlp: Language) -> Tokenizer:
     )
 
 
-def spacy_data_path() -> str:
-    pu.load_cwd_dotenv()
+def spacy_data_path(load_env: bool = False) -> str:
+    if load_env:
+        pu.load_cwd_dotenv()
     return os.environ.get("SPACY_DATA", "")
 
 
@@ -72,7 +75,7 @@ def prepend_path(model: Union[Language, str], path: str) -> Union[Language, str]
 def prepend_spacy_path(model: Union[Language, str]) -> Union[Language, str]:
     """Prepends `model` with SPACY_DATA environment if set and model is a string"""
 
-    spacy_data: str = spacy_data_path()
+    spacy_data: str = spacy_data_path(True)
     model: str = prepend_path(model, spacy_data)
 
     return model
@@ -87,6 +90,29 @@ def remove_whitespace_entities(doc: Doc) -> Doc:
     return doc
 
 
+def check_model_version(load_env: bool = True) -> bool:
+    major, minor, _ = spacy_version.split('.')
+    model_path: str = spacy_data_path(load_env)
+
+    if model_path == "":
+        return False
+
+    if model_path.endswith('/'):
+        model_path = model_path[:-1]
+
+    if not model_path:
+        return False
+
+    model_major, model_minor, _ = os.path.basename(model_path).split('.')
+
+    if major != model_major or minor != model_minor:
+        raise ValueError(
+            f"spaCy version {major}.{minor} does not match model version {model_major}.{model_minor}\nUse spacy download {model_path} or run script install-script-models.sh"
+        )
+
+    return True
+
+
 def load_model(
     *,
     model: str | Language,
@@ -96,6 +122,8 @@ def load_model(
     keep_hyphens: bool = False,
     remove_whitespace_ents: bool = False,
 ) -> Language:
+    check_model_version()
+
     if remove_whitespace_ents:
         Language.factories['remove_whitespace_entities'] = lambda _nlp, **_cfg: remove_whitespace_entities
 

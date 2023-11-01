@@ -10,12 +10,14 @@ try:
     from spacy.tokens import Doc, Token
 
     from ._spacy import (
+        check_model_version,
         load,
         load_model,
         load_model_by_parts,
         prepend_path,
         prepend_spacy_path,
         spacy_data_path,
+        spacy_version,
         token_count_by,
     )
 
@@ -32,3 +34,5 @@ except (ImportError, NameError):
     prepend_spacy_path = stub
     token_count_by = stub
     Language = Any
+    check_model_version = stub
+    spacy_version = '0.0.0'
