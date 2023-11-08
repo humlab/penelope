@@ -1,3 +1,4 @@
+import contextlib
 import os
 import re
 import xml.etree.ElementTree as ET
@@ -92,14 +93,12 @@ class MalletTopicModel(LdaMallet):
 
     def xlog_perplexity(self, content: str) -> float:
         perplexity = None
-        try:
-            # content = open(filename).read()
+        with contextlib.suppress(Exception):
             p = re.compile(r"<\d+> LL/token\: (-[\d\.]+)")
             matches = p.findall(content)
             if len(matches) > 0:
                 perplexity = float(matches[-1])
-        finally:
-            return perplexity  # pylint: disable=lost-exception
+        return perplexity
 
     def load_topic_diagnostics(self) -> pd.DataFrame:
         """Loads MALLET topic diagnostics item into dataframe

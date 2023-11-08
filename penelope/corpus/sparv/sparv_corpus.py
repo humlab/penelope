@@ -4,9 +4,10 @@ from typing import TYPE_CHECKING
 
 import penelope.utility.zip_utils as zip_util
 
-from .. import sparv
 from ..readers.interfaces import ExtractTaggedTokensOpts, TextReaderOpts
 from ..tokenized_corpus import TokenizedCorpus
+from .sparv_csv_reader import SparvCsvReader
+from .sparv_xml_reader import SparvXmlReader
 
 if TYPE_CHECKING:
     from ..transform import TokensTransformOpts
@@ -23,10 +24,10 @@ class SparvTokenizedXmlCorpus(TokenizedCorpus):
         transform_opts: TokensTransformOpts,
         chunk_size: int = None,
     ):
-        if isinstance(source, sparv.SparvXmlReader):
+        if isinstance(source, SparvXmlReader):
             tokens_reader = source
         else:
-            tokens_reader = sparv.SparvXmlReader(
+            tokens_reader = SparvXmlReader(
                 source,
                 extract_opts=extract_opts,
                 xslt_filename=None,
@@ -56,10 +57,10 @@ class SparvTokenizedCsvCorpus(TokenizedCorpus):
         transform_opts: TokensTransformOpts,
         chunk_size: int = None,
     ):
-        if isinstance(source, sparv.SparvCsvReader):
+        if isinstance(source, SparvCsvReader):
             tokens_reader = source
         else:
-            tokens_reader = sparv.SparvCsvReader(
+            tokens_reader = SparvCsvReader(
                 source,
                 extract_opts=extract_opts,
                 reader_opts=reader_opts,

@@ -32,7 +32,6 @@ try:
     from spacy.util import compile_prefix_regex, compile_suffix_regex
 
 except ImportError:
-    ...
     spacy_version = '0.0.0'
 
 

@@ -8,8 +8,7 @@ from typing import Callable
 import pandas as pd
 from loguru import logger
 
-from penelope.utility import read_yaml
-
+from .file_utility import read_yaml
 from .pandas_utils import PropertyValueMaskingOpts
 from .utils import clear_cached_properties, dotcoalesce, revdict
 

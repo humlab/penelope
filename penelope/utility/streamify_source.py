@@ -7,13 +7,13 @@ from multiprocessing import Pool
 from os.path import isdir, isfile, join
 from typing import Any, AnyStr, Callable, Iterable, Iterator, Optional, Union
 
-from . import zip_utils
 from .file_utility import read_textfile, read_textfile2
 from .filename_utils import filename_satisfied_by, replace_folder
+from .zip_utils import list_filenames, read_file_content2
 
 
 def _read_file_in_zip(args: tuple) -> tuple[str, AnyStr]:
-    return zip_utils.read_file_content2(zip_or_filename=args[0], filename=args[1], as_binary=args[2])
+    return read_file_content2(zip_or_filename=args[0], filename=args[1], as_binary=args[2])
 
 
 def _read_file_in_folder(args: tuple) -> tuple[str, AnyStr]:
@@ -30,14 +30,14 @@ def streamify_zip_source(
     n_processes: int = 1,
     n_chunksize: int = 5,
 ) -> Iterator[tuple[str, AnyStr]]:
-    filenames = filenames or zip_utils.list_filenames(
+    filenames = filenames or list_filenames(
         zip_or_filename=path, filename_pattern=filename_pattern, filename_filter=filename_filter
     )
 
     if n_processes == 1:
         with zipfile.ZipFile(path, 'r') as zf:
             for filename in filenames:
-                yield zip_utils.read_file_content2(zip_or_filename=zf, filename=filename, as_binary=as_binary)
+                yield read_file_content2(zip_or_filename=zf, filename=filename, as_binary=as_binary)
 
     else:
         args: str = [(path, filename, as_binary) for filename in filenames]
@@ -214,7 +214,7 @@ def is_url(source: str) -> bool:
 
 def read_text(source: Any, filename: str) -> str:
     if _is_zipfile(source):
-        _, data = zip_utils.read_file_content2(zip_or_filename=source, filename=filename, as_binary=False)
+        _, data = read_file_content2(zip_or_filename=source, filename=filename, as_binary=False)
         return data
 
     if isinstance(source, str) and isdir(source) and isfile(join(source, filename)):
