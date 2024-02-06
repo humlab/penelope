@@ -36,7 +36,7 @@ def train(
         options:
             perplexity_score    Computed perplexity scores
             coherence_score     Computed coherence scores
-            engine_options       Passed engine options (not the interpreted algorithm specific options)
+            engine_options      Passed engine options (not the interpreted algorithm specific options)
             extra_options       Any other compute option passed as a kwarg
     """
 
