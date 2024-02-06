@@ -18,7 +18,6 @@ from typing import Callable
 from loguru import logger
 
 from ..inject import ConfigValue
-
 from .utility import load_dict, load_token_set, store_dict, store_token_set
 
 PARAGRAPH_MARKER = '##PARAGRAPH##'
