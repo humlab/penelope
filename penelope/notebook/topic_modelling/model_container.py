@@ -19,6 +19,7 @@ class TopicModelContainer:
         self._train_corpus_folder: str | tm.TrainingCorpus = None
         self._folder: str = None
         self._observers: dict[Any, Callable] = {}
+        self._property_bag: dict[str, Any] = {}
 
     def register(self, observer: Any, callback: Callable) -> None:
         self._observers[observer] = callback
@@ -93,3 +94,9 @@ class TopicModelContainer:
     @property
     def folder(self) -> str:
         return self._folder
+
+    def get(self, key: str, default: Any = None) -> Any:
+        return self._property_bag.get(key, default)
+
+    def set(self, key: str, value: Any) -> None:
+        self._property_bag[key] = value

@@ -122,7 +122,7 @@ class CorpusConfig:
             dependencies=self.dependencies,
         )
 
-    def dump(self, path: str):
+    def dump(self, path: str) -> None:
         """Serializes and writes a CorpusConfig to `path`"""
 
         with open(path, "w", encoding="utf-8") as fp:
@@ -139,7 +139,7 @@ class CorpusConfig:
                 config_dict: dict = yaml.load(fp, Loader=yaml.FullLoader)
             else:
                 config_dict: dict = json.load(fp)
-        deserialized_config = CorpusConfig.dict_to_corpus_config(config_dict)
+        deserialized_config: CorpusConfig = CorpusConfig.dict_to_corpus_config(config_dict)
         if source is not None:
             deserialized_config.pipeline_payload.source = source
         return deserialized_config
@@ -147,7 +147,9 @@ class CorpusConfig:
     @staticmethod
     def loads(data_str: str) -> "CorpusConfig":
         """Deserializes a CorpusConfig from `data_str`"""
-        deserialized_config = CorpusConfig.dict_to_corpus_config(yaml.load(data_str, Loader=yaml.FullLoader))
+        deserialized_config: CorpusConfig = CorpusConfig.dict_to_corpus_config(
+            yaml.load(data_str, Loader=yaml.FullLoader)
+        )
         return deserialized_config
 
     @staticmethod
@@ -353,7 +355,6 @@ class DependencyResolver:
             dependencies: <dict of key-specific dependencies>
         key#2: ...
         """
-
         dependency: dict = (store or {}).get(key)
 
         if not dependency:
@@ -364,13 +365,13 @@ class DependencyResolver:
         if not class_name:
             raise ValueError(f"Missing class name in config: {key}")
 
-        options: dict = dependency.get('options', {})
+        options: dict = dependency.get('options', {}) or {}
 
-        arguments: list = dependency.get('arguments', [])
+        arguments: list = dependency.get('arguments', []) or []
         if not isinstance(arguments, list):
             arguments = [arguments]
 
-        local_store: dict = dict(dependency.get('dependencies', {}))
+        local_store: dict = dict(dependency.get('dependencies', {}) or {})
 
         cls.resolve_arguments(options, ('config@', store), ('local@', local_store))
 

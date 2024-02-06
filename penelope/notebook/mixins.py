@@ -7,7 +7,6 @@ from collections import defaultdict
 import ipywidgets as w
 import pandas as pd
 from IPython.display import display as ipydisplay
-from typing_extensions import deprecated
 
 from penelope import utility as pu
 from penelope.corpus.render import IRenderService, ITextRepository
@@ -120,7 +119,6 @@ class PivotKeysMixIn:
         register_observer(self._filter_keys_picker, handler=self.pivot_key_handler, value=True)
         return self
 
-    @deprecated
     def reset(self) -> "PivotKeysMixIn":
         self.observe(value=False, handler=self._display_event_handler)
         self._filter_keys_picker.value = [self.clear_label]
