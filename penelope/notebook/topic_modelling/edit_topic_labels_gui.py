@@ -1,3 +1,4 @@
+import os
 from os.path import join as jj
 
 import ipywidgets as w
@@ -59,12 +60,15 @@ class EditTopicLabelsGUI(mx.AlertMixIn, mx.TopicsStateGui):
 
     def save(self, *_):
         try:
+            username: str = os.environ.get("JUPYTERHUB_USER", "")
+            if username:
+                filename: str = "-" + username
+            filename: str = jj(self.folder, self.state.inferred_topics.topic_labels_filename())
+
             self.inferred_topics.topic_token_overview['label'] = self._grid.data['label']
-            self.inferred_topics.topic_token_overview.to_csv(
-                jj(self.folder, "topic_token_overview_label.csv"), sep='\t'
-            )
+            self.inferred_topics.topic_token_overview.to_csv(filename, sep='\t')
             self._save.disabled = True
             self._save.button_style = ''
-            self.alert(f'🙃 Saved to {jj(self.folder, "topic_token_overview_label.csv")}!')
+            self.alert(f'🙃 Saved to {filename}!')
         except Exception as ex:
             self.warn(f"😡 {ex}")

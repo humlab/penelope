@@ -335,12 +335,19 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         logger.warning(f'No CorpusConfig found in {folder} (may affect certain operations)')
         return None
 
-    def load_topic_labels(self, folder: str, **csv_opts: dict) -> pd.DataFrame:
+    @staticmethod
+    def topic_labels_filename(private: bool = False) -> str:
+        username: str = os.environ.get("JUPYTERHUB_USER", "")
+        if private and username:
+            return f"topic_token_overview_label-{username}.csv"
+        return "topic_token_overview_label.csv"
+
+    def load_topic_labels(self, folder: str, private: bool = False, **csv_opts: dict) -> pd.DataFrame:
         tto: pd.DataFrame = self.topic_token_overview
-        if isfile(jj(folder, "topic_token_overview_label.csv")):
-            labeled_tto: pd.DataFrame = pd.read_csv(jj(folder, 'topic_token_overview_label.csv'), **csv_opts)
+        filename: str = jj(folder, self.topic_labels_filename(private))
+        if isfile(filename):
+            labeled_tto: pd.DataFrame = pd.read_csv(filename, **csv_opts)
             if self.is_satisfied_topic_token_overview(labeled_tto):
-                # logger.info(f"labeled file loaded from: {folder}")
                 tto = labeled_tto
 
         if 'label' not in tto.columns:
