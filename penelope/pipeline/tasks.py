@@ -440,7 +440,7 @@ class TextToTokens(TransformTokensMixIn, ITask):
                 self.tokenize(self._text_transformer.transform(payload.content))
             tokens = self.tokenize(payload.content)
 
-        tokens = self.transform(tokens)
+        tokens: list[str] = self.transform(tokens)
 
         return payload.update(self.out_content_type, tokens)
 

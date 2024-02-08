@@ -24,15 +24,16 @@ SafeLoaderIgnoreUnknown.add_constructor(None, SafeLoaderIgnoreUnknown.let_unknow
 
 
 class Config(dict):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, *, data: dict = None, context: str = "default", filename: str | None = None):
+        self.data: dict = data
         self.context: str = "default"
+        self.filename: str | None = filename
 
     def get(self, *keys: str, default: Any | Type[Any] = None, mandatory: bool = False) -> Any:
         if mandatory and not self.exists(*keys):
             raise ValueError(f"Missing mandatory key: {keys}")
 
-        value: Any = dget(self, *keys)
+        value: Any = dget(self.data, *keys)
 
         if value is not None:
             return value
@@ -40,7 +41,7 @@ class Config(dict):
         return default() if isclass(default) else default
 
     def exists(self, *keys) -> bool:
-        return dotexists(self, *keys)
+        return dotexists(self.data, *keys)
 
     @staticmethod
     def load(*, source: str | dict | Config = None, context: str = None) -> "Config":
