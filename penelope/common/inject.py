@@ -24,9 +24,9 @@ SafeLoaderIgnoreUnknown.add_constructor(None, SafeLoaderIgnoreUnknown.let_unknow
 
 
 class Config(dict):
-    def __init__(self, *, data: dict = None, context: str = "default", filename: str | None = None):
+    def __init__(self, data: dict = None, *, context: str = "default", filename: str | None = None):
         self.data: dict = data
-        self.context: str = "default"
+        self.context: str = context
         self.filename: str | None = filename
 
     def get(self, *keys: str, default: Any | Type[Any] = None, mandatory: bool = False) -> Any:
