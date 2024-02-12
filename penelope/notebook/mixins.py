@@ -245,7 +245,7 @@ class PivotKeysMixIn:
     def default_pivot_keys_layout(self, vertical: bool = False, **kwargs) -> w.Widget:
         # if not self._pivot_keys.has_pivot_keys:
         #     return w.VBox()
-        width: str = '200px'
+        width: str = '250px'
         if kwargs.get('rows') is not None:
             self._filter_values_picker.rows = kwargs.get('rows')
         self._filter_values_picker.layout.width = '95%'
