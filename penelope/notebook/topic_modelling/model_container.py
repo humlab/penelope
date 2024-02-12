@@ -42,9 +42,9 @@ class TopicModelContainer:
     def __setitem__(self, key, item):
         self.__dict__[key] = item
 
-    @staticmethod
-    def singleton() -> "TopicModelContainer":
-        TopicModelContainer._singleton = TopicModelContainer._singleton or TopicModelContainer()
+    @classmethod
+    def singleton(cls) -> Self:
+        TopicModelContainer._singleton = TopicModelContainer._singleton or cls.create_instance()
         return TopicModelContainer._singleton
 
     def update(
@@ -98,5 +98,10 @@ class TopicModelContainer:
     def get(self, key: str, default: Any = None) -> Any:
         return self._property_bag.get(key, default)
 
-    def set(self, key: str, value: Any) -> None:
-        self._property_bag[key] = value
+    def store(self, **key_values) -> Self:
+        self._property_bag.update(**key_values)
+        return self
+
+    @classmethod
+    def create_instance(cls) -> Self:
+        return cls()

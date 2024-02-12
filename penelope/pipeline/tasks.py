@@ -680,6 +680,7 @@ class Vocabulary(ITask):
 
     @property
     def target(self) -> str:
+        # FIXME: Fetch from pipeline.config.serialize_opts instead!
         if self.token_type == Vocabulary.TokenType.Lemma:
             return self.pipeline.payload.memory_store.get("lemma_column")
         return self.pipeline.payload.memory_store.get("text_column")

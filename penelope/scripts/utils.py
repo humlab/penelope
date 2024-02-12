@@ -132,8 +132,12 @@ def consolidate_arguments(
     options_filename: Optional[str] = arguments.get(filename_key)
     del arguments[filename_key]
     arguments = utility.update_dict_from_yaml(options_filename, arguments)
-    cli_args: dict = passed_cli_arguments(arguments)
-    arguments.update(cli_args)
+    try:
+        cli_args: dict = passed_cli_arguments(arguments)
+        if cli_args:
+            arguments.update(cli_args)
+    except RuntimeError:
+        pass
 
     if store_opts:
         log_arguments(arguments, log_dir=log_dir, sub_dir=sub_dir)

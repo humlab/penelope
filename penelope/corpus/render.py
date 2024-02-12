@@ -105,7 +105,7 @@ class LemmaCorpusLoader(TaggedCorpusLoader):
     def __init__(self, source: str, **opts):
         super().__init__(source, **opts)
         self._type_column_name: str = 'lemma_column'
-        self._probe_column_names = ['lemma', 'baseform']
+        self._probe_column_names: list[str] = ['lemma', 'baseform']
 
 
 class TextRepository(ITextRepository):
