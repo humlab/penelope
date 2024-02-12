@@ -7,8 +7,9 @@ from contextlib import suppress
 from functools import cached_property
 from os.path import isfile
 from os.path import join as jj
-from typing import TYPE_CHECKING, Callable, List, Tuple
 from pathlib import Path
+from typing import TYPE_CHECKING, Callable, List, Tuple
+
 import numpy as np
 import pandas as pd
 from loguru import logger

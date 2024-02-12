@@ -138,7 +138,7 @@ def consolidate_arguments(
             arguments.update(cli_args)
     except RuntimeError:
         pass
-        
+
     if store_opts:
         log_arguments(arguments, log_dir=log_dir, sub_dir=sub_dir)
 
