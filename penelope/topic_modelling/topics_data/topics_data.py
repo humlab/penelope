@@ -8,7 +8,7 @@ from functools import cached_property
 from os.path import isfile
 from os.path import join as jj
 from typing import TYPE_CHECKING, Callable, List, Tuple
-
+from pathlib import Path
 import numpy as np
 import pandas as pd
 from loguru import logger
@@ -242,6 +242,8 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
 
         if self.corpus_config is not None:
             self.corpus_config.dump(jj(target_folder, "corpus.yml"))
+            if self.corpus_config.corpus_version:
+                Path(target_folder / 'version').write_text(self.corpus_config.corpus_version)
 
     def _store_csv(self, target_folder: str) -> None:
         data: list[tuple[pd.DataFrame, str]] = [

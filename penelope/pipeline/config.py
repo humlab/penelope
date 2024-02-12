@@ -54,6 +54,7 @@ class CorpusConfig:
     corpus_name: str
     corpus_type: CorpusType
     corpus_pattern: str
+    corpus_version: str
     serialize_opts: Optional[SerializeOpts]
     text_reader_opts: TextReaderOpts
     text_transform_opts: TextTransformOpts
@@ -112,6 +113,7 @@ class CorpusConfig:
             corpus_name=self.corpus_name,
             corpus_type=int(self.corpus_type),
             corpus_pattern=self.corpus_pattern,
+            corpus_version=self.corpus_version,
             serialize_opts=asdict(self.serialize_opts) if self.serialize_opts else None,
             text_reader_opts=asdict(self.text_reader_opts) if self.text_reader_opts else None,
             text_transform_opts=str(self.text_transform_opts.transforms) if self.text_transform_opts else None,
@@ -264,6 +266,7 @@ class CorpusConfig:
             corpus_name=uuid.uuid1(),
             corpus_type=CorpusType.Tokenized,
             corpus_pattern=None,
+            corpus_version=None,
             serialize_opts=None,
             text_reader_opts=None,
             text_transform_opts=None,
@@ -297,6 +300,7 @@ class CorpusConfig:
         corpus_name: str = None,
         corpus_type: CorpusType = CorpusType.Undefined,
         corpus_pattern: str = "*.zip",
+        corpus_version: str = None,
         serialize_opts: Optional[SerializeOpts] = None,
         text_reader_opts: TextReaderOpts = None,
         text_transform_opts: TextTransformOpts = None,
@@ -310,6 +314,7 @@ class CorpusConfig:
             corpus_name=corpus_name,
             corpus_type=corpus_type,
             corpus_pattern=corpus_pattern,
+            corpus_version=corpus_version,
             serialize_opts=serialize_opts,
             text_reader_opts=text_reader_opts,
             text_transform_opts=text_transform_opts,
