@@ -85,7 +85,7 @@ def filter_topic_tokens_overview(
     search_text: str,
     n_top: int,
     truncate_tokens: bool = False,
-    format_string: str = '<b style="color:green;font-size:14px">{}</b>',
+    format_string: bool | str = '<b style="color:green;font-size:14px">{}</b>',
 ) -> pd.DataFrame:
     """Filter out topics where `search` string is in `n_counts` words. Return data frame."""
 
@@ -98,7 +98,7 @@ def filter_topic_tokens_overview(
         if truncate_tokens:
             """Truncate tokens in result to top_n_tokens"""
             data['tokens'] = top_n_tokens.loc[data.index]
-        if len(data) > 0:
+        if format_string and len(data) > 0:
             """Highlight search text in tokens"""
             # FIXME: Search replaced text case insensitive
             re_subst: re.Pattern = re.compile(re.escape(search_text), re.IGNORECASE)
