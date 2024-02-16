@@ -124,8 +124,9 @@ def compute_topic_proportions(dtw: pd.DataFrame, document_index: pd.DataFrame) -
     """Compute topics' proportion for all documents."""
     if 'n_tokens' not in document_index.columns:
         return None
+    shape: tuple[int, int] = (len(document_index), dtw.topic_id.max() + 1)
     doc_sizes: np.ndarray = document_index.n_tokens.values
-    theta: sp.coo_matrix = sp.coo_matrix((dtw.weight, (dtw.document_id, dtw.topic_id)))
+    theta: sp.coo_matrix = sp.coo_matrix((dtw.weight, (dtw.document_id, dtw.topic_id)), shape=shape)
     theta_mult_doc_length: np.ndarray = theta.T.multiply(doc_sizes).T
     topic_frequency: np.ndarray = theta_mult_doc_length.sum(axis=0).A1
     topic_proportion: np.ndarray = topic_frequency / topic_frequency.sum()
