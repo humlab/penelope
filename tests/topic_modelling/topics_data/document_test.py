@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-import scipy.sparse as sp
 
 from penelope.topic_modelling.topics_data import DocumentTopicsCalculator, InferredTopicsData
 from penelope.topic_modelling.topics_data.document import (
