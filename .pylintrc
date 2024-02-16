@@ -45,7 +45,8 @@ disable=c-extension-no-member,
         use-dict-literal,
         wrong-import-order,
         wrong-spelling-in-comment,
-        wrong-spelling-in-docstring
+        wrong-spelling-in-docstring,
+        multiple-statements
 
 [REPORTS]
 output-format=text
