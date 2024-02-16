@@ -17,6 +17,8 @@ from penelope.topic_modelling.topics_data.document import (
     overload,
 )
 
+# pylint: disable=redefined-outer-name
+
 
 def test_compute_topic_proportions():
     dtw: pd.DataFrame = pd.DataFrame(
