@@ -91,15 +91,17 @@ def filter_by_keys(dtw: pd.DataFrame, document_index: pd.DataFrame, **kwargs) ->
 
 
 def filter_by_topics(dtw: pd.DataFrame, topic_ids: Sequence[int]) -> pd.DataFrame:
+    """Filter document-topic weights by topics."""
     dtw: pd.DataFrame = dtw[dtw['topic_id'].isin(topic_ids)]
     return dtw
 
 
 def filter_by_text(dtw: pd.DataFrame, topic_token_overview: pd.DataFrame, search_text: str, n_top: int) -> pd.DataFrame:
+    """Filter document-topic weights by text."""
     if len(search_text) <= 2:
         return dtw
     topic_ids: list[int] = filter_topic_tokens_overview(
-        topic_token_overview, search_text=search_text, n_top=n_top
+        topic_token_overview, search_text=search_text, n_top=n_top, format_string=False
     ).index.tolist()
     dtw: pd.DataFrame = filter_by_topics(dtw, topic_ids)
     return dtw
@@ -107,13 +109,15 @@ def filter_by_text(dtw: pd.DataFrame, topic_token_overview: pd.DataFrame, search
 
 def filter_by_inner_join(
     dtw: pd.DataFrame, other: pd.DataFrame | pd.Series | Sequence[int], left_index: bool = True, left_on: str = None
-):
+) -> pd.DataFrame:
+    """Filter document-topic weights by inner join with other data."""
     other: pd.DataFrame = pd.DataFrame(data=None, index=other.index if hasattr(other, 'index') else other)
     dtw = dtw.merge(other, left_index=left_index, left_on=left_on, right_index=True, how='inner')
     return dtw
 
 
 def filter_by_n_top(dtw: pd.DataFrame, n_top: int = 500) -> pd.DataFrame:
+    """Filter document-topic weights by top `n_top` topics."""
     dtw: pd.DataFrame = (
         dtw.set_index('document_id').sort_values('weight', ascending=False).head(n_top)  # .drop(['topic_id'], axis=1)
     )
