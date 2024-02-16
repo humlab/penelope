@@ -36,8 +36,7 @@ if DEBUG_TRACE:
 
 
 class IVocabulary(Protocol):
-    def build(self, extra_tokens: list[str] = None) -> None:
-        ...
+    def build(self, extra_tokens: list[str] = None) -> None: ...
 
 
 @dataclass

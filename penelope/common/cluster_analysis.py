@@ -73,13 +73,11 @@ class CorpusClusters(abc.ABC):
 
     @property
     @abc.abstractproperty
-    def threshold(self) -> float:
-        ...
+    def threshold(self) -> float: ...
 
     @threshold.setter
     @abc.abstractproperty
-    def threshold(self, value: float):
-        ...
+    def threshold(self, value: float): ...
 
 
 class HCACorpusClusters(CorpusClusters):

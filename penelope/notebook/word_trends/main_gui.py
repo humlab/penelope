@@ -32,9 +32,11 @@ class ComplexTrendsGUI:
         self.config: pp.CorpusConfig = (
             None
             if corpus_config is None
-            else pp.CorpusConfig.find(corpus_config, resources_folder).folders(corpus_folder)
-            if isinstance(corpus_config, str)
-            else corpus_config
+            else (
+                pp.CorpusConfig.find(corpus_config, resources_folder).folders(corpus_folder)
+                if isinstance(corpus_config, str)
+                else corpus_config
+            )
         )
         self.gui_compute: dtm_gui.ComputeGUI = dtm_gui.ComputeGUI(
             default_corpus_path=corpus_folder,

@@ -16,8 +16,7 @@ logger = utility.getLogger('penelope')
 
 
 # pylint: disable=
-class CoOccurrenceError(ValueError):
-    ...
+class CoOccurrenceError(ValueError): ...
 
 
 def compute_hal_or_glove_co_occurrences(

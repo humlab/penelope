@@ -30,13 +30,11 @@ class DoneCallback(Protocol):
         sender: Any | None = None,
         opts: interface.ComputeOpts = None,
         **kwargs: str,
-    ) -> None:
-        ...
+    ) -> None: ...
 
 
 class ComputeCallback(Protocol):
-    def __call__(self, opts: interface.ComputeOpts, config: CorpusConfig) -> Any:
-        ...
+    def __call__(self, opts: interface.ComputeOpts, config: CorpusConfig) -> Any: ...
 
 
 class BaseGUI:

@@ -31,8 +31,7 @@ class TrendsBaseGUI(abc.ABC):
     """GUI component that displays word trends"""
 
     @abc.abstractmethod
-    def keyness_widget(self) -> w.Dropdown:
-        ...
+    def keyness_widget(self) -> w.Dropdown: ...
 
     def __init__(self, n_top_count: int = 1000):
         super().__init__()
@@ -424,15 +423,17 @@ class CoOccurrenceTrendsGUI(TrendsBaseGUI):
         super().__init__(n_top_count=n_top_count)
         self.bundle = bundle
         self._keyness_source: w.Dropdown = w.Dropdown(
-            options={
-                "Full corpus": KeynessMetricSource.Full,
-                "Concept corpus": KeynessMetricSource.Concept,
-                "Weighed corpus": KeynessMetricSource.Weighed,
-            }
-            if bundle.concept_corpus is not None
-            else {
-                "Full corpus": KeynessMetricSource.Full,
-            },
+            options=(
+                {
+                    "Full corpus": KeynessMetricSource.Full,
+                    "Concept corpus": KeynessMetricSource.Concept,
+                    "Weighed corpus": KeynessMetricSource.Weighed,
+                }
+                if bundle.concept_corpus is not None
+                else {
+                    "Full corpus": KeynessMetricSource.Full,
+                }
+            ),
             value=KeynessMetricSource.Weighed if bundle.concept_corpus is not None else KeynessMetricSource.Full,
             layout=w.Layout(width='auto'),
         )

@@ -140,9 +140,7 @@ class PandasSource(ISource):  # pylint: disable=too-many-instance-attributes, di
             df = (
                 df[df[column].between(*value)]
                 if isinstance(value, tuple)
-                else df[df[column].isin(value)]
-                if isinstance(value, list)
-                else df[df[column] == value]
+                else df[df[column].isin(value)] if isinstance(value, list) else df[df[column] == value]
             )
         self.filtered_data = df
         return self

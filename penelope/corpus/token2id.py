@@ -18,8 +18,7 @@ MAGIC_TOKENS = ["*", GLOBAL_TF_THRESHOLD_MASK_TOKEN]
 # pylint: disable=too-many-public-methods, unsubscriptable-object
 
 
-class ClosedVocabularyError(Exception):
-    ...
+class ClosedVocabularyError(Exception): ...
 
 
 def id2token2token2id(id2token: Mapping[int, str]) -> dict:
@@ -413,7 +412,5 @@ class Token2Id(MutableMapping):
         return (
             id2token.token.to_dict()
             if isinstance(id2token, pd.DataFrame)
-            else id2token.id2token
-            if isinstance(id2token, Token2Id)
-            else id2token
+            else id2token.id2token if isinstance(id2token, Token2Id) else id2token
         )

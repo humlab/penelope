@@ -153,9 +153,11 @@ class BetterWordTokenizer(ISegmenter):
                 self._word_tokenize_fmt
                 % {
                     "tokens": ("(?:" + "|".join(self.patterns["tokens"]) + ")|") if self.patterns["tokens"] else "",
-                    "abbrevs": ("(?:" + "|".join(re.escape(a + ".") for a in self.abbreviations) + ")|")
-                    if self.abbreviations
-                    else "",
+                    "abbrevs": (
+                        ("(?:" + "|".join(re.escape(a + ".") for a in self.abbreviations) + ")|")
+                        if self.abbreviations
+                        else ""
+                    ),
                     "misc": "|".join(self.patterns["misc"]),
                     "number": self.patterns["number"],
                     "within": self.patterns["within"],
@@ -329,8 +331,7 @@ class SegmenterRepository:
         return SegmenterRepository.sentenizer().tokenize(text)
 
 
-class ModelNotFoundError(Exception):
-    ...
+class ModelNotFoundError(Exception): ...
 
 
 create_tokenize = SegmenterRepository.create_tokenize

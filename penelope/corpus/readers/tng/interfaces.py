@@ -33,16 +33,13 @@ class SourceInfo:
 
 class ISource(AbstractContextManager):
     @abc.abstractmethod
-    def namelist(self, *, pattern: str) -> List[str]:
-        ...
+    def namelist(self, *, pattern: str) -> List[str]: ...
 
     @abc.abstractmethod
-    def read(self, filename: str, as_binary: bool = False) -> Optional[Any]:
-        ...
+    def read(self, filename: str, as_binary: bool = False) -> Optional[Any]: ...
 
     @abc.abstractmethod
-    def exists(self, filename: str) -> bool:
-        ...
+    def exists(self, filename: str) -> bool: ...
 
     def get_info(self, opts: TextReaderOpts) -> SourceInfo:
         filenames = self.namelist(pattern=opts.filename_pattern)

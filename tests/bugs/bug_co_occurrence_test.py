@@ -9,7 +9,9 @@ from penelope.notebook.word_trends import BundleTrendsService, CoOccurrenceTrend
 
 # pylint: disable=redefined-outer-name, protected-access
 
-TEST_BUNDLE: str = "/data/inidun/courier/co_occurrence/courier_issue_by_article_pages_20221220/Courier_civilizations_w5_tf10_nvadj_nolemma"
+TEST_BUNDLE: str = (
+    "/data/inidun/courier/co_occurrence/courier_issue_by_article_pages_20221220/Courier_civilizations_w5_tf10_nvadj_nolemma"
+)
 
 
 @pytest.mark.skip(reason="Bug fixed")

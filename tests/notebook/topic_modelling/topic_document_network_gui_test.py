@@ -9,8 +9,7 @@ from penelope.notebook.topic_modelling import topic_document_network_gui as tdn_
 
 
 # pylint: disable=protected-access, redefined-outer-name
-def monkey_patch(*_, **__):
-    ...
+def monkey_patch(*_, **__): ...
 
 
 def test_create_gui(state: TopicModelContainer):

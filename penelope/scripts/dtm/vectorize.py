@@ -17,8 +17,7 @@ from penelope.workflows import interface
 
 
 @click.group()
-def main():
-    ...
+def main(): ...
 
 
 @main.command(name="args")

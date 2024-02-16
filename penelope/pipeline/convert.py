@@ -20,16 +20,13 @@ def is_encoded_tagged_frame(tagged_frame: pd.DataFrame) -> bool:
     return is_numeric_frame
 
 
-class Token2IdMissingError(ValueError):
-    ...
+class Token2IdMissingError(ValueError): ...
 
 
-class PoSTagSchemaMissingError(ValueError):
-    ...
+class PoSTagSchemaMissingError(ValueError): ...
 
 
-class TaggedFrameColumnNameError(ValueError):
-    ...
+class TaggedFrameColumnNameError(ValueError): ...
 
 
 # pylint: disable=too-many-arguments, too-many-statements

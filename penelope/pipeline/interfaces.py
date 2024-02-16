@@ -277,8 +277,7 @@ class PipelinePayload:
         return None
 
 
-class ResetNotApplicableError(Exception):
-    ...
+class ResetNotApplicableError(Exception): ...
 
 
 @dataclass
@@ -448,5 +447,4 @@ DocumentTagger = Callable[[DocumentPayload, List[str], Dict[str, Any]], TaggedFr
 
 class IDocumentTagger(abc.ABC):
     @abc.abstractmethod
-    def tag(self, document: str) -> TaggedFrame:
-        ...
+    def tag(self, document: str) -> TaggedFrame: ...

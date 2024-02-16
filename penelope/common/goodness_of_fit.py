@@ -25,8 +25,7 @@ from .distance_metrics import (
 )
 
 
-class GoodnessOfFitComputeError(ValueError):
-    ...
+class GoodnessOfFitComputeError(ValueError): ...
 
 
 @dataclass

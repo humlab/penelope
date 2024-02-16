@@ -78,7 +78,6 @@ class LdaEngineSpec(EngineSpec):
 
 
 class LdaMulticoreEngineSpec(EngineSpec):
-
     """
     See Gensim documentation: https://radimrehurek.com/gensim/gensim_models/ldamulticore.html#gensim.gensim_models.ldamulticore.LdaMulticore
 

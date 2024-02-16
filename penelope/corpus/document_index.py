@@ -26,8 +26,7 @@ if TYPE_CHECKING:
     from .readers.interfaces import TextReaderOpts
 
 
-class DocumentIndexError(ValueError):
-    ...
+class DocumentIndexError(ValueError): ...
 
 
 T = TypeVar("T", int, str)
@@ -47,9 +46,11 @@ class DocumentIndexHelper:
         self._document_index: DocumentIndex = (
             document_index
             if isinstance(document_index, DocumentIndex)
-            else metadata_to_document_index(metadata=document_index, document_id_field=None)
-            if isinstance(document_index, list)
-            else load_document_index_from_str(data_str=document_index, sep=kwargs.get('sep', '\t'))
+            else (
+                metadata_to_document_index(metadata=document_index, document_id_field=None)
+                if isinstance(document_index, list)
+                else load_document_index_from_str(data_str=document_index, sep=kwargs.get('sep', '\t'))
+            )
         )
 
     @property
@@ -188,11 +189,11 @@ class DocumentIndexHelper:
         transform = lambda df: (
             df[pivot_column_name]
             if transformer is None
-            else df[pivot_column_name].apply(transformer)
-            if callable(transformer)
-            else df[pivot_column_name].apply(transformer.get)
-            if isinstance(transformer, dict)
-            else None
+            else (
+                df[pivot_column_name].apply(transformer)
+                if callable(transformer)
+                else df[pivot_column_name].apply(transformer.get) if isinstance(transformer, dict) else None
+            )
         )
 
         """
@@ -205,9 +206,7 @@ class DocumentIndexHelper:
             **(
                 {'n_documents': 'sum'}
                 if "n_documents" in di_cols
-                else {'document_id': 'nunique'}
-                if "document_id" in di_cols
-                else {}
+                else {'document_id': 'nunique'} if "document_id" in di_cols else {}
             ),
         }
 
@@ -489,9 +488,11 @@ def load_document_index(
         document_index: DocumentIndex = (
             filename
             if isinstance(filename, DocumentIndex)
-            else pd.read_feather(filename)
-            if isinstance(filename, str) and '.feather' in filename
-            else pd.read_csv(filename, sep=sep, **read_csv_kwargs)
+            else (
+                pd.read_feather(filename)
+                if isinstance(filename, str) and '.feather' in filename
+                else pd.read_csv(filename, sep=sep, **read_csv_kwargs)
+            )
         )
 
     for old_or_unnamed_index_column in ['Unnamed: 0', 'filename.1']:

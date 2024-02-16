@@ -13,12 +13,10 @@ import scipy.sparse as sp
 from penelope.utility import DummyClass, streamify_any_source
 
 
-class TextCorpus(DummyClass):
-    ...
+class TextCorpus(DummyClass): ...
 
 
-class MmCorpus(DummyClass):
-    ...
+class MmCorpus(DummyClass): ...
 
 
 class Dictionary(DummyClass):

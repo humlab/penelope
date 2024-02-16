@@ -11,12 +11,10 @@ class ZeroComputeError(ValueError):
         super().__init__("Computation ended up in ZERO records. Check settings!")
 
 
-class CoOccurrenceError(ValueError):
-    ...
+class CoOccurrenceError(ValueError): ...
 
 
-class PartitionKeyNotUniqueKey(ValueError):
-    ...
+class PartitionKeyNotUniqueKey(ValueError): ...
 
 
 @dataclass

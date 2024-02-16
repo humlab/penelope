@@ -28,20 +28,16 @@ DEFAULT_TEMPLATE: str = """
 
 
 class ITextRepository(abc.ABC):
-    def get_text(self, document_name: str) -> str:
-        ...
+    def get_text(self, document_name: str) -> str: ...
 
-    def get(self, document_name: str) -> dict:
-        ...
+    def get(self, document_name: str) -> dict: ...
 
     @property
-    def filenames(self) -> list[str]:
-        ...
+    def filenames(self) -> list[str]: ...
 
 
 class IRenderService(abc.ABC):
-    def render(self, document_info: dict, kind: Literal['text', 'html']) -> dict | str:
-        ...
+    def render(self, document_info: dict, kind: Literal['text', 'html']) -> dict | str: ...
 
 
 class Loader(abc.ABC):
@@ -53,12 +49,10 @@ class Loader(abc.ABC):
         return self._load_text(self.source, document)
 
     @abc.abstractmethod
-    def _load_text(self, source: str, document: str) -> str:
-        ...
+    def _load_text(self, source: str, document: str) -> str: ...
 
     @property
-    def filenames(self) -> list[str]:
-        ...
+    def filenames(self) -> list[str]: ...
 
 
 class ZipLoader(Loader):

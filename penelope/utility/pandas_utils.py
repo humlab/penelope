@@ -146,11 +146,11 @@ def create_mask(doc: pd.DataFrame, args: dict) -> np.ndarray:
         attr_mask = (
             value_serie.between(*attr_value)
             if isinstance(attr_value, tuple)
-            else attr_operator(value_serie, attr_value)
-            if attr_operator is not None
-            else value_serie.isin(attr_value)
-            if isinstance(attr_value, (list, set))
-            else value_serie == attr_value
+            else (
+                attr_operator(value_serie, attr_value)
+                if attr_operator is not None
+                else value_serie.isin(attr_value) if isinstance(attr_value, (list, set)) else value_serie == attr_value
+            )
         )
 
         if attr_sign:

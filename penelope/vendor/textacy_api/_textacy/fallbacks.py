@@ -31,16 +31,13 @@ def whitespace(text: str) -> str:
 # end copyright notice
 
 
-class Corpus(pu.DummyClass):
-    ...
+class Corpus(pu.DummyClass): ...
 
 
-class TopicModel(pu.DummyClass):
-    ...
+class TopicModel(pu.DummyClass): ...
 
 
-class Vectorizer(pu.DummyClass):
-    ...
+class Vectorizer(pu.DummyClass): ...
 
 
 normalize_whitespace = whitespace

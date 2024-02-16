@@ -426,9 +426,9 @@ class PickleUtility:
             pickled_data: types.SimpleNamespace = pickle.load(f)
 
         data: InferredTopicsData = InferredTopicsData(
-            document_index=pickled_data.document_index
-            if hasattr(pickled_data, 'document_index')
-            else pickled_data.documents,
+            document_index=(
+                pickled_data.document_index if hasattr(pickled_data, 'document_index') else pickled_data.documents
+            ),
             dictionary=pickled_data.dictionary,
             topic_token_weights=pickled_data.topic_token_weights,
             topic_token_overview=pickled_data.topic_token_overview,

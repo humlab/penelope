@@ -27,8 +27,7 @@ class TopicPrevalenceOverTimeCalculator(abc.ABC):
         threshold: float = 0.0,
         result_threshold: float = 0.0,
         n_top_relevance: int = None,
-    ) -> pd.DataFrame:
-        ...
+    ) -> pd.DataFrame: ...
 
 
 class AverageTopicPrevalenceOverTimeCalculator(TopicPrevalenceOverTimeCalculator):
@@ -157,9 +156,7 @@ def _compute_yearly_topic_weights_statistics(
     topic_ids = (
         range(0, dtw.topic_id.max() + 1)
         if topic_ids is None
-        else [topic_ids]
-        if isinstance(topic_ids, int)
-        else topic_ids
+        else [topic_ids] if isinstance(topic_ids, int) else topic_ids
     )
 
     year_topics: list[tuple[int, int]] = list(itertools.product(year_range, topic_ids))
@@ -285,9 +282,7 @@ def compute_specified_yearly_topic_weights(
     aggregate_keys: list[str] = (
         aggregate_keys
         if isinstance(aggregate_keys, (list, tuple))
-        else aggregate_keys.split(',')
-        if isinstance(aggregate_keys, str)
-        else AggregateKeyValues
+        else aggregate_keys.split(',') if isinstance(aggregate_keys, str) else AggregateKeyValues
     )
 
     ytw: pd.DataFrame = _compute_yearly_topic_weights_statistics(dtw).pipe(

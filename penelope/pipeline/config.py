@@ -34,8 +34,7 @@ def create_pipeline_factory(
     return factory
 
 
-class DependencyError(Exception):
-    ...
+class DependencyError(Exception): ...
 
 
 @enum.unique

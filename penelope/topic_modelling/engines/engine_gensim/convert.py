@@ -219,8 +219,7 @@ def to_feather(folder: str):
     data._store_feather(folder)  # pylint: disable=protected-access
 
 
-class Id2TokenMissingError(NotImplementedError):
-    ...
+class Id2TokenMissingError(NotImplementedError): ...
 
 
 class TranslateCorpus:

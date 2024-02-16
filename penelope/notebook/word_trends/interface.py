@@ -93,8 +93,7 @@ class TrendsServiceBase(abc.ABC):
         self._gof_data = None
 
     @abc.abstractmethod
-    def _transform_corpus(self, opts: TrendsComputeOpts) -> pc.VectorizedCorpus:
-        ...
+    def _transform_corpus(self, opts: TrendsComputeOpts) -> pc.VectorizedCorpus: ...
 
     @property
     def transformed_corpus(self) -> pc.VectorizedCorpus:
@@ -111,12 +110,10 @@ class TrendsServiceBase(abc.ABC):
         return self._gof_data
 
     @overload
-    def find_word_indices(self, opts: TrendsComputeOpts = ...) -> list[int]:
-        ...
+    def find_word_indices(self, opts: TrendsComputeOpts = ...) -> list[int]: ...
 
     @overload
-    def find_word_indices(self, words: list[str] = ..., top_count: int = ..., descending: bool = ...) -> list[int]:
-        ...
+    def find_word_indices(self, words: list[str] = ..., top_count: int = ..., descending: bool = ...) -> list[int]: ...
 
     def find_word_indices(
         self,
@@ -155,12 +152,10 @@ class TrendsServiceBase(abc.ABC):
         raise TypeError("Either opts or words must be provided")
 
     @overload
-    def find_words(self, opts: TrendsComputeOpts = ...) -> list[str]:
-        ...
+    def find_words(self, opts: TrendsComputeOpts = ...) -> list[str]: ...
 
     @overload
-    def find_words(self, words: list[str] = ..., top_count: int = ..., descending: bool = ...) -> list[str]:
-        ...
+    def find_words(self, words: list[str] = ..., top_count: int = ..., descending: bool = ...) -> list[str]: ...
 
     def find_words(
         self, opts: TrendsComputeOpts = None, words: list[str] = None, top_count: int = None, descending: bool = None
@@ -206,12 +201,12 @@ class TrendsServiceBase(abc.ABC):
         return self
 
     @overload
-    def extract(self, indices: Sequence[int | str] = ..., filter_opts: pu.PropertyValueMaskingOpts = ...) -> list[str]:
-        ...
+    def extract(
+        self, indices: Sequence[int | str] = ..., filter_opts: pu.PropertyValueMaskingOpts = ...
+    ) -> list[str]: ...
 
     @overload
-    def extract(self, indices: list[str] = ..., top_count: int = ..., descending: bool = ...) -> list[str]:
-        ...
+    def extract(self, indices: list[str] = ..., top_count: int = ..., descending: bool = ...) -> list[str]: ...
 
     def extract(
         self,
@@ -249,9 +244,9 @@ class TrendsService(TrendsServiceBase):
         corpus: pc.VectorizedCorpus = (
             self.corpus.tf_idf()
             if opts.keyness == pk.KeynessMetric.TF_IDF
-            else self.corpus.normalize_by_raw_counts()
-            if opts.keyness == pk.KeynessMetric.TF_normalized
-            else self.corpus
+            else (
+                self.corpus.normalize_by_raw_counts() if opts.keyness == pk.KeynessMetric.TF_normalized else self.corpus
+            )
         )
 
         corpus = corpus.group_by_pivot_keys(

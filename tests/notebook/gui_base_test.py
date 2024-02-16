@@ -5,8 +5,7 @@ from penelope.notebook.gui_base import BaseGUI
 from penelope.pipeline.config import CorpusConfig
 
 
-def monkey_patch(*_, **__):
-    ...
+def monkey_patch(*_, **__): ...
 
 
 def test_gui_base_create_and_setup():  # pylint: disable=redefined-outer-name

@@ -35,8 +35,7 @@ def test_TrendsGUI_display():
     gui.display(trends_service=trends_service)
 
 
-def monkey_patch(*_, **__):
-    ...
+def monkey_patch(*_, **__): ...
 
 
 def test_create_simple_gui():

@@ -48,8 +48,7 @@ def _raise_deprecated_class(cls):
     return Deprecated
 
 
-class UseOfClassOrMethodIsDisabled(Exception):
-    ...
+class UseOfClassOrMethodIsDisabled(Exception): ...
 
 
 def mark_as_disabled(obj):

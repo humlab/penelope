@@ -232,15 +232,17 @@ class CoOccurrenceTopTokensDisplayer(TopTokensDisplayer):
         super().__init__(corpus=bundle.corpus, name=name)
         self.bundle = bundle
         self._keyness_source: Dropdown = Dropdown(
-            options={
-                "Full corpus": KeynessMetricSource.Full,
-                "Concept corpus": KeynessMetricSource.Concept,
-                "Weighed corpus": KeynessMetricSource.Weighed,
-            }
-            if bundle.concept_corpus is not None
-            else {
-                "Full corpus": KeynessMetricSource.Full,
-            },
+            options=(
+                {
+                    "Full corpus": KeynessMetricSource.Full,
+                    "Concept corpus": KeynessMetricSource.Concept,
+                    "Weighed corpus": KeynessMetricSource.Weighed,
+                }
+                if bundle.concept_corpus is not None
+                else {
+                    "Full corpus": KeynessMetricSource.Full,
+                }
+            ),
             value=KeynessMetricSource.Weighed if bundle.concept_corpus is not None else KeynessMetricSource.Full,
             layout=Layout(width='auto'),
         )

@@ -9,6 +9,7 @@ This source code is heavily influenced by the source code found at https://gitla
 License: https://gitlab.com/Julipan/swedish-de-hyphenator/-/blob/master/LICENSE
 
 """
+
 import re
 from dataclasses import dataclass, field
 from enum import IntEnum

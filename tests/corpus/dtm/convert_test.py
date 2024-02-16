@@ -136,5 +136,4 @@ def test_from_stream_of_text(document_index, token2id):
     assert corpus.data.astype(int).todense().tolist() == EXPECTED_DENSE_VALUES
 
 
-def test_translate():
-    ...
+def test_translate(): ...

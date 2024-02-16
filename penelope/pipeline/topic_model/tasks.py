@@ -31,11 +31,9 @@ class TopicModelMixinProtocol(Protocol):
     prior: ITask = None
     document_index: pd.DataFrame = None
 
-    def resolved_prior_out_content_type(self) -> ContentType:
-        ...
+    def resolved_prior_out_content_type(self) -> ContentType: ...
 
-    def instream_to_vectorized_corpus(self: TopicModelMixinProtocol, token2id: dict) -> pc.VectorizedCorpus:
-        ...
+    def instream_to_vectorized_corpus(self: TopicModelMixinProtocol, token2id: dict) -> pc.VectorizedCorpus: ...
 
 
 class TopicModelMixin:

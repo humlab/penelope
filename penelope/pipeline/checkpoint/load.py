@@ -17,8 +17,7 @@ class PayloadLoader(Protocol):
         opts: SerializeOpts,
         filenames: list[str],
         ordered: bool = False,
-    ) -> Iterable[DocumentPayload]:
-        ...
+    ) -> Iterable[DocumentPayload]: ...
 
 
 def load_payload(

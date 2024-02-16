@@ -211,5 +211,4 @@ class PropsMixIn(t.Generic[T]):
         return self
 
 
-class EmptyDataError(ValueError):
-    ...
+class EmptyDataError(ValueError): ...

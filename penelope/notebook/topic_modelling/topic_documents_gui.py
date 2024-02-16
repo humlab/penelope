@@ -15,8 +15,7 @@ from . import mixins as mx
 from .model_container import TopicModelContainer
 
 
-class NotLoadedError(Exception):
-    ...
+class NotLoadedError(Exception): ...
 
 
 # FIXME #157 Strange weights are displayed for certain topics (integer value)

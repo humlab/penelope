@@ -46,40 +46,33 @@ class ITopicModelEngine(abc.ABC):
 
     @staticmethod
     @abc.abstractmethod
-    def is_supported(model: Any) -> bool:
-        ...
+    def is_supported(model: Any) -> bool: ...
 
     @staticmethod
     @abc.abstractmethod
-    def supported_models() -> Sequence[Type]:
-        ...
+    def supported_models() -> Sequence[Type]: ...
 
     @abc.abstractmethod
-    def n_topics(self) -> int:
-        ...
+    def n_topics(self) -> int: ...
 
     @abc.abstractmethod
     def get_topic_token_weights_data(
         self, n_tokens: int = 200, id2term: dict = None, **_
-    ) -> list[tuple[int, list[tuple[str, float]]]]:
-        ...
+    ) -> list[tuple[int, list[tuple[str, float]]]]: ...
 
     @abc.abstractmethod
     def top_topic_tokens(
         self, topic_id: int, n_tokens: int = 200, id2term: dict = None, **_
-    ) -> list[tuple[int, TokenWeights]]:
-        ...
+    ) -> list[tuple[int, TokenWeights]]: ...
 
     @staticmethod
     @abc.abstractmethod
     def train(
         train_corpus: "TrainingCorpus", method: str, engine_args: dict[str, Any], **kwargs: dict[str, Any]
-    ) -> "InferredModel":
-        ...
+    ) -> "InferredModel": ...
 
     @abc.abstractmethod
-    def predict(self, corpus: Any, minimum_probability: float = 0.005, **kwargs) -> Iterable:
-        ...
+    def predict(self, corpus: Any, minimum_probability: float = 0.005, **kwargs) -> Iterable: ...
 
     def get_topic_token_weights(
         self, vocabulary: Any, n_tokens: int = 200, minimum_probability: float = 0.000001

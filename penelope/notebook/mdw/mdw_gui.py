@@ -11,13 +11,11 @@ from penelope.vendor import textacy_api as mdw
 
 
 class ComputedCallback(Protocol):
-    def __call__(self, *, result: dtm.VectorizedCorpus, sender: Any, **kwargs) -> None:
-        ...
+    def __call__(self, *, result: dtm.VectorizedCorpus, sender: Any, **kwargs) -> None: ...
 
 
 class ComputeCallback(Protocol):
-    def __call__(self, *, corpus: dtm.VectorizedCorpus, args: "MDW_GUI") -> None:
-        ...
+    def __call__(self, *, corpus: dtm.VectorizedCorpus, args: "MDW_GUI") -> None: ...
 
 
 class MDW_GUI:

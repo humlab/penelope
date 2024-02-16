@@ -108,8 +108,7 @@ def main(
         print(ex)
 
 
-class MissingOptionError(Exception):
-    ...
+class MissingOptionError(Exception): ...
 
 
 def process_co_ocurrence(

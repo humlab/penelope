@@ -24,8 +24,7 @@ VECTORIZER_ARGS_FILENAME: str = "train_vectorizer_args.json"
 DEFAULT_VECTORIZE_PARAMS = dict(tf_type='linear', apply_idf=False, idf_type='smooth', norm='l2', min_df=1, max_df=0.95)
 
 
-class DeprecatedError(Exception):
-    ...
+class DeprecatedError(Exception): ...
 
 
 AnyCorpus = Union[

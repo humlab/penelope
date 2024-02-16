@@ -23,8 +23,7 @@ def corpus_fixture():
     )
 
 
-def monkey_patch(*_, **__):
-    ...
+def monkey_patch(*_, **__): ...
 
 
 def test_create_main_gui(corpus_fixture):

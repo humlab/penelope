@@ -6,8 +6,7 @@ import penelope.notebook.mdw.mdw_gui as mdw_gui
 from penelope.corpus import dtm
 
 
-def monkey_patch(*_, **__):
-    ...
+def monkey_patch(*_, **__): ...
 
 
 @patch('IPython.display.display', monkey_patch)

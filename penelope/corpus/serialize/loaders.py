@@ -16,8 +16,7 @@ class ILoader(Protocol):
         opts: SerializeOpts,
         filenames: list[str],
         ordered: bool = False,
-    ) -> Any:
-        ...
+    ) -> Any: ...
 
 
 class LoaderRegistry(registry.Registry[ILoader]):

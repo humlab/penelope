@@ -3,8 +3,7 @@ from unittest import mock
 from penelope.notebook.topic_modelling import TopicModelContainer, topic_trends_gui
 
 
-def monkey_patch(*_, **__):
-    ...
+def monkey_patch(*_, **__): ...
 
 
 def test_create_gui(state: TopicModelContainer):

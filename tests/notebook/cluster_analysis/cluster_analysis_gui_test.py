@@ -9,12 +9,10 @@ import penelope.notebook.cluster_analysis.cluster_analysis_gui as cluster_analys
 from penelope.corpus import dtm
 
 
-def dummy_patch(*_, **__):
-    ...
+def dummy_patch(*_, **__): ...
 
 
-def monkey_patch(*_, **__):
-    ...
+def monkey_patch(*_, **__): ...
 
 
 @mock.patch('IPython.display.display', dummy_patch)

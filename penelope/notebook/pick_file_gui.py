@@ -14,8 +14,7 @@ from .utility import shorten_filechooser_label
 
 
 class PickedCallback(Protocol):
-    def __call__(self, filename: str, sender: 'PickFileGUI', **kwargs) -> None:
-        ...
+    def __call__(self, filename: str, sender: 'PickFileGUI', **kwargs) -> None: ...
 
 
 class PickFileGUI:

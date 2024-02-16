@@ -74,9 +74,11 @@ class SparvCsvToText:
         if _lemmatize:
             if _append_pos:
                 data = (
-                    _pad
-                    if x[_pos] in _pos_paddings
-                    else f"{x[_tok] if x[_lem].strip('|') == '' else x[_lem].strip('|').split('|')[0]}@{x[_pos]}"
+                    (
+                        _pad
+                        if x[_pos] in _pos_paddings
+                        else f"{x[_tok] if x[_lem].strip('|') == '' else x[_lem].strip('|').split('|')[0]}@{x[_pos]}"
+                    )
                     for x in data
                 )
             else:
@@ -85,9 +87,7 @@ class SparvCsvToText:
                         (
                             _pad
                             if x[_pos] in _pos_paddings
-                            else x[_tok]
-                            if x[_lem].strip('|') == ''
-                            else x[_lem].strip('|').split('|')[0]
+                            else x[_tok] if x[_lem].strip('|') == '' else x[_lem].strip('|').split('|')[0]
                         )
                         for x in data
                     )

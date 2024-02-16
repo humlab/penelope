@@ -11,8 +11,7 @@ from .. import widgets_utils as wu
 from . import model_container as mc
 
 
-class EmptyDataError(Exception):
-    ...
+class EmptyDataError(Exception): ...
 
 
 class TopicsStateGui:

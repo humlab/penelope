@@ -77,13 +77,11 @@ def normalize_characters(text: str, groups: str = None) -> str:
 
 
 class TokensTransform(Protocol):
-    def __call__(self, _: Iterable[str]) -> Iterable[str]:
-        ...
+    def __call__(self, _: Iterable[str]) -> Iterable[str]: ...
 
 
 class TextTransform(Protocol):
-    def __call__(self, _: str) -> str:
-        ...
+    def __call__(self, _: str) -> str: ...
 
 
 Transform = TokensTransform | TextTransform

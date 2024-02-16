@@ -64,9 +64,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         self._token2id: Mapping[str, int] = (
             token2id
             if isinstance(token2id, (dict, type(None)))
-            else token2id.data
-            if hasattr(token2id, 'data')
-            else token2id
+            else token2id.data if hasattr(token2id, 'data') else token2id
         )
         self._id2token: Optional[Mapping[int, str]] = None
         self._document_index: DocumentIndex = self._ingest_document_index(document_index=document_index)

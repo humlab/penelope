@@ -246,8 +246,7 @@ class TopicDocumentNetworkGui(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn,
         return None
 
 
-class DefaultTopicDocumentNetworkGui(TopicDocumentNetworkGui):
-    ...
+class DefaultTopicDocumentNetworkGui(TopicDocumentNetworkGui): ...
 
 
 class FocusTopicDocumentNetworkGui(TopicDocumentNetworkGui):

@@ -24,8 +24,7 @@ from .interfaces import ContentType, DocumentPayload, ITask, PipelineError
 from .tasks_mixin import DefaultResolveMixIn, PoSCountMixIn, TokenCountMixIn, TransformTokensMixIn
 
 
-class EmptyCheckPointError(PipelineError):
-    ...
+class EmptyCheckPointError(PipelineError): ...
 
 
 @dataclass
@@ -479,8 +478,7 @@ class TapStream(ITask):
         return self.store(payload)
 
 
-class AssertPayloadError(PipelineError):
-    ...
+class AssertPayloadError(PipelineError): ...
 
 
 # @dataclass
@@ -520,8 +518,7 @@ class AssertPayloadError(PipelineError):
 #     return payload
 
 
-class AssertOnExitError(PipelineError):
-    ...
+class AssertOnExitError(PipelineError): ...
 
 
 @dataclass
@@ -789,8 +786,7 @@ class LoadTokenizedCorpus(TokenCountMixIn, DefaultResolveMixIn, ITask):
         return payload
 
 
-class Split(ITask):
-    ...
+class Split(ITask): ...
 
 
 class Compute(ITask):

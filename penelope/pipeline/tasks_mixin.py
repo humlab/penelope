@@ -19,8 +19,7 @@ class DefaultResolveMixIn:
         return payload
 
 
-class PoSCountError(ValueError):
-    ...
+class PoSCountError(ValueError): ...
 
 
 @dataclass
