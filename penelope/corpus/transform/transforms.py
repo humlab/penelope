@@ -10,6 +10,7 @@ import nltk
 import penelope.vendor.nltk as nltk_utility
 from penelope.common.tokenize import default_tokenize as _sparv_tokenize
 from penelope.vendor.textacy_api import normalize_whitespace
+from penelope.common.dehyphenation import SwedishDehyphenator
 
 # pylint: disable=W0601,E0602
 
@@ -98,6 +99,16 @@ class TextTransform(Protocol):
 Transform = TokensTransform | TextTransform
 
 
+class DehypenatorProvider:
+    dehyphenator: SwedishDehyphenator = None
+
+    @classmethod
+    def locate(cls) -> SwedishDehyphenator:
+        if cls.dehyphenator is None:
+            cls.dehyphenator = SwedishDehyphenator()
+        return cls.dehyphenator
+
+
 class TransformRegistry:
     _items: dict[str, Any] = {}
     _aliases: dict[str, str] = {}
@@ -162,11 +173,23 @@ class TransformRegistry:
 
     @classmethod
     def getfx(cls, *keys: tuple[str], extras: list = None) -> Transform:
-        fxs: list[Transform] = [cls.get(k) for key in keys for k in key.split(',') if k]
+        """Get transform function by resolving list of keys into a single function.
+        If extras is provided, it will be appended to the list of functions resolved by the keys.
+        A key can be a string or a list of strings or a function."""
+        # fxs: list[Transform] = [cls.get(k) if isinstance(k,str) else k for key in keys for k in key.split(',') if isinstance(k,str) else [key]]
+        fxs: list[Transform] = [
+            cls.get(k) if isinstance(k, str) else k
+            for key in keys
+            for k in (key.split(',') if isinstance(key, str) else [key])
+        ]
         if extras:
             fxs.extend(extras)
         if not fxs:
             return lambda x: x
+        return cls.reduce(fxs)
+
+    @classmethod
+    def reduce(cls, fxs: list[Transform]) -> Transform:
         return functools.reduce(lambda f, g: lambda x: f(g(x)), reversed(fxs))
 
     @classmethod
@@ -200,7 +223,9 @@ class TextTransformRegistry(TransformRegistry):
         'normalize-whitespace': normalize_whitespace,
         'ftfy-fix-text': ftfy.fix_text,
         'ftfy-fix-encoding': ftfy.fix_encoding,
+        'uppercase': str.upper,
         'to-upper': str.upper,
+        'lowercase': str.lower,
         'to-lower': str.lower,
     }
     _aliases: dict[str, str] = {
@@ -216,7 +241,7 @@ class TokensTransformRegistry(TransformRegistry):
     _aliases: dict[str, str] = {}
 
 
-@TextTransformRegistry.register(key='space-after-period-uppercase,space-after-sentence')
+@TextTransformRegistry.register(key='space-after-period-uppercase,space-after-sentence,fix-space-after-sentence')
 def space_after_period_uppercase(text: str) -> str:
     """Insert space after a period if it is followed by an uppercase letter"""
     return re.sub(RE_PERIOD_UPPERCASE, r'. \1', text)
@@ -226,6 +251,13 @@ def space_after_period_uppercase(text: str) -> str:
 def dehyphen(text: str) -> str:
     result = RE_HYPHEN_REGEXP.sub(r"\1\2\n", text)
     return result
+
+
+@TextTransformRegistry.register(key='swe-dehyphen,swedish-dehyphen')
+def swedish_dehyphen(text: str) -> str:
+    """Remove hyphens from `text`."""
+    dehyphenated_text = DehypenatorProvider.locate().dehyphen_text(text)
+    return dehyphenated_text
 
 
 @TextTransformRegistry.register(key="dedent")

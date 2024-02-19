@@ -69,11 +69,23 @@ def test_transformers():
     assert '. Mähler' == tr.space_after_period_uppercase('.Mähler')
     assert 'stenen. Mähler' == tr.space_after_period_uppercase('stenen.Mähler')
     assert 'stenen.mähler' == tr.space_after_period_uppercase('stenen.mähler')
+    assert 'Mahler' == tr.TextTransformRegistry.get("strip-accents")('Mähler')
+    assert 'stenen. Mähler' == tr.TextTransformRegistry.get('fix-space-after-sentence')('stenen.Mähler')
 
 
-# @TextTransformRegistry.register(key='space-after-period-uppercase,space-after-sentence')
-# def space_after_period_uppercase(text: str) -> str:
-#     return re.sub(RE_PERIOD_UPPERCASE, r'. \1', text)
+def test_reduced_transformers():
+
+    assert 'stenen. mähler' == tr.TextTransformRegistry.getfx('fix-space-after-sentence,lowercase')('stenen.Mähler')
+    assert 'stenen. mähler' == tr.TextTransformRegistry.getfx('fix-space-after-sentence', 'lowercase')('stenen.Mähler')
+    assert 'apa' == tr.TextTransformRegistry.getfx('fix-space-after-sentence', lambda _: 'APA', 'lowercase')(
+        'stenen.Mähler'
+    )
+    assert "stenen. bergsgeten\n." == tr.TextTransformRegistry.getfx(
+        'dehyphen,fix-space-after-sentence,normalize-whitespace,lowercase'
+    )(
+        """stenen.Bergs-
+        geten."""
+    )
 
 
 def test_get_transformers():
