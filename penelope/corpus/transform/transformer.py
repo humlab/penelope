@@ -146,7 +146,6 @@ class TransformOpts:
     def props(self) -> list[str]:
         return {x.split('?')[0]: x.split('?')[1] if '?' in x else True for x in self.transforms.parts()}
 
-    @deprecated
     def transform(self, data: T) -> T:
         if self.no_effect():
             return data
