@@ -1,7 +1,7 @@
 # type: ignore
 
 from .tokens_transformer import TokensTransformOpts
-from .transformer import TextTransformer, TextTransformOpts
+from .transformer import TextTransformOpts
 from .transforms import (
     TextTransform,
     TextTransformRegistry,

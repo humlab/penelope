@@ -52,7 +52,6 @@ from .sparv.sparv_corpus import (
 from .token2id import ClosedVocabularyError, Token2Id, id2token2token2id
 from .tokenized_corpus import ReiterableTerms, TokenizedCorpus
 from .transform import (
-    TextTransformer,
     TextTransformOpts,
     TokensTransformOpts,
     Transform,
@@ -60,5 +59,7 @@ from .transform import (
     default_tokenizer,
     dehyphen,
     tokens_transformer,
+    TextTransform,
+    TokensTransform,
 )
 from .utils import bow2text, csr2bow, generate_token2id, term_frequency

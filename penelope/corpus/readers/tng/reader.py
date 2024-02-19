@@ -3,7 +3,7 @@ from typing import Callable, Iterable, Iterator, List, Union
 from penelope.utility import getLogger
 
 from ...document_index import DocumentIndex, metadata_to_document_index
-from ...transform import TextTransformer
+from ...transform import TextTransform, TextTransformOpts
 from ..interfaces import ICorpusReader, TextReaderOpts
 from .interfaces import ContentFilter, ISource, StoreItemPair
 from .sources import SourceInfo
@@ -28,13 +28,13 @@ class CorpusReader(ICorpusReader):
         self,
         source: ISource,
         reader_opts: TextReaderOpts = None,
-        transformer: TextTransformer = None,
+        transform_opts: TextTransformOpts = None,
         preprocess: Callable[[str], str] = None,
         tokenizer: Callable[[str], Iterator[str]] = None,
     ):
         self.source: ISource = source
         self.reader_opts: TextReaderOpts = reader_opts.copy() if reader_opts is not None else TextReaderOpts()
-        self.transformer: TextTransformer = transformer
+        self.transform: TextTransform = transform_opts.getfx() if transform_opts is not None else None
         self.iterator = None
         self.preprocess: Callable[[str], str] = preprocess
         self.tokenizer: Callable[[str], Iterator[str]] = tokenizer
@@ -82,8 +82,8 @@ class CorpusReader(ICorpusReader):
         if self.preprocess:
             data = self.preprocess(data)
 
-        if self.transformer and isinstance(data, str):
-            data = self.transformer.transform(data)
+        if self.transform and isinstance(data, str):
+            data = self.transform(data)
 
         if self.tokenizer is not None:
             data = self.tokenizer(data)

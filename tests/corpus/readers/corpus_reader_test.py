@@ -43,22 +43,21 @@ def test_transformer():
     transform_opts = tt.TextTransformOpts(transforms="")
     transform_opts += "strip-accents"
 
-    transformer = tt.TextTransformer(transform_opts=transform_opts)
-    result = transformer.transform("Rågér")
+    result = transform_opts.getfx()("Rågér")
     assert result == "Rager"
 
-    transformer.transform_opts -= "strip-accents"
-    result = transformer.transform("Rågér")
+    transform_opts -= "strip-accents"
+    result = transform_opts.getfx()("Rågér")
     assert result == "Rågér"
 
-    transformer.transform_opts.clear()
-    transformer.transform_opts += "dehyphen"
-    result = transformer.transform("mål-\nvakt")
+    transform_opts.clear()
+    transform_opts += "dehyphen"
+    result = transform_opts.getfx()("mål-\nvakt")
     assert result.strip() == "målvakt"
 
-    transformer.transform_opts.clear()
-    transformer.transform_opts += "normalize-whitespace"
-    result = transformer.transform("mål    vakt")
+    transform_opts.clear()
+    transform_opts += "normalize-whitespace"
+    result = transform_opts.getfx()("mål    vakt")
     assert result == "mål vakt"
 
 

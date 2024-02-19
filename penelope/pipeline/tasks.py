@@ -414,7 +414,7 @@ class TextToTokens(TransformTokensMixIn, ITask):
 
     tokenize: Callable[[str], list[str]] = None
     text_transform_opts: pc.TextTransformOpts = None
-    _text_transformer: pc.TextTransformer = field(init=False)
+    _text_transform: pc.TextTransform = field(init=False, default=None)
 
     def setup(self) -> ITask:
         super().setup()
@@ -427,7 +427,7 @@ class TextToTokens(TransformTokensMixIn, ITask):
         self.tokenize = self.tokenize or pc.default_tokenizer
 
         if self.text_transform_opts is not None:
-            self._text_transformer = pc.TextTransformer(transform_opts=self.text_transform_opts)
+            self._text_transform = self.text_transform_opts.getfx()
 
         self.setup_transform()
 
@@ -435,9 +435,10 @@ class TextToTokens(TransformTokensMixIn, ITask):
         if self.in_content_type == ContentType.TOKENS:
             tokens = payload.content
         else:
-            if self._text_transformer is not None:
-                self.tokenize(self._text_transformer.transform(payload.content))
-            tokens = self.tokenize(payload.content)
+            if self._text_transform is not None:
+                tokens = self.tokenize(self._text_transform(payload.content))
+            else:
+                tokens = self.tokenize(payload.content)
 
         tokens: list[str] = self.transform(tokens)
 

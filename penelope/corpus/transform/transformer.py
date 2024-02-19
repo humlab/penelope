@@ -163,15 +163,3 @@ class TransformOpts:
 class TextTransformOpts(TransformOpts):
     registry: tr.TransformRegistry = tr.TextTransformRegistry
     DEFAULT_TRANSFORMS = CommaStr('dehyphen,normalize-whitespace')
-
-
-class TextTransformer:
-    """FIXME: Deprecate!"""
-
-    """Transforms applied on non-tokenized text"""
-
-    def __init__(self, *, transform_opts: TextTransformOpts = None):
-        self.transform_opts = transform_opts or TextTransformOpts()
-
-    def transform(self, data: T) -> T:
-        return self.transform_opts.transform(data)
