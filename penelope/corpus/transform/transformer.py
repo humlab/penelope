@@ -67,10 +67,12 @@ class TransformOpts:
         self,
         transforms: str | CommaStr | dict[str, bool] = None,
         extras: list[tr.Transform] = None,
+        overides: dict[str, tr.Transform] = None,
     ):
         self.transforms: CommaStr = CommaStr("")
         self.ingest(self.DEFAULT_TRANSFORMS if transforms is None else transforms)
         self.extras: list[tr.Transform] = extras or []
+        self.overides: dict[str, tr.Transform] = overides or {}
 
     def ingest(self, transforms: str | CommaStr | dict[str, bool]) -> Self:
         if not transforms:
@@ -116,9 +118,9 @@ class TransformOpts:
         key = key.replace('_', '-')
         if '?' in key:
             key: str = key.split('?')[0]
-        for part in self.transforms.parts():
-            if part == key or part.startswith(f"{key}?"):
-                yield part
+        for candidate in self.transforms.parts():
+            if candidate == key or candidate.startswith(f"{key}?"):
+                yield candidate
 
     def clear(self: TransformType) -> Self:
         self.transforms = ""
@@ -144,17 +146,18 @@ class TransformOpts:
     def props(self) -> list[str]:
         return {x.split('?')[0]: x.split('?')[1] if '?' in x else True for x in self.transforms.parts()}
 
+    @deprecated
     def transform(self, data: T) -> T:
         if self.no_effect():
             return data
         return self.getfx()(data)
 
-    def getfx(self, overides: dict[str, tr.Transform] = None) -> tr.Transform:
+    def getfx(self) -> tr.Transform:
         if self.no_effect():
             return lambda x: x
-        return self.registry.getfx(self.transforms, extras=self.extras, overides=overides)
+        return self.registry.getfx(self.transforms, extras=self.extras, overides=self.overides)
 
-    def no_effect(self):
+    def no_effect(self) -> bool:
         return not self.transforms and not self.extras
 
 
