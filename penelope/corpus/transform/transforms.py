@@ -8,9 +8,9 @@ import ftfy
 import nltk
 
 import penelope.vendor.nltk as nltk_utility
+from penelope.common.dehyphenation import SwedishDehyphenator
 from penelope.common.tokenize import default_tokenize as _sparv_tokenize
 from penelope.vendor.textacy_api import normalize_whitespace
-from penelope.common.dehyphenation import SwedishDehyphenator
 
 # pylint: disable=W0601,E0602
 
