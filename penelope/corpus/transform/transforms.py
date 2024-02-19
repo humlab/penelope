@@ -177,7 +177,7 @@ class TransformRegistry:
         If extras is provided, it will be appended to the list of functions resolved by the keys.
         A key can be a string or a list of strings or a function."""
         # fxs: list[Transform] = [cls.get(k) if isinstance(k,str) else k for key in keys for k in key.split(',') if isinstance(k,str) else [key]]
-        gx: Transform = cls.get if not override else lambda k: overides.get(k) if k in overides else cls.get(k)
+        gx: Transform = cls.get if not overides else lambda k: overides.get(k) if k in overides else cls.get(k)
         fxs: list[Transform] = [
             gx(k) if isinstance(k, str) else k
             for key in keys
