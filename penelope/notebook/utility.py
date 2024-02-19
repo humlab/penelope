@@ -13,7 +13,7 @@ from IPython.display import Javascript
 from IPython.display import display as ipython_display
 from loguru import logger
 
-# pylint: disable=too-many-ancestors
+# pylint: disable=too-many-ancestors,unsubscriptable-object
 
 CLEAR_OUTPUT = True
 
