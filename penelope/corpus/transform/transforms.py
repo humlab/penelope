@@ -179,7 +179,7 @@ class TransformRegistry:
         # fxs: list[Transform] = [cls.get(k) if isinstance(k,str) else k for key in keys for k in key.split(',') if isinstance(k,str) else [key]]
         fxs: list[Transform] = [
             cls.get(k) if isinstance(k, str) else k
-            for key in keys
+            for key in keys if key
             for k in (key.split(',') if isinstance(key, str) else [key])
         ]
         if extras:

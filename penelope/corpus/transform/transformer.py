@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, Self, TypeVar
 
 from penelope.utility.utils import CommaStr
 
