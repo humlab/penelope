@@ -59,6 +59,10 @@ def test_overload():
             'date': ['2021-01-01', '2021-01-02'],
         }
     )
+    assert set(result.columns) == set(expected.columns)
+
+    expected = expected[result.columns]
+    
     pd.testing.assert_frame_equal(result, expected)
 
 
