@@ -22,6 +22,7 @@ from .transforms import (
     remove_empty,
     remove_numerals,
     remove_symbols,
+    space_after_period_uppercase,
     strip_accents,
     to_lower,
     to_upper,

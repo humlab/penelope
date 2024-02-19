@@ -112,7 +112,7 @@ class TransformOpts:
                     self.transforms -= k
         return self
 
-    def find_keys(self, key: str) -> list[str]:
+    def find_keys(self, key: str) -> Any:
         key = key.replace('_', '-')
         if '?' in key:
             key: str = key.split('?')[0]

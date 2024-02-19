@@ -14,6 +14,7 @@ from penelope.vendor.textacy_api import normalize_whitespace
 # pylint: disable=W0601,E0602
 
 ALPHABETIC_LOWER_CHARS = string.ascii_lowercase + "åäöéàáâãäåæèéêëîïñôöùûÿ"
+ALPHABETIC_UPPER_CHARS = string.ascii_uppercase + "A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝ"
 ALPHABETIC_CHARS = set(ALPHABETIC_LOWER_CHARS + ALPHABETIC_LOWER_CHARS.upper())
 SYMBOLS_CHARS = set("'\\¢£¥§©®°±øæç•›€™").union(set('!"#$%&\'()*+,./:;<=>?@[\\]^_`{|}~'))
 ACCENT_CHARS = set('\'`')
@@ -21,6 +22,7 @@ SYMBOLS_TRANSLATION = dict.fromkeys(map(ord, SYMBOLS_CHARS), None)
 default_tokenizer = nltk.word_tokenize
 
 RE_HYPHEN_REGEXP: re.Pattern = re.compile(r'\b(\w+)[-¬]\s*\r?\n\s*(\w+)\s*\b', re.UNICODE)
+RE_PERIOD_UPPERCASE: re.Pattern = re.compile(r'\.([A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝ])', re.UNICODE)
 
 CURRENCY_SYMBOLS = ''.join(chr(i) for i in range(0xFFFF) if unicodedata.category(chr(i)) == 'Sc')
 RE_CURRENCY_SYMBOLS: re.Pattern = re.compile(rf"[{CURRENCY_SYMBOLS}]")
@@ -36,6 +38,7 @@ SPECIAL_CHARS = {
     'double_quotes': '"“”„‟',
     'accents': '`´',
     'primes': '′″‴‵‶‷⁗',
+    'accented_chars': "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ",
 }
 
 # SPECIAL_CHARS_ESCAPED = {
@@ -64,6 +67,14 @@ ALL_IN_ONE_TRANSLATION = str.maketrans(
         '----------++//~~~~~~~\'\'\'\'\'\'\'\'\'""""`′′′′′′',
     ]
 )
+
+pattern = re.compile(r'\.([A-Z])')
+
+
+# Define a function that uses the compiled pattern to replace occurrences
+def insert_space_after_period(text):
+    # Use the compiled pattern's sub method for replacement
+    return pattern.sub(r'. \1', text)
 
 
 def normalize_characters(text: str, groups: str = None) -> str:
@@ -204,6 +215,11 @@ class TokensTransformRegistry(TransformRegistry):
     _items: dict[str, Any] = {}
     _aliases: dict[str, str] = {}
 
+@TextTransformRegistry.register(key='space-after-period-uppercase,space-after-sentence')
+def space_after_period_uppercase(text: str) -> str:
+    """Insert space after a period if it is followed by an uppercase letter"""
+    return re.sub(RE_PERIOD_UPPERCASE, r'. \1', text)
+
 
 @TextTransformRegistry.register(key='dehyphen,fix-hyphenation')
 def dehyphen(text: str) -> str:
@@ -287,12 +303,12 @@ def max_chars_factory(chars: int = 3) -> TokensTransform:
     return lambda tokens: (x for x in tokens if len(x) <= int(chars))
 
 
-@TokensTransformRegistry.register(key="to-lower")
+@TokensTransformRegistry.register(key="to-lower,lowercase")
 def to_lower(tokens: Iterable[str]) -> Iterable[str]:
     return map(str.lower, tokens)
 
 
-@TokensTransformRegistry.register(key="to-upper")
+@TokensTransformRegistry.register(key="to-upper,uppercase")
 def to_upper(tokens: Iterable[str]) -> Iterable[str]:
     """Upper case"""
     return map(str.upper, tokens)

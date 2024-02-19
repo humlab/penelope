@@ -66,6 +66,15 @@ def test_transformers():
     assert 'Mahler' == tr.TextTransformRegistry.get("strip-accents")('Mähler')
 
 
+    assert 'Mähler' == tr.space_after_period_uppercase('Mähler')
+    assert '. Mähler' == tr.space_after_period_uppercase('.Mähler')
+    assert 'stenen. Mähler' == tr.space_after_period_uppercase('stenen.Mähler')
+    assert 'stenen.mähler' == tr.space_after_period_uppercase('stenen.mähler')
+
+# @TextTransformRegistry.register(key='space-after-period-uppercase,space-after-sentence')
+# def space_after_period_uppercase(text: str) -> str:
+#     return re.sub(RE_PERIOD_UPPERCASE, r'. \1', text)
+
 def test_get_transformers():
     assert callable(tr.TextTransformRegistry.get("strip-accents"))
     assert callable(tr.TextTransformRegistry.get("  dedent   "))
