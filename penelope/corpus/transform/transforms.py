@@ -215,6 +215,7 @@ class TokensTransformRegistry(TransformRegistry):
     _items: dict[str, Any] = {}
     _aliases: dict[str, str] = {}
 
+
 @TextTransformRegistry.register(key='space-after-period-uppercase,space-after-sentence')
 def space_after_period_uppercase(text: str) -> str:
     """Insert space after a period if it is followed by an uppercase letter"""
