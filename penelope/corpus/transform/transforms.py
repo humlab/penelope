@@ -172,13 +172,14 @@ class TransformRegistry:
         return [cls.get(k) for key in keys for k in key.split(',')]
 
     @classmethod
-    def getfx(cls, *keys: tuple[str], extras: list = None) -> Transform:
+    def getfx(cls, *keys: tuple[str], extras: list = None, overides: dict[str, Transform] = None) -> Transform:
         """Get transform function by resolving list of keys into a single function.
         If extras is provided, it will be appended to the list of functions resolved by the keys.
         A key can be a string or a list of strings or a function."""
         # fxs: list[Transform] = [cls.get(k) if isinstance(k,str) else k for key in keys for k in key.split(',') if isinstance(k,str) else [key]]
+        gx: Transform = cls.get if not override else lambda k: overides.get(k) if k in overides else cls.get(k)
         fxs: list[Transform] = [
-            cls.get(k) if isinstance(k, str) else k
+            gx(k) if isinstance(k, str) else k
             for key in keys
             if key
             for k in (key.split(',') if isinstance(key, str) else [key])

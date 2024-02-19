@@ -149,10 +149,10 @@ class TransformOpts:
             return data
         return self.getfx()(data)
 
-    def getfx(self) -> tr.Transform:
+    def getfx(self, overides: dict[str, tr.Transform] = None) -> tr.Transform:
         if self.no_effect():
             return lambda x: x
-        return self.registry.getfx(self.transforms, extras=self.extras)
+        return self.registry.getfx(self.transforms, extras=self.extras, overides=overides)
 
     def no_effect(self):
         return not self.transforms and not self.extras
