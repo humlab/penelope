@@ -72,7 +72,7 @@ class TransformOpts:
         self.ingest(self.DEFAULT_TRANSFORMS if transforms is None else transforms)
         self.extras: list[tr.Transform] = extras or []
 
-    def ingest(self, transforms: str | CommaStr | dict[str, bool]) -> TransformOpts:
+    def ingest(self, transforms: str | CommaStr | dict[str, bool]) -> Self:
         if not transforms:
             return self
         if isinstance(transforms, CommaStr):
@@ -93,7 +93,7 @@ class TransformOpts:
                     self.add(f"{key}?{value}")
         return self
 
-    def add(self, *ys: TransformType) -> TransformOpts:
+    def add(self, *ys: TransformType) -> Self:
         for y in ys:
             if callable(y):
                 self.extras.append(y)
@@ -103,7 +103,7 @@ class TransformOpts:
                 raise ValueError(f"Invalid transform: {y}")
         return self
 
-    def remove(self, *keys: TransformType) -> TransformOpts:
+    def remove(self, *keys: TransformType) -> Self:
         for key in keys:
             if callable(key) and key in self.extras:
                 self.extras.remove(key)
@@ -120,16 +120,16 @@ class TransformOpts:
             if part == key or part.startswith(f"{key}?"):
                 yield part
 
-    def clear(self: TransformType) -> TransformOpts:
+    def clear(self: TransformType) -> Self:
         self.transforms = ""
         self.extras = []
         return self
 
-    def __add__(self, ys: TransformType) -> TransformOpts:
+    def __add__(self, ys: TransformType) -> Self:
         self.add(ys)
         return self
 
-    def __sub__(self, ys: TransformType) -> TransformOpts:
+    def __sub__(self, ys: TransformType) -> Self:
         self.remove(ys)
         return self
 
