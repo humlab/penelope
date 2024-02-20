@@ -191,6 +191,10 @@ class TransformRegistry:
         return cls.reduce(fxs)
 
     @classmethod
+    def resolve(cls, keys: list[str], extras: list = None, overides: dict[str, Transform] = None) -> Transform:
+        return cls.getfx(*keys, extras=extras, overides=overides)
+
+    @classmethod
     def reduce(cls, fxs: list[Transform]) -> Transform:
         return functools.reduce(lambda f, g: lambda x: f(g(x)), reversed(fxs))
 
