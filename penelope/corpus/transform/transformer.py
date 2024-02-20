@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Self, TypeVar
+from typing import Any, Callable, FunctionType, Self, TypeVar
 
 from penelope.utility.utils import CommaStr
 
@@ -77,7 +77,7 @@ class TransformOpts:
     def ingest(self, transforms: str | CommaStr | dict[str, bool]) -> Self:
         if not transforms:
             return self
-        if isinstance(transforms, CommaStr):
+        if isinstance(transforms, (CommaStr, FunctionType)):
             self.add(transforms)
         elif isinstance(transforms, str):
             self.add(CommaStr(transforms))
