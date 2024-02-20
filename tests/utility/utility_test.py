@@ -7,6 +7,7 @@ import scipy.sparse as sp
 
 from penelope import corpus as pc
 from penelope import utility
+from penelope.utility import try_load_function_or_class_method, try_load_module
 
 
 def test_clear_cached_properties():
@@ -190,3 +191,85 @@ def test_find_keys():
     assert list(C('a?1,b,c').find_keys('a?1')) == ['a?1']
     assert list(C('a?1,b,c').find_keys('a')) == ['a?1']
     assert list(C('a?1,a?2,a,b,c').find_keys('a')) == ['a?1', 'a?2', 'a']
+
+
+def test_try_load_module():
+
+    x = try_load_module('datetime.datetime')
+    assert x is not None
+
+    x = try_load_module('datetime.datetime.now')
+    assert x is not None
+
+    x = try_load_module('penelope.utility.utils')
+    assert x is not None
+    assert x[1].__name__ == x[0] == 'penelope.utility.utils'
+
+    x = try_load_module('penelope.utility.utils.create_class')
+    assert x is not None
+    assert x[1].__name__ == x[0] == 'penelope.utility.utils'
+
+    x = try_load_module('penelope.utility.utils.apa.apa')
+    assert x is not None
+    assert x[1].__name__ == x[0] == 'penelope.utility.utils'
+
+    assert try_load_module('os.path') is not None
+
+
+def test_try_load_module_invalid_module():
+    assert try_load_module('non.existent.module') is None
+
+
+def test_try_load_module_partial_valid_module():
+    assert try_load_module('os.nonexistent') is not None
+
+
+def test_try_load_module_empty_string():
+    assert try_load_module('') is None
+
+
+def test_try_load_module_none():
+    assert try_load_module(None) is None
+
+
+def test_try_class_or_function():
+    m = try_load_module('datetime')
+    f = try_load_function_or_class_method('datetime.datetime.now', year=2021, month=1, day=1)
+    assert f is not None
+    assert f() is not None
+
+    m = try_load_module('penelope.utility.utils')
+    f = try_load_function_or_class_method('penelope.utility.utils.create_class')
+
+
+def test_try_load_function_or_class_method_valid_function():
+    assert try_load_function_or_class_method('os.path.join') is not None
+
+
+def test_try_load_function_or_class_method_invalid_function():
+    with pytest.raises(TypeError):
+        try_load_function_or_class_method('os.path.non_existent_function')
+
+
+def test_try_load_function_or_class_method_valid_class_method():
+    assert try_load_function_or_class_method('datetime.datetime.now') is not None
+
+
+def test_try_load_function_or_class_method_invalid_class_method():
+    with pytest.raises(TypeError):
+        try_load_function_or_class_method('datetime.datetime.non_existent_method')
+
+
+def test_try_load_function_or_class_method_invalid_module():
+    with pytest.raises(TypeError):
+        try_load_function_or_class_method('non.existent.module')
+
+
+def test_try_load_function_or_class_method_empty_string():
+    with pytest.raises(TypeError):
+        try_load_function_or_class_method('')
+
+
+def test_try_load_function_or_class_method_none():
+    with pytest.raises(TypeError):
+        try_load_function_or_class_method(None)

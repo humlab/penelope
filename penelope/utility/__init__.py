@@ -184,6 +184,8 @@ from .utils import (
     timestamp,
     to_text,
     trunc_year_by,
+    try_load_function_or_class_method,
+    try_load_module,
     tuple_of_lists_to_list_of_tuples,
     uniquify,
 )

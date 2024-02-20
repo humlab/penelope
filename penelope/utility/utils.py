@@ -5,6 +5,7 @@ import copy
 import datetime
 import functools
 import glob
+import importlib
 import inspect
 import itertools
 import json
@@ -19,11 +20,13 @@ from dataclasses import is_dataclass
 from importlib import import_module
 from numbers import Number
 from random import randrange
+from types import FunctionType, ModuleType
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Set, Tuple, Type, TypeVar, Union
 
 import dotenv
 import numpy as np
 import pandas as pd
+import pytest
 import scipy
 
 T = TypeVar('T')
@@ -614,6 +617,75 @@ def create_dataclass_instance_from_kwargs(cls: Type[U], **kwargs) -> U:
         setattr(instance, k, v)
 
     return instance
+
+
+def try_load_module(object_name: str) -> tuple[str, ModuleType] | None:
+    if object_name is None:
+        return None
+    parts: list[str] = object_name.split('.')
+    for i in range(len(parts), 0, -1):
+        try:
+            module_name: str = '.'.join(parts[:i])
+            return (module_name, importlib.import_module(module_name))
+        except (ModuleNotFoundError, ValueError):
+            pass
+    return None
+
+
+def try_load_function_or_class_method(name: str, **args) -> Callable[[str], str]:
+
+    value: Any = try_load_module(name)
+
+    if value is None:
+        raise TypeError(f"{name} is not a valid module name")
+
+    module_name, module = value
+
+    object_name: str = name.lstrip(module_name)
+    if object_name.startswith('.'):
+        object_name = object_name[1:]
+
+    parts: list[str] = object_name.split('.')
+
+    if len(parts) == 0 or not hasattr(module, parts[0]):
+        raise TypeError(f"{module.__name__}.{object_name or ''} is not a valid object name")
+
+    if len(parts) == 1:
+        if not hasattr(module, object_name):
+            return None
+        if not isinstance(getattr(module, object_name), FunctionType):
+            raise TypeError(f"{module.__name__}.{object_name} is not a function")
+
+        if args:
+            """If arguments are provided, then assume the function is a factory."""
+            return getattr(module, object_name)(**args)
+
+        """Return function"""
+        return getattr(module, object_name)
+
+    cls: Any = getattr(module, parts[0])
+    if not isinstance(cls, type):
+        raise TypeError(f"{module.__name__}.{object_name} is not a class")
+
+    if len(parts) == 2:
+
+        if not hasattr(cls, parts[1]):
+            raise TypeError(f"{module.__name__}.{object_name} is not a valid object name")
+
+        method = inspect.getattr_static(cls, parts[1])
+        if isinstance(method, (staticmethod, classmethod)):
+            """Return static method"""
+            return getattr(cls, parts[1])
+
+        if not args:
+            """Return method on class, assume that it not is a factory method whwn no arguments are provided."""
+            return getattr(cls, parts[1])
+
+        """Return method on instance"""
+        instance = cls(**args)
+        return getattr(instance, parts[1])
+
+    raise TypeError(f"{module.__name__}.{object_name} is not a valid object name")
 
 
 def multiple_replace(text: str, replace_map: dict, ignore_case: bool = False) -> str:
