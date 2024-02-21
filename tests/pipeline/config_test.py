@@ -4,9 +4,9 @@ import os
 import pytest
 import yaml
 
-from penelope.pipeline import CorpusConfig
+from penelope.corpus import TextTransformOpts
+from penelope.pipeline import CorpusConfig, PipelinePayload
 from penelope.pipeline.config import DependencyResolver
-from penelope.pipeline.interfaces import PipelinePayload
 
 # pylint: disable=redefined-outer-name
 
@@ -156,3 +156,43 @@ def test_resolve_render_text():
     render_text.render(document_info, kind='text')
 
     assert document_info['text'] == 'apa'
+
+
+def test_decode_transform_opts_none():
+    result: TextTransformOpts = CorpusConfig.decode_transform_opts(None)
+    assert result is None
+
+
+def test_decode_transform_opts_string():
+    result: TextTransformOpts = CorpusConfig.decode_transform_opts('key1,key2,key3')
+    assert isinstance(result, TextTransformOpts)
+    assert result.transforms == 'key1,key2,key3'
+
+
+def test_decode_transform_opts_dict_function_found():
+    transform_opts = {
+        'preprocessors': 'key1,key2,key3',
+        'key1': {'name': 'datetime.datetime.now', 'arguments': {'year': 2001, 'month': 1, 'day': 1}},
+    }
+    result: TextTransformOpts = CorpusConfig.decode_transform_opts(transform_opts)
+    assert result is not None
+
+
+def test_decode_transform_opts_dict_using_builtin_function():
+    transform_opts = {
+        'preprocessors': 'strip',
+        'strip': {'name': 'str.strip', 'arguments': {}},
+    }
+    result: TextTransformOpts = CorpusConfig.decode_transform_opts(transform_opts)
+    assert result is not None
+
+    assert result.getfx()(f'  apa  ') == 'apa'
+
+
+def test_decode_transform_opts_dict_reference_not_found():
+    transform_opts = {
+        'preprocessors': 'key1,key2,key3',
+        'key1': {'name': 'bla.bla.bla', 'arguments': {'arg1': 'value1'}},
+    }
+    with pytest.raises(TypeError):
+        CorpusConfig.decode_transform_opts(transform_opts)

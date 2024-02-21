@@ -11,10 +11,13 @@ from dataclasses import asdict, dataclass, field
 from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Type, Union
 
 import yaml
+from loguru import logger
 
 from penelope import utility as pu
 from penelope.corpus import TextReaderOpts, TextTransformOpts
 from penelope.corpus.serialize import SerializeOpts
+from penelope.corpus.transform.transforms import TextTransform
+from penelope.utility.utils import try_load_function_or_class_method
 
 from . import interfaces
 
@@ -154,11 +157,43 @@ class CorpusConfig:
         return deserialized_config
 
     @staticmethod
-    def decode_transform_opts(transform_opts: dict) -> TextTransformOpts:
+    def decode_transform_opts(transform_opts: str | dict) -> TextTransformOpts:
+        """Decodes transform_opts from a dict or string
+        Valid formats:
+            text_transform_opts: "key1,key2,key3,..."
+            or
+            text_transform_opts:
+                preprocessors: "key1,key2,key3,..."
+                key-n:
+                    name: fully_qualified_name_to_function_or_class
+                    arguments:
+                        key1: value1
+                        key2: value2
+                        ...
+                ...
+        """
         if transform_opts is None:
             return None
-        if isinstance(transform_opts, (str, pu.CommaStr, dict)):
+
+        if isinstance(transform_opts, (str, pu.CommaStr)):
             return TextTransformOpts(transforms=transform_opts)
+
+        if isinstance(transform_opts, dict):
+            transform_keys: str | dict[str, bool] = transform_opts.get('preprocessors', None)
+            overides: dict[str, TextTransform] = {}
+            for key, transform in transform_opts.items():
+                if key == 'preprocessors':
+                    continue
+                if key not in transform_keys:
+                    logger.warning(f"transform {key} specified but not used (not in preprocessors)")
+                    continue
+
+                if 'name' not in transform:
+                    raise ValueError(f"Missing 'name' in transform_opts: {transform}")
+
+                overides[key] = try_load_function_or_class_method(transform['name'], **transform.get('arguments', {}))
+
+            return TextTransformOpts(transforms=transform_keys, overides=overides)
         return None
 
     @staticmethod
