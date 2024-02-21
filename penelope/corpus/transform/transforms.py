@@ -233,6 +233,7 @@ class TextTransformRegistry(TransformRegistry):
         'to-upper': str.upper,
         'lowercase': str.lower,
         'to-lower': str.lower,
+        'strip': str.strip,
     }
     _aliases: dict[str, str] = {
         'fix-whitespaces': 'normalize-whitespace',
