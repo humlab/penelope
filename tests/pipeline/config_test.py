@@ -186,7 +186,7 @@ def test_decode_transform_opts_dict_using_builtin_function():
     result: TextTransformOpts = CorpusConfig.decode_transform_opts(transform_opts)
     assert result is not None
 
-    assert result.getfx()(f'  apa  ') == 'apa'
+    assert result.getfx()('  apa  ') == 'apa'
 
 
 def test_decode_transform_opts_dict_reference_not_found():

@@ -26,7 +26,6 @@ from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Seque
 import dotenv
 import numpy as np
 import pandas as pd
-import pytest
 import scipy
 
 T = TypeVar('T')

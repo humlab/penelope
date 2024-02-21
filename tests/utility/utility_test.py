@@ -233,7 +233,6 @@ def test_try_load_module_none():
 
 
 def test_try_class_or_function():
-    m = try_load_module('datetime')
     f = try_load_function_or_class_method('datetime.datetime.now', year=2021, month=1, day=1)
     assert f is not None
     assert f() is not None
