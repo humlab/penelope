@@ -273,3 +273,11 @@ def test_try_load_function_or_class_method_empty_string():
 def test_try_load_function_or_class_method_none():
     with pytest.raises(TypeError):
         try_load_function_or_class_method(None)
+
+
+def test_try_load_build_in_function_or_class_method_none():
+    fx = try_load_function_or_class_method('str.strip')
+
+    assert fx is not None
+
+    assert fx('  apa  ') == 'apa'
