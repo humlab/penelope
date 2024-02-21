@@ -640,7 +640,7 @@ def try_load_function_or_class_method(name: str, **args) -> Callable[[str], str]
         """Try load class or function from builtins"""
         name = f'builtins.{name}'
         value: Any = try_load_module(name)
-        
+
     if value is None:
         raise TypeError(f"{name} is not a valid module name")
 
