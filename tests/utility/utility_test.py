@@ -237,7 +237,6 @@ def test_try_class_or_function():
     assert f is not None
     assert f() is not None
 
-    m = try_load_module('penelope.utility.utils')
     f = try_load_function_or_class_method('penelope.utility.utils.create_class')
 
 
