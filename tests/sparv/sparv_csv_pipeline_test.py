@@ -31,7 +31,6 @@ def test_read_sparv_csv_zip_using_tng_reader_and_zip_source(corpus_config: pipel
     corpus_reader = tng.CorpusReader(
         source=tng.ZipSource(source_path=corpus_config.pipeline_payload.source),
         reader_opts=corpus_config.text_reader_opts,
-        transformer=None,
         preprocess=None,
         tokenizer=None,
     )

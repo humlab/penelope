@@ -62,7 +62,7 @@ def token2id() -> dict:
 
 @fixture
 def tokenized_corpus():
-    reader = tng.CorpusReader(source=tng.InMemorySource(SIMPLE_CORPUS_ABC_5DOCS), transformer=None)  # already tokenized
+    reader = tng.CorpusReader(source=tng.InMemorySource(SIMPLE_CORPUS_ABC_5DOCS))  # already tokenized
     corpus = pc.TokenizedCorpus(reader=reader)
     return corpus
 

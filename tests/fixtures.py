@@ -113,7 +113,6 @@ def very_simple_corpus(data: List[Tuple[str, List[str]]]) -> TokenizedCorpus:
     reader = tng.CorpusReader(
         source=tng.InMemorySource(data),
         reader_opts=TextReaderOpts(filename_fields="year:_:1"),
-        transformer=None,  # already tokenized
     )
     corpus = TokenizedCorpus(reader=reader)
     return corpus
