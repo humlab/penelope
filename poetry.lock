@@ -3927,4 +3927,4 @@ full = ["PyYAML", "click", "gensim", "pyarrow", "spacy", "textacy", "wordcloud"]
 [metadata]
 lock-version = "2.0"
 python-versions = "==3.11.*"
-content-hash = "cf2997c420f1e845091ea97e0147582da622b84aa213cec2af377bef39a071fa"
+content-hash = "2f69450e9ef02977e24fefc26bd10a759ef109a25f1ab85c6fa5e61fe9e3ffcc"
