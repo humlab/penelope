@@ -49,7 +49,7 @@ def test_resolve_fx_string_no_args():
 
 
 try:
-    from distutils.util import strtobool # type: ignore=deprecated-module
+    from distutils.util import strtobool  # type: ignore=deprecated-module
 except ImportError:
     from setuptools.distutils.util import strtobool  # type: ignore=import-error
 
