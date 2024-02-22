@@ -2,7 +2,7 @@ import functools
 import re
 import string
 import unicodedata
-from typing import Any, Callable, Iterable, Protocol
+from typing import Any, Iterable, Protocol
 
 import ftfy
 import nltk
