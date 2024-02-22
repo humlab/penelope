@@ -34,6 +34,66 @@ def test_normalize_characters():
     assert normalized_text == 'räksmörgås‐‑⁃‒–—―−－⁻＋⁺⁄∕~~~~~~~’՚Ꞌꞌ＇‘’‚‛""""´″‴‵‶‷⁗RÄKSMÖRGÅS'
 
 
+def test_resolve_fx_callable():
+    function = lambda x: x * 2
+    result = tr.TransformRegistry.resolve_fx(function)
+    assert callable(result)
+    assert result(2) == 4
+
+
+def test_resolve_fx_string_no_args():
+    overrides = {'len': len}
+    result = tr.TransformRegistry.resolve_fx('len', overrides)
+    assert callable(result)
+    assert result('test') == 4
+
+
+try:
+    from distutils.util import strtobool
+except ImportError:
+    from setuptools.distutils.util import strtobool  # type: ignore=import-error
+
+
+def test_resolve_fx_string_with_args():
+    overrides = {'apify': lambda t, b: 'apa' if strtobool(b) else t}
+    fx = tr.TransformRegistry.resolve_fx('apify?False', overrides)
+    assert callable(fx)
+    assert fx("hej") == "hej"
+    fx = tr.TransformRegistry.resolve_fx('apify?True', overrides)
+    assert callable(fx)
+    assert fx("hej") == "apa"
+
+
+def test_resolve_fx_string_with_kwargs():
+    overrides = {'apify': lambda t, is_apa, name: name if strtobool(is_apa) else t}
+    result = tr.TransformRegistry.resolve_fx('apify?is_apa=True&name=apa', overrides)
+    assert callable(result)
+    assert result('hej') == 'apa'
+    result = tr.TransformRegistry.resolve_fx('apify?is_apa=False&name=apa', overrides)
+    assert callable(result)
+    assert result('hej') == 'hej'
+
+
+def test_resolve_fx_string_with_list_args():
+    overrides = {'apify': lambda t, is_apa, name: name if strtobool(is_apa) else t}
+    result = tr.TransformRegistry.resolve_fx('apify?[True,apa]', overrides)
+    assert callable(result)
+    assert result('hej') == 'apa'
+    result = tr.TransformRegistry.resolve_fx('apify?[False,apa]', overrides)
+    assert callable(result)
+    assert result('olle') == 'olle'
+
+
+def test_resolve_fx_invalid():
+    with pytest.raises(ValueError):
+        tr.TransformRegistry.resolve_fx(123)
+
+
+def test_resolve_fx_string_not_callable():
+    with pytest.raises(ValueError):
+        tr.TransformRegistry.resolve_fx('unknown')
+
+
 def test_transformers():
     assert ['A', 'B', 'C'] == list(tr.to_upper(['a', 'b', 'c']))
     assert ['A', 'B', 'C'] == list(tr.TokensTransformRegistry.get("to-upper")(['a', 'b', 'c']))
@@ -77,9 +137,9 @@ def test_reduced_transformers():
 
     assert 'stenen. mähler' == tr.TextTransformRegistry.getfx('fix-space-after-sentence,lowercase')('stenen.Mähler')
     assert 'stenen. mähler' == tr.TextTransformRegistry.getfx('fix-space-after-sentence', 'lowercase')('stenen.Mähler')
-    assert 'apa' == tr.TextTransformRegistry.getfx('fix-space-after-sentence', lambda _: 'APA', 'lowercase')(
-        'stenen.Mähler'
-    )
+    assert 'apa' == tr.TextTransformRegistry.getfx(
+        'fix-space-after-sentence', 'lowercase', overrides={'fix-space-after-sentence': lambda _: 'APA'}
+    )('stenen.Mähler')
     assert "stenen. bergsgeten\n." == tr.TextTransformRegistry.getfx(
         'dehyphen,fix-space-after-sentence,normalize-whitespace,lowercase'
     )(
@@ -189,21 +249,36 @@ def cfx(
     return lambda tokens: list(opts.getfx()(tokens))
 
 
-def test_transform_opts():
-    assert cfx({'to-lower': True})(['A', 'B', 'C']) == ['a', 'b', 'c']
-    assert cfx('to-lower')(['A', 'B', 'C']) == ['a', 'b', 'c']
-    assert cfx('to-lower,to-upper')(['A', 'B', 'C']) == ['A', 'B', 'C']
-    assert cfx('to-upper,to-lower')(['A', 'B', 'C']) == ['a', 'b', 'c']
-    assert not cfx('to-upper,min-chars?2')(['A', 'B', 'C'])
-    assert cfx('to-upper,min-chars?2')(['A', 'AB', 'BC', 'CD', 'E']) == ['AB', 'BC', 'CD']
-    assert cfx('to-upper,min-chars?2,max-chars?2')(['A', 'AB', 'BC', 'XYZ', 'CD', 'E', 'ABC']) == ['AB', 'BC', 'CD']
+@pytest.mark.parametrize(
+    'transforms,tokens,expected_tokens',
+    [
+        ({'to-lower': True}, ['A', 'B', 'C'], ['a', 'b', 'c']),
+        ('to-lower', ['A', 'B', 'C'], ['a', 'b', 'c']),
+        ('to-lower,to-upper', ['A', 'B', 'C'], ['A', 'B', 'C']),
+        ('to-upper,to-lower', ['A', 'B', 'C'], ['a', 'b', 'c']),
+        ('to-upper,min-chars?2', ['A', 'B', 'C'], []),
+        ('to-upper,min-chars?2', ['A', 'AB', 'BC', 'CD', 'E'], ['AB', 'BC', 'CD']),
+        ('to-upper,min-chars?2,max-chars?2', ['A', 'AB', 'BC', 'XYZ', 'CD', 'E', 'ABC'], ['AB', 'BC', 'CD']),
+    ],
+)
+def test_transform_opts(transforms: str, tokens, expected_tokens):
+    opts = tr.TokensTransformOpts(transforms=transforms, extras=None, extra_stopwords=None)
+    results = list(opts.getfx()(tokens))
+    assert results == expected_tokens
+
+
+def test_transform_empty_preprocessor():
+    opts = tr.TokensTransformOpts(transforms="")
+    assert list(opts.getfx()(['A', 'B', 'C'])) == ['A', 'B', 'C']
 
 
 def test_transform_opts_extras():
     def to_apa(tokens: list[str]) -> list[str]:
         return ['APA' for _ in tokens]
 
-    assert cfx('', extras=[to_apa])(['A', 'B', 'C']) == ['APA', 'APA', 'APA']
+    opts = tr.TokensTransformOpts(transforms="", extras=[to_apa], extra_stopwords=None)
+    results = list(opts.getfx()(['A', 'B', 'C']))
+    assert results == ['APA', 'APA', 'APA']
 
 
 def test_transform_opts_extras_stopwords():

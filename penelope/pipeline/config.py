@@ -180,7 +180,7 @@ class CorpusConfig:
 
         if isinstance(transform_opts, dict):
             transform_keys: str | dict[str, bool] = transform_opts.get('preprocessors', None)
-            overides: dict[str, TextTransform] = {}
+            overrides: dict[str, TextTransform] = {}
             for key, transform in transform_opts.items():
                 if key == 'preprocessors':
                     continue
@@ -191,9 +191,9 @@ class CorpusConfig:
                 if 'name' not in transform:
                     raise ValueError(f"Missing 'name' in transform_opts: {transform}")
 
-                overides[key] = try_load_function_or_class_method(transform['name'], **transform.get('arguments', {}))
+                overrides[key] = try_load_function_or_class_method(transform['name'], **transform.get('arguments', {}))
 
-            return TextTransformOpts(transforms=transform_keys, overides=overides)
+            return TextTransformOpts(transforms=transform_keys, overrides=overrides)
         return None
 
     @staticmethod

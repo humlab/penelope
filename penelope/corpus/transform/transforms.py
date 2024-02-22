@@ -2,10 +2,11 @@ import functools
 import re
 import string
 import unicodedata
-from typing import Any, Iterable, Protocol
+from typing import Any, Callable, Iterable, Protocol
 
 import ftfy
 import nltk
+import regex
 
 import penelope.vendor.nltk as nltk_utility
 from penelope.common.dehyphenation import SwedishDehyphenator
@@ -130,6 +131,10 @@ class TransformRegistry:
     @classmethod
     def get(cls, key: str) -> Transform:
         """Get transform function by key"""
+
+        if not isinstance(key, str):
+            raise ValueError(f"Invalid key type: {type(key).__name__}")
+
         key = key.replace('_', '-').strip()
 
         if key in cls._items:
@@ -140,12 +145,12 @@ class TransformRegistry:
 
         if '?' in key:
             """Transform has arguments"""
-            return cls.add(fn=cls.partial_to_total(key), key=key)
+            return cls.add(fn=cls.resolve_fx(key), key=key)
 
         raise ValueError(f"preprocessor {key} is not registered")
 
     @classmethod
-    def partial_to_total(cls, key: str) -> Transform:
+    def resolve_fx(cls, key: str | Transform, overrides: dict[str, Transform] = None) -> Transform:
         """Transform functions needs or accepts extra with arguments
         Examples:
             'min-chars?chars=2' => kwargs = {'chars': '2'}
@@ -153,37 +158,48 @@ class TransformRegistry:
             'any-option?[2,3]'  => args = '[2,3]'
 
         """
+        if callable(key):
+            return key
+
+        if not isinstance(key, str):
+            raise ValueError(f"Invalid key type: {type(key).__name__}")
+
+        overrides = overrides or {}
+        key, args = key.split('?', 1) if '?' in key else (key, None)
         key = key.replace('_', '-')
-        pkey, args = key.split('?')
+
+        fx = cls.get(key) if key not in overrides else overrides.get(key)
+
+        if not args:
+            return fx
 
         if '[' in args:
             """args is a list"""
+            # FIXME: Cannot use ',' in list since it is used to separate keys
             args = [x.strip() for x in args.lstrip('[').rstrip(']').split(',')]
-            return lambda x: cls.get(pkey)(x, *args)  # pylint: disable=unnecessary-lambda
+            return lambda x: fx(x, *args)  # pylint: disable=unnecessary-lambda
 
         if '=' in args:
-            kwargs = {k: v for k, v in [x.split('=') for x in args.split('&')]}
-            return lambda x: cls.get(pkey)(x, **kwargs)  # pylint: disable=unnecessary-lambda
+            kwargs: dict = {k: v for k, v in [x.split('=') for x in args.split('&')]}
+            # kwargs = dict(x.split('=') for x in args.split('&'))
+            return lambda x: fx(x, **kwargs)  # pylint: disable=unnecessary-lambda
 
-        return lambda x: cls.get(pkey)(x, args)
+        return lambda x: fx(x, args)
 
     @classmethod
     def gets(cls, *keys: tuple[str]) -> list[Transform]:
         return [cls.get(k) for key in keys for k in key.split(',')]
 
     @classmethod
-    def getfx(cls, *keys: tuple[str], extras: list = None, overides: dict[str, Transform] = None) -> Transform:
+    def getfx(cls, *keys: tuple[str], extras: list = None, overrides: dict[str, Transform] = None) -> Transform:
         """Get transform function by resolving list of keys into a single function.
         If extras is provided, it will be appended to the list of functions resolved by the keys.
         A key can be a string or a list of strings or a function."""
-        # fxs: list[Transform] = [cls.get(k) if isinstance(k,str) else k for key in keys for k in key.split(',') if isinstance(k,str) else [key]]
-        gx: Transform = cls.get if not overides else lambda k: overides.get(k) if k in overides else cls.get(k)
-        fxs: list[Transform] = [
-            gx(k) if isinstance(k, str) else k
-            for key in keys
-            if key
-            for k in (key.split(',') if isinstance(key, str) else [key])
+        keys_or_fxs: list[Transform] = [
+            k if isinstance(k, str) else k for key in keys for k in key.split(',') if k if keys
         ]
+        fxs: list[Transform] = [cls.resolve_fx(k, overrides=overrides) for k in keys_or_fxs]
+
         if extras:
             fxs.extend(extras)
         if not fxs:
@@ -191,8 +207,8 @@ class TransformRegistry:
         return cls.reduce(fxs)
 
     @classmethod
-    def resolve(cls, keys: list[str], extras: list = None, overides: dict[str, Transform] = None) -> Transform:
-        return cls.getfx(*keys, extras=extras, overides=overides)
+    def resolve(cls, keys: list[str], extras: list = None, overrides: dict[str, Transform] = None) -> Transform:
+        return cls.getfx(*keys, extras=extras, overrides=overrides)
 
     @classmethod
     def reduce(cls, fxs: list[Transform]) -> Transform:
@@ -293,6 +309,14 @@ def sparv_tokenize(text: str) -> list[str]:
 @TextTransformRegistry.register(key="replace-currency-symbols")
 def replace_currency_symbols(text: str, marker: str = "__cur__") -> str:
     return RE_CURRENCY_SYMBOLS.sub(marker, text)
+
+
+@TextTransformRegistry.register(key="replace-special-characters")
+def replace_special_characters(text: str, replace_character: str = ' ') -> str:
+    return regex.sub(r'[^\w\s\p{P}\p{L}]', replace_character, text)
+
+
+""" Token transforms """
 
 
 @TokensTransformRegistry.register(key="has-alphabetic")

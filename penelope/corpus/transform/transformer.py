@@ -68,12 +68,12 @@ class TransformOpts:
         self,
         transforms: str | CommaStr | dict[str, bool] = None,
         extras: list[tr.Transform] = None,
-        overides: dict[str, tr.Transform] = None,
+        overrides: dict[str, tr.Transform] = None,
     ):
         self.transforms: CommaStr = CommaStr("")
         self.ingest(self.DEFAULT_TRANSFORMS if transforms is None else transforms)
         self.extras: list[tr.Transform] = extras or []
-        self.overides: dict[str, tr.Transform] = overides or {}
+        self.overrides: dict[str, tr.Transform] = overrides or {}
 
     def ingest(self, transforms: str | CommaStr | dict[str, bool]) -> Self:
         if not transforms:
@@ -155,7 +155,7 @@ class TransformOpts:
     def getfx(self) -> tr.Transform:
         if self.no_effect():
             return lambda x: x
-        return self.registry.getfx(self.transforms, extras=self.extras, overides=self.overides)
+        return self.registry.getfx(self.transforms, extras=self.extras, overrides=self.overrides)
 
     def no_effect(self) -> bool:
         return not self.transforms and not self.extras
