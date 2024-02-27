@@ -24,7 +24,6 @@ SYMBOLS_TRANSLATION = dict.fromkeys(map(ord, SYMBOLS_CHARS), None)
 default_tokenizer = nltk.word_tokenize
 
 RE_HYPHEN_REGEXP: re.Pattern = re.compile(r'\b(\w+)[-¬]\s*\r?\n\s*(\w+)\s*\b', re.UNICODE)
-RE_PERIOD_UPPERCASE: re.Pattern = re.compile(r'\.([A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝ])', re.UNICODE)
 
 CURRENCY_SYMBOLS = ''.join(chr(i) for i in range(0xFFFF) if unicodedata.category(chr(i)) == 'Sc')
 RE_CURRENCY_SYMBOLS: re.Pattern = re.compile(rf"[{CURRENCY_SYMBOLS}]")
@@ -242,6 +241,7 @@ class TransformRegistry:
 
 class TextTransformRegistry(TransformRegistry):
     _items: dict[str, Any] = {
+        'normalize-characters': normalize_characters,
         'normalize-whitespace': normalize_whitespace,
         'ftfy-fix-text': ftfy.fix_text,
         'ftfy-fix-encoding': ftfy.fix_encoding,
@@ -263,11 +263,18 @@ class TokensTransformRegistry(TransformRegistry):
     _items: dict[str, Any] = {}
     _aliases: dict[str, str] = {}
 
+RE_PERIOD_UPPERCASE_LETTER: re.Pattern = re.compile(r'\.([0-9A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝ\-\–])', re.UNICODE)
+RE_SPACE_PERIOD_UPPERCASE_LETTER: re.Pattern = re.compile(r'\s\.([0-9A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝ\-\–])', flags=re.UNICODE | re.IGNORECASE)
+RE_SPACE_PERIOD_UPPERCASE_APOSTOPHE: re.Pattern = re.compile(r"\s'([0-9A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝ\-\–])", flags=re.UNICODE | re.IGNORECASE)
+# RE_PERIOD_UPPERCASE: re.Pattern = re.compile(r'\.([0-9A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝ\-\–])', re.UNICODE)
 
 @TextTransformRegistry.register(key='space-after-period-uppercase,space-after-sentence,fix-space-after-sentence')
 def space_after_period_uppercase(text: str) -> str:
     """Insert space after a period if it is followed by an uppercase letter"""
-    return re.sub(RE_PERIOD_UPPERCASE, r'. \1', text)
+    text: str = re.sub(RE_PERIOD_UPPERCASE_LETTER, r'. \1', text)
+    text: str = re.sub(RE_SPACE_PERIOD_UPPERCASE_LETTER, r' . \1', text)
+    text: str = re.sub(RE_SPACE_PERIOD_UPPERCASE_APOSTOPHE, r" ' \1", text)
+    return text
 
 
 @TextTransformRegistry.register(key='dehyphen,fix-hyphenation')
