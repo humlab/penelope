@@ -46,7 +46,8 @@ disable=c-extension-no-member,
         wrong-import-order,
         wrong-spelling-in-comment,
         wrong-spelling-in-docstring,
-        multiple-statements
+        multiple-statements,
+        use-yield-from
 
 [REPORTS]
 output-format=text
