@@ -9,7 +9,7 @@ from penelope import corpus as pc
 from penelope import pipeline
 from penelope.scripts.utils import consolidate_arguments, load_config, log_arguments, option2, remove_none
 from penelope.topic_modelling.interfaces import InferredModel
-
+from penelope import utility as pu
 # pylint: disable=unused-argument, too-many-arguments
 
 
@@ -29,6 +29,7 @@ from penelope.topic_modelling.interfaces import InferredModel
 @option2('--fix-hyphenation/--no-fix-hyphenation')
 @option2('--fix-accents/--no-fix-accents')
 @option2('--remove-stopwords')
+@option2('--extra-stopwords')
 @option2('--min-word-length')
 @option2('--max-word-length')
 @option2('--keep-symbols/--no-keep-symbols')
@@ -70,6 +71,7 @@ def click_main(
     max_tokens: int = None,
     tf_threshold: int = None,
     remove_stopwords: Optional[str] = None,
+    extra_stopwords: Optional[str] = None,
     min_word_length: int = 2,
     max_word_length: Optional[int] = None,
     keep_symbols: bool = False,
@@ -119,6 +121,7 @@ def main(
     max_tokens: int = None,
     tf_threshold: int = None,
     remove_stopwords: Optional[str] = None,
+    extra_stopwords: Optional[str] = None,
     min_word_length: int = 2,
     max_word_length: int = None,
     keep_symbols: bool = False,
@@ -176,6 +179,12 @@ def main(
         text_transform_opts.remove('dehyphen')
         text_transform_opts.add(pc.dehyphen)
 
+    if isinstance(extra_stopwords, str):
+        if not os.path.isfile(extra_stopwords):
+            click.echo(f"error: extra stopwords file not found: {extra_stopwords}")
+            sys.exit(1)
+        extra_stopwords = { x for x in pu.read_textfile(extra_stopwords).splitlines() if x }
+
     transform_opts: pc.TokensTransformOpts = pc.TokensTransformOpts(
         transforms={
             'to-lower': to_lower,
@@ -186,7 +195,8 @@ def main(
             'remove-symbols': not keep_symbols,
             'only-alphabetic': only_alphabetic,
             'only-any-alphanumeric': only_any_alphanumeric,
-        }
+        },
+        extra_stopwords=extra_stopwords,
     )
 
     extract_opts: pc.ExtractTaggedTokensOpts = pc.ExtractTaggedTokensOpts(
