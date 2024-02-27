@@ -6,7 +6,11 @@ from penelope.corpus import transform as tr
 from penelope.utility.utils import CommaStr
 from penelope.vendor.nltk import STOPWORDS_CACHE, extended_stopwords, get_stopwords, load_stopwords
 
-# pylint: disable=protected-access
+# pylint: disable=protected-access,deprecated-module
+try:
+    from distutils.util import strtobool
+except ImportError:
+    from setuptools.distutils.util import strtobool  # type: ignore=import-error
 
 
 def test_transform_smoke_test():
@@ -46,12 +50,6 @@ def test_resolve_fx_string_no_args():
     result = tr.TransformRegistry.resolve_fx('len', overrides)
     assert callable(result)
     assert result('test') == 4
-
-
-try:
-    from distutils.util import strtobool  # type: ignore=deprecated-module
-except ImportError:
-    from setuptools.distutils.util import strtobool  # type: ignore=import-error
 
 
 def test_resolve_fx_string_with_args():
