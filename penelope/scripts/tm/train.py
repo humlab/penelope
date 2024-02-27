@@ -7,9 +7,10 @@ import click
 
 from penelope import corpus as pc
 from penelope import pipeline
+from penelope import utility as pu
 from penelope.scripts.utils import consolidate_arguments, load_config, log_arguments, option2, remove_none
 from penelope.topic_modelling.interfaces import InferredModel
-from penelope import utility as pu
+
 # pylint: disable=unused-argument, too-many-arguments
 
 
@@ -183,7 +184,7 @@ def main(
         if not os.path.isfile(extra_stopwords):
             click.echo(f"error: extra stopwords file not found: {extra_stopwords}")
             sys.exit(1)
-        extra_stopwords = { x for x in pu.read_textfile(extra_stopwords).splitlines() if x }
+        extra_stopwords = {x for x in pu.read_textfile(extra_stopwords).splitlines() if x}
 
     transform_opts: pc.TokensTransformOpts = pc.TokensTransformOpts(
         transforms={

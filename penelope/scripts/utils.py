@@ -81,9 +81,7 @@ CLI_OPTIONS = {
     '--remove-stopwords': dict(
         help='Remove stopwords using given language', default=None, type=click.Choice(['swedish', 'english'])
     ),
-    '--extra-stopwords': dict(
-        help='Filename with extra stopwords given in', default=None, type=str
-    ),
+    '--extra-stopwords': dict(help='Filename with extra stopwords given in', default=None, type=str),
     '--store-compressed/--no-store-compressed': dict(
         help='Store training corpus compressed', default=True, is_flag=True
     ),

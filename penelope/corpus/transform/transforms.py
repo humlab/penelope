@@ -263,10 +263,16 @@ class TokensTransformRegistry(TransformRegistry):
     _items: dict[str, Any] = {}
     _aliases: dict[str, str] = {}
 
+
 RE_PERIOD_UPPERCASE_LETTER: re.Pattern = re.compile(r'\.([0-9A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝ\-\–])', re.UNICODE)
-RE_SPACE_PERIOD_UPPERCASE_LETTER: re.Pattern = re.compile(r'\s\.([0-9A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝ\-\–])', flags=re.UNICODE | re.IGNORECASE)
-RE_SPACE_PERIOD_UPPERCASE_APOSTOPHE: re.Pattern = re.compile(r"\s'([0-9A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝ\-\–])", flags=re.UNICODE | re.IGNORECASE)
+RE_SPACE_PERIOD_UPPERCASE_LETTER: re.Pattern = re.compile(
+    r'\s\.([0-9A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝ\-\–])', flags=re.UNICODE | re.IGNORECASE
+)
+RE_SPACE_PERIOD_UPPERCASE_APOSTOPHE: re.Pattern = re.compile(
+    r"\s'([0-9A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝ\-\–])", flags=re.UNICODE | re.IGNORECASE
+)
 # RE_PERIOD_UPPERCASE: re.Pattern = re.compile(r'\.([0-9A-ZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝ\-\–])', re.UNICODE)
+
 
 @TextTransformRegistry.register(key='space-after-period-uppercase,space-after-sentence,fix-space-after-sentence')
 def space_after_period_uppercase(text: str) -> str:
