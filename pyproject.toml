@@ -49,7 +49,7 @@ click = ">=8.1.*"
 smart-open = ">=6.4.*"
 python-dotenv = "^1.0.0"
 urllib3 = "*"
-pandas = "==1.5.3"
+pandas = "*"
 networkx = "^3.1"
 regex = "^2023.12.25"
 
