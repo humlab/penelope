@@ -16,6 +16,7 @@ from penelope.corpus import (
     DocumentIndex,
     DocumentIndexHelper,
     Token2Id,
+    consolidate_document_index,
     load_document_index,
     update_document_index_by_dicts_or_tuples,
     update_document_index_properties,
@@ -138,9 +139,7 @@ class PipelinePayload:
     @document_index.setter
     def document_index(self, value: DocumentIndex) -> None:
         """Add document index to payload. If already set, consolidate with existing."""
-        self.effective_document_index = DocumentIndexHelper.consolidate(
-            document_index=self.document_index, other_index=value
-        )
+        self.effective_document_index = consolidate_document_index(self.document_index, value)
 
     def _try_load_document_index(self) -> DocumentIndex:
         if isinstance(self.document_index_source, DocumentIndex):

@@ -51,9 +51,10 @@ class CorpusCheckpoint:
         self.reader_opts: TextReaderOpts = reader_opts
         self.content_type: ContentType = serialize_opts.content_type
 
-        self.document_index: DocumentIndex = DocumentIndexHelper(document_index).consolidate(
-            DocumentIndexHelper.from_filenames2(self.filenames, self.reader_opts)
-        )
+        reader_index: DocumentIndex = DocumentIndexHelper.from_filenames2(self.filenames, self.reader_opts)
+
+        self.document_index: DocumentIndex = consolidate_document_index(document_index, reader_index)
+
         self._sync_filenames()
         self._filter_documents()
 
