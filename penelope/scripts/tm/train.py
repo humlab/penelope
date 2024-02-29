@@ -13,6 +13,8 @@ from penelope.topic_modelling.interfaces import InferredModel
 
 # pylint: disable=unused-argument, too-many-arguments
 
+jj = os.path.join
+
 
 @click.command()
 @click.argument('config-filename', required=False)
@@ -104,7 +106,12 @@ def click_main(
     main(**arguments)
 
     with contextlib.suppress(Exception):
-        log_arguments(args=arguments, log_dir=arguments.get('target_folder'))
+        tf: str = arguments.get('target_folder')
+        tn: str = arguments.get('target_name', '')
+        for folder in [jj(tf, tn), tf]:
+            if os.path.isdir(folder):
+                log_arguments(args=arguments, log_dir=folder)
+                break
 
 
 def main(
