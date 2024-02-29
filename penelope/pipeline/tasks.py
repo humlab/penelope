@@ -18,6 +18,7 @@ from penelope import corpus as pc
 from penelope import utility as pu
 from penelope.corpus.readers.tng import CorpusReader, create_sparv_xml_corpus_reader
 from penelope.corpus.serialize import SerializeOpts
+from penelope.type_alias import DocumentIndex
 
 from . import checkpoint as cp
 from .interfaces import ContentType, DocumentPayload, ITask, PipelineError
@@ -58,15 +59,15 @@ class LoadText(DefaultResolveMixIn, ITask):
         )
 
         """Try to fetch document index from source (e.g. it might exist in compressed archive)"""
-        di = (
+        self.pipeline.payload.document_index = (
             self.text_reader.try_load_document_index(
                 filename=self.pipeline.payload.document_index_source, sep=self.pipeline.payload.document_index_sep
             )
             if self.text_reader.filename_exists(self.pipeline.payload.document_index_source)
             else None
         )
-
-        self.pipeline.payload.set_reader_index(self.text_reader.document_index, di)
+        """Add (consolidate) corpus' document index to pipeline"""
+        self.pipeline.payload.document_index = self.text_reader.document_index
         self.pipeline.payload.metadata = self.text_reader.metadata
 
         self.pipeline.put("text_reader_opts", self.reader_opts.props)
@@ -256,6 +257,14 @@ class LoadTaggedCSV(PoSCountMixIn, ITask):
         self.serialize_opts = self.serialize_opts or self.pipeline.config.serialize_opts
         self.checkpoint_data: cp.CorpusCheckpoint = self.load_archive()
 
+        self.pipeline.payload.document_index = self.load_document_index()
+
+        self.pipeline.put("reader_opts", self.extra_reader_opts.props)
+        self.pipeline.put("serialize_opts", self.serialize_opts.props)
+
+        return self
+
+    def load_document_index(self) -> DocumentIndex:
         document_index: pd.DataFrame = cp.feather.read_document_index(self.serialize_opts.feather_folder)
 
         if document_index is not None:
@@ -266,13 +275,7 @@ class LoadTaggedCSV(PoSCountMixIn, ITask):
 
         if document_index is None:
             document_index = self.checkpoint_data.document_index
-
-        self.pipeline.payload.set_reader_index(document_index)
-
-        self.pipeline.put("reader_opts", self.extra_reader_opts.props)
-        self.pipeline.put("serialize_opts", self.serialize_opts.props)
-
-        return self
+        return document_index
 
     def create_instream(self) -> Iterable[DocumentPayload]:
         if self.stop_at_index:
@@ -387,7 +390,7 @@ class LoadTaggedXML(PoSCountMixIn, ITask):
             sparv_version=int(self.pipeline.payload.get("sparv_version", 0)),
             content_type="pandas",
         )
-        self.pipeline.payload.set_reader_index(self.corpus_reader.document_index)
+        self.pipeline.payload.document_index = self.corpus_reader.document_index
 
     def create_instream(self) -> Iterable[DocumentPayload]:
         return (
@@ -769,7 +772,7 @@ class LoadTokenizedCorpus(TokenCountMixIn, DefaultResolveMixIn, ITask):
 
     def setup(self) -> ITask:
         super().setup()
-        self.pipeline.payload.set_reader_index(self.corpus.document_index)
+        self.pipeline.payload.document_index = self.corpus.document_index
 
     def create_instream(self) -> Iterable[DocumentPayload]:
         return (

@@ -10,7 +10,15 @@ from typing import Any, Callable, Iterable, Iterator, Optional
 
 from loguru import logger
 
-from penelope.corpus import DocumentIndex, DocumentIndexHelper, TextReaderOpts, Token2Id, load_document_index, serialize
+from penelope.corpus import (
+    DocumentIndex,
+    DocumentIndexHelper,
+    TextReaderOpts,
+    Token2Id,
+    consolidate_document_index,
+    load_document_index,
+    serialize,
+)
 from penelope.utility import filenames_satisfied_by, zip_utils
 
 from ..interfaces import ContentType, DocumentPayload, PipelineError
@@ -37,19 +45,15 @@ class CorpusCheckpoint:
         reader_opts: TextReaderOpts = None,
     ):
         self.source_name: Any = source_name
-        self.document_index: DocumentIndex = document_index
         self.token2id: Token2Id = token2id
         self.serialize_opts: serialize.SerializeOpts = serialize_opts
         self.filenames: list[str] = filenames
         self.reader_opts: TextReaderOpts = reader_opts
         self.content_type: ContentType = serialize_opts.content_type
 
-        self.document_index: DocumentIndex = (
-            self.document_index
-            if self.document_index is not None
-            else DocumentIndexHelper.from_filenames2(self.filenames, self.reader_opts)
+        self.document_index: DocumentIndex = DocumentIndexHelper(document_index).consolidate(
+            DocumentIndexHelper.from_filenames2(self.filenames, self.reader_opts)
         )
-
         self._sync_filenames()
         self._filter_documents()
 

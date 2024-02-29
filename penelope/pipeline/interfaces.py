@@ -9,13 +9,13 @@ from os.path import basename, dirname, isdir, isfile, join
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Literal, Mapping, Sequence, Tuple, Type, Union
 
+from loguru import logger
 from tqdm.auto import tqdm
 
 from penelope.corpus import (
     DocumentIndex,
     DocumentIndexHelper,
     Token2Id,
-    consolidate_document_index,
     load_document_index,
     update_document_index_by_dicts_or_tuples,
     update_document_index_properties,
@@ -132,14 +132,25 @@ class PipelinePayload:
     @property
     def document_index(self) -> DocumentIndex:
         if self.effective_document_index is None:
-            if isinstance(self.document_index_source, DocumentIndex):
-                self.effective_document_index = self.document_index_source
-            elif isinstance(self.document_index_source, str):
-                self.effective_document_index = load_document_index(
-                    filename=self.document_index_source,
-                    sep=self.document_index_sep,
-                )
+            self.effective_document_index = self._try_load_document_index()
         return self.effective_document_index
+
+    @document_index.setter
+    def document_index(self, value: DocumentIndex) -> None:
+        """Add document index to payload. If already set, consolidate with existing."""
+        self.effective_document_index = DocumentIndexHelper.consolidate(
+            document_index=self.document_index, other_index=value
+        )
+
+    def _try_load_document_index(self) -> DocumentIndex:
+        if isinstance(self.document_index_source, DocumentIndex):
+            return self.document_index_source
+        if isinstance(self.document_index_source, str):
+            try:
+                return load_document_index(filename=self.document_index_source, sep=self.document_index_sep)
+            except FileNotFoundError:
+                logger.warning(f"skipped loading document index {self.document_index_source} (not found)")
+        return None
 
     @property
     def _memory_store_props(self) -> dict[str, Any] | None:
@@ -177,18 +188,6 @@ class PipelinePayload:
         }
         return {**self.props, **opts, **extra_opts}
 
-    def set_reader_index(self, reader_index: DocumentIndex, document_index: DocumentIndex = None) -> "PipelinePayload":
-        """If document index is supplied, set it as effective (if not set)"""
-        if self.effective_document_index is None:
-            if document_index is not None:
-                self.effective_document_index = document_index
-
-        self.effective_document_index = consolidate_document_index(
-            document_index=self.document_index if document_index is None else document_index,
-            reader_index=reader_index,
-        )
-        return self
-
     def document_lookup(self, document_name: str) -> Dict[str, Any]:
         return self.document_index.loc[strip_path_and_extension(document_name)]
 
@@ -202,11 +201,7 @@ class PipelinePayload:
 
     def update_document_properties(self, document_name: str, **properties):
         """Updates document index with given property values"""
-        update_document_index_properties(
-            self.document_index,
-            document_name=document_name,
-            property_bag=properties,
-        )
+        update_document_index_properties(self.document_index, document_name=document_name, property_bag=properties)
 
     def update_document_index_by_dicts_or_tuples(
         self, *, data: List[Tuple[Any, ...]], columns: List[str], default: Any = 0

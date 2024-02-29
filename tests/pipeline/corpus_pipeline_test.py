@@ -267,7 +267,7 @@ def patch_load_archive(*_, **__) -> CorpusCheckpoint:
 
 @patch('penelope.pipeline.checkpoint.store_archive', patch_store_archive)
 def test_save_data_frame_succeeds():
-    pipeline = Mock(spec=CorpusPipeline, **{'payload.set_reader_index': monkey_patch})
+    pipeline = Mock(spec=CorpusPipeline)
     opts = Mock(spec=SerializeOpts)
     prior = MagicMock(spec=ITask, outstream=lambda: fake_data_frame_stream(1))
     task = tasks.SaveTaggedCSV(pipeline=pipeline, prior=prior, filename="dummy.zip", serialize_opts=opts)
@@ -276,12 +276,7 @@ def test_save_data_frame_succeeds():
 
 
 def test_load_data_frame_succeeds():
-    pipeline = Mock(
-        spec=CorpusPipeline,
-        **{
-            'payload.set_reader_index': monkey_patch,
-        },
-    )
+    pipeline = Mock(spec=CorpusPipeline)
     prior = MagicMock(spec=ITask, outstream=lambda: fake_data_frame_stream(1))
 
     task: tasks.LoadTaggedCSV = tasks.LoadTaggedCSV(

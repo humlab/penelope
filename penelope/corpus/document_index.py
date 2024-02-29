@@ -103,8 +103,8 @@ class DocumentIndexHelper:
         _index = load_document_index_from_str(data_str=data_str, sep=sep, document_id_field=document_id_field)
         return DocumentIndexHelper(_index)
 
-    def consolidate(self, reader_index: DocumentIndex) -> "DocumentIndexHelper":
-        self._document_index = consolidate_document_index(self._document_index, reader_index)
+    def consolidate(self, other_index: DocumentIndex) -> "DocumentIndexHelper":
+        self._document_index = consolidate_document_index(self._document_index, other_index)
         return self
 
     @deprecated
@@ -572,23 +572,23 @@ def load_document_index_from_str(data_str: str, sep: str, document_id_field: str
     return df
 
 
-def consolidate_document_index(document_index: DocumentIndex, reader_index: DocumentIndex) -> DocumentIndex:
+def consolidate_document_index(document_index: DocumentIndex, other_index: DocumentIndex) -> DocumentIndex:
     """Returns a consolidated document index from an existing index, if exists,
     and the reader index."""
 
     if document_index is None:
-        return reader_index
+        return other_index
 
-    if reader_index is None:
+    if other_index is None:
         return document_index
 
-    if document_index is reader_index:
+    if document_index is other_index:
         return document_index
 
-    columns = [x for x in reader_index.columns if x not in document_index.columns]
+    columns = [x for x in other_index.columns if x not in document_index.columns]
 
     if len(columns) > 0:
-        return document_index.merge(reader_index[columns], left_index=True, right_index=True, how='left')
+        return document_index.merge(other_index[columns], left_index=True, right_index=True, how='left')
 
     return document_index
 
