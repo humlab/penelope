@@ -86,6 +86,8 @@ class CorpusCheckpoint:
             return
 
         if set(self.filenames) != set(self.document_index.filename.to_list()):
+            print(set(self.filenames) - set(self.document_index.filename.to_list()))
+            print(set(self.document_index.filename.to_list()) - set(self.filenames))
             raise ValueError(f"{self.source_name} filenames in archive and document index differs")
 
         if 'document_id' in self.document_index:
@@ -173,9 +175,13 @@ class CheckpointZipFile(zipfile.ZipFile):
         return self.opts.document_index_name or CheckpointNames.DOCUMENT_INDEX
 
     @cached_property
+    def has_document_index(self) -> bool:
+        return self.document_index_name in self.namelist()
+
+    @cached_property
     def document_index(self) -> Optional[DocumentIndex]:
         """Returns the document index stored in archive, or None if not exists"""
-        if self.document_index_name not in self.namelist():
+        if not self.has_document_index:
             return None
 
         return load_document_index(
