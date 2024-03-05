@@ -196,13 +196,19 @@ def load_term_substitutions(
     return substitutions
 
 
-def read_yaml(file: Any) -> dict:
+def read_yaml(file: Any, ignore_errors: bool = False) -> dict:
     """Read yaml file. Return dict."""
-    if isinstance(file, str) and any(file.endswith(x) for x in ('.yml', '.yaml')):
-        with open(file, "r", encoding='utf-8') as fp:
-            return yaml.load(fp, Loader=yaml.FullLoader)
-    data: List[dict] = yaml.load(file, Loader=yaml.FullLoader)
-    return {} if len(data) == 0 else data[0]
+    try:
+        if isinstance(file, str) and any(file.endswith(x) for x in ('.yml', '.yaml')):
+            with open(file, "r", encoding='utf-8') as fp:
+                return yaml.load(fp, Loader=yaml.FullLoader)
+        data: List[dict] = yaml.load(file, Loader=yaml.FullLoader)
+        return {} if len(data) == 0 else data[0]
+    except Exception as ex:
+        if ignore_errors:
+            logging.error(ex)
+            return {}
+        raise ex
 
 
 def write_yaml(data: dict, file: str) -> None:
