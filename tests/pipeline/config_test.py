@@ -77,7 +77,7 @@ def test_corpus_config_set_folders():
 
 
 def test_dependency_store(corpus_config: CorpusConfig):
-    store: dict = corpus_config.dependency_store()
+    store: dict = corpus_config.dependency_store
     assert store is not None
 
     assert set(store.keys()) == {'tagger', 'text_repository', 'render_text', 'text_loader', 'dummy_dependency'}

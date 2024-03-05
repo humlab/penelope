@@ -364,7 +364,7 @@ class CorpusConfig:
         """Returns a resolved dependency by key"""
         try:
             if key not in self._key_container:
-                self._key_container[key] = DependencyResolver.resolve_key(key, self.dependency_store(), **kwargs)
+                self._key_container[key] = DependencyResolver.resolve_key(key, self.dependency_store, **kwargs)
         except Exception as ex:
             raise DependencyError(f"Dependency {key} not configured.") from ex
         return self._key_container[key]
