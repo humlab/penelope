@@ -63,7 +63,7 @@ class PivotKeysMixIn:
 
         self.clear_label: str = '(clear)'
         self.pivot_key_specs: PivotKeySpecArg = pivot_key_specs
-        self.pivot_keys = pivot_key_specs
+        self.pivot_keys = pivot_key_specs or self.config.pivot_keys
 
     @property
     def pivot_keys(self) -> pu.PivotKeys:
