@@ -399,6 +399,7 @@ class CorpusConfig:
 
 class DependencyResolver:
     """Resolves dependencies from a dictionary of dependencies"""
+
     @classmethod
     def resolve_key(cls, key: str, store: dict, **kwargs) -> Any:
         """Returns a dependency by key
