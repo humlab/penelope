@@ -206,7 +206,6 @@ def read_yaml(file: Any, ignore_errors: bool = False) -> dict:
         return {} if len(data) == 0 else data[0]
     except Exception as ex:
         if ignore_errors:
-            logging.error(ex)
             return {}
         raise ex
 
