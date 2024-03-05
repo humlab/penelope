@@ -8,16 +8,15 @@ import os
 import pathlib
 import uuid
 from dataclasses import asdict, dataclass, field
+from functools import cached_property
 from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Type, Union
 
 import yaml
 from loguru import logger
 
 from penelope import utility as pu
-from penelope.corpus import TextReaderOpts, TextTransformOpts
+from penelope.corpus import TextReaderOpts, TextTransform, TextTransformOpts
 from penelope.corpus.serialize import SerializeOpts
-from penelope.corpus.transform.transforms import TextTransform
-from penelope.utility.utils import try_load_function_or_class_method
 
 from . import interfaces
 
@@ -191,7 +190,9 @@ class CorpusConfig:
                 if 'name' not in transform:
                     raise ValueError(f"Missing 'name' in transform_opts: {transform}")
 
-                overrides[key] = try_load_function_or_class_method(transform['name'], **transform.get('arguments', {}))
+                overrides[key] = pu.try_load_function_or_class_method(
+                    transform['name'], **transform.get('arguments', {})
+                )
 
             return TextTransformOpts(transforms=transform_keys, overrides=overrides)
         return None
@@ -360,7 +361,7 @@ class CorpusConfig:
         )
 
     def resolve_dependency(self, key: str, **kwargs) -> Any:
-        """Returns a dependency by key"""
+        """Returns a resolved dependency by key"""
         try:
             if key not in self._key_container:
                 self._key_container[key] = DependencyResolver.resolve_key(key, self.dependency_store(), **kwargs)
@@ -368,9 +369,21 @@ class CorpusConfig:
             raise DependencyError(f"Dependency {key} not configured.") from ex
         return self._key_container[key]
 
+    @cached_property
     def dependency_store(self) -> dict:
-        store: dict = {}
-        store |= self.dependencies or {}
+        """
+        Returns a dictionary of all dependencies found in the config
+        The dictionary is a combination of the `dependencies` section and the `pipeline_payload.memory_store`
+        If the dependencies section contains a filename, then the key-values are read from file.
+        """
+
+        store: dict = (
+            pu.read_yaml(self.dependencies, ignore_errors=True)
+            if isinstance(self.dependencies, str)
+            else self.dependencies or {}
+        )
+        if 'dependencies' in store:
+            store.update(store['dependencies'])
         for k, v in (self.pipeline_payload.memory_store or {}).items():
             if not isinstance(v, dict):
                 continue
@@ -380,10 +393,12 @@ class CorpusConfig:
 
     @property
     def pivot_keys(self) -> Any:
+        """Returns the pivot keys from the extra_opts section"""
         return self.extra_opts.get("pivot_keys")
 
 
 class DependencyResolver:
+    """Resolves dependencies from a dictionary of dependencies"""
     @classmethod
     def resolve_key(cls, key: str, store: dict, **kwargs) -> Any:
         """Returns a dependency by key
@@ -417,7 +432,8 @@ class DependencyResolver:
         return pu.create_class(class_name)(*arguments, **options, **kwargs)
 
     @classmethod
-    def resolve_arguments(cls, options: dict[str, Any], *stores: list[tuple[str, dict]]):
+    def resolve_arguments(cls, options: dict[str, Any], *stores: list[tuple[str, dict]]) -> None:
+        """Resolves arguments in a dictionary of options"""
         for key, value in options.items():
             if not isinstance(value, str):
                 continue
