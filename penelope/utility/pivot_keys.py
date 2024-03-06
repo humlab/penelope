@@ -1,16 +1,15 @@
 import glob
 from collections import defaultdict
-from functools import cached_property
 from operator import methodcaller
 from os.path import isdir, isfile, join
-from typing import Callable
+from typing import Any, Callable, Self
 
 import pandas as pd
 from loguru import logger
 
 from .file_utility import read_yaml
 from .pandas_utils import PropertyValueMaskingOpts
-from .utils import clear_cached_properties, dotcoalesce, revdict
+from .utils import dotcoalesce, revdict
 
 PivotKeySpec = dict[str, str | dict[str, int]]
 
@@ -37,40 +36,49 @@ class PivotKeys:
     """
 
     def __init__(self, pivot_keys: dict[str, PivotKeySpec] | list[PivotKeySpec] = None):
-        self.pivot_keys: dict[str, PivotKeySpec] = pivot_keys or {}
+        self._pivot_keys: dict[str, PivotKeySpec] = {}
+        self += pivot_keys
 
     @staticmethod
-    def load(path: str, default: dict = None) -> "PivotKeys":
-        """Loads pivot keys from any given file, or probe in folder for pivot keys"""
-        try:
-            if isinstance(path, dict):
-                return PivotKeys(pivot_keys=path)
-
-            if isinstance(path, str):
-                if isfile(path):
-                    data: dict = PivotKeys.try_load(path, default=default)
-                    if data is not None:
-                        return PivotKeys(pivot_keys=data)
-
-                if isdir(path):
-                    return PivotKeys.load_by_probe(path)
-
-        except FileNotFoundError:
-            ...
-        logger.warning(f"Pivot keys file not found: {path}")
-        return PivotKeys()
+    def create(value) -> Self:
+        if isinstance(value, str):
+            if isfile(value):
+                data: dict = PivotKeys.try_load(value, default={})
+                if data is not None:
+                    return PivotKeys(pivot_keys=data)
+            if isdir(value):
+                return PivotKeys.load_by_probe(value)
+            logger.warning(f"Pivot keys file not found: {value}")
+            return PivotKeys()
+        if isinstance(value, PivotKeys):
+            return value
+        return PivotKeys(pivot_keys={})
 
     @staticmethod
-    def try_load(path: str, default: dict = None) -> "PivotKeys":
+    def create_by_index(document_index: pd.DataFrame, *text_columns: str) -> Self:
+        """Create pivot keys from document index. For each text column an ID column is converted, and used as a pivot key."""
+        # FIXME: Extend to support existing ID columns, naming, etc
+        pivot_keys: dict = {}
+        for text_column in text_columns:
+            id_column: str = f"{text_column}_id"
+            pivot_keys[text_column] = {
+                'text_name': text_column,
+                'id_name': id_column,
+                'values': codify_column(document_index, text_column, id_column_name=id_column),
+            }
+        return PivotKeys(pivot_keys=pivot_keys)
+
+    @staticmethod
+    def try_load(path: str, default: dict = None) -> Self:
         data: dict = read_yaml(path)
         return dotcoalesce(data, 'extra_opts.pivot_keys', 'pivot_keys', default=default)
 
     @staticmethod
-    def load_by_probe(folder: str) -> "PivotKeys":
+    def load_by_probe(folder: str) -> Self:
         """Probes folder for pivot keys"""
 
         if isfile(join(folder, 'pivot_keys.yml')):
-            return PivotKeys.load(join(folder, 'pivot_keys.yml'))
+            return PivotKeys.create(join(folder, 'pivot_keys.yml'))
 
         for path in glob.glob(folder + '/*.y*ml'):
             data: dict = PivotKeys.try_load(path, default=None)
@@ -84,24 +92,22 @@ class PivotKeys:
         return self._pivot_keys
 
     @pivot_keys.setter
-    def pivot_keys(self, pivot_keys: dict[str, PivotKeySpec] | list[PivotKeySpec]):
-        clear_cached_properties(self)
-        self._pivot_keys: dict[str, PivotKeySpec] = pivot_keys or {}
-        if isinstance(self.pivot_keys, list):
-            """Changes mapping to a dict of dicts instead of a list of dicts"""
-            self._pivot_keys = {x['text_name']: x for x in self.pivot_keys} if self.pivot_keys else {}
-        self.is_satisfied()
+    def pivot_keys(self, pivot_keys: dict[str, PivotKeySpec] | list[PivotKeySpec]) -> None:
+        self += pivot_keys or {}
 
-    def get(self, text_name: str) -> dict:
-        return self.pivot_keys.get(text_name, {})
+    def __contains__(self, text_name: str) -> bool:
+        return text_name in self._pivot_keys
 
-    def __getitem__(self, text_name: str) -> dict:
-        return self.get(text_name)
+    def __getitem__(self, text_name: str, default: dict = None) -> dict:
+        return self._pivot_keys.get(text_name, default or {})
 
-    def __len__(self):
-        return len(self.pivot_keys)
+    def get(self, text_name: str, default: Any = None) -> dict:
+        return self._pivot_keys.get(text_name, default or {})
 
-    def __eq__(self, other):
+    def __len__(self) -> int:
+        return len(self._pivot_keys)
+
+    def __eq__(self, other) -> bool:
         if other is None:
             return False
         if isinstance(other, dict):
@@ -111,26 +117,36 @@ class PivotKeys:
             return self._pivot_keys == other._pivot_keys
         return False
 
-    @cached_property
-    def key_name2key_id(self) -> dict:
-        return {x['text_name']: x['id_name'] for x in self.pivot_keys.values()}
+    def __add__(self, other) -> Self:
+        if isinstance(other, PivotKeys):
+            self._pivot_keys.update(other.pivot_keys)
+        if isinstance(other, dict):
+            self._pivot_keys.update(other)
+        if isinstance(other, list):
+            self._pivot_keys.update({x['text_name']: x for x in other.pivot_keys})
+        self.is_satisfied()
+        return self
 
-    @cached_property
+    @property
+    def key_name2key_id(self) -> dict:
+        return {x['text_name']: x['id_name'] for x in self._pivot_keys.values()}
+
+    @property
     def key_id2key_name(self) -> dict:
         """Translates e.g. `gender_id` to `gender`."""
         return revdict(self.key_name2key_id)
 
     @property
     def text_names(self) -> list[str]:
-        return [x for x in self.pivot_keys]
+        return [x['text_name'] for x in self._pivot_keys.values()]
 
-    @cached_property
+    @property
     def id_names(self) -> list[str]:
-        return [x.get('id_name') for x in self.pivot_keys.values()]
+        return [x['id_name'] for x in self._pivot_keys.values()]
 
     @property
     def has_pivot_keys(self) -> list[str]:
-        return len(self.text_names) > 0
+        return len(self._pivot_keys) > 0
 
     def key_value_name2id(self, text_name: str) -> dict[str, int]:
         """Returns name/id mapping for given key's value range"""
@@ -144,13 +160,13 @@ class PivotKeys:
         return [f'{k}{sep}{v}' for k in names for v in self.key_value_name2id(k).keys()]
 
     def is_satisfied(self) -> bool:
-        if self.pivot_keys is None:
+        if self._pivot_keys is None:
             return True
 
-        if not isinstance(self.pivot_keys, (list, dict)):
-            raise TypeError(f"expected list/dict of pivot key specs, got {type(self.pivot_keys)}")
+        if not isinstance(self._pivot_keys, (list, dict)):
+            raise TypeError(f"expected list/dict of pivot key specs, got {type(self._pivot_keys)}")
 
-        items: dict = self.pivot_keys if isinstance(self.pivot_keys, list) else self.pivot_keys.values()
+        items: dict = self._pivot_keys if isinstance(self._pivot_keys, list) else self._pivot_keys.values()
 
         if not all(isinstance(x, dict) for x in items):
             raise TypeError("expected list of dicts")
@@ -189,7 +205,7 @@ class PivotKeys:
 
         return opts
 
-    @cached_property
+    @property
     def single_key_options(self) -> dict:
         return {v['text_name']: v['id_name'] for v in self.pivot_keys.values()}
 
@@ -204,10 +220,11 @@ class PivotKeys:
                 opts[k] = list(map(int, v or [])) if self.is_id_name(k) else list(v)
 
         else:
-            """Values are e.g. ('xxx', ['label-1','label2','label-3',...}"""
+            """Values are e.g. ('xxx', ['label_1','label_2','label_3',...}"""
+            key2id: dict = self.key_name2key_id
             for k, v in key_values.items():
                 fg: Callable[[str], int] = self.key_value_name2id(k).get
-                opts[self.key_name2key_id[k]] = [int(fg(x)) for x in v]
+                opts[key2id[k]] = [int(fg(x)) for x in v]
         return opts
 
     def create_filter_by_str_sequence(
@@ -256,3 +273,24 @@ class PivotKeys:
                 if drop:
                     df.drop(columns=key_id, inplace=True, errors='ignore')
         return df
+
+
+def codify_column(document_index: pd.DataFrame, column_name: str, id_column_name: str = None) -> dict[Any, int]:
+    """Create a new column named id_column_name with unique integer values for each unique value in column_name"""
+
+    if column_name not in document_index.columns:
+        raise ValueError(f'Column {column_name} not found in document_index')
+
+    if id_column_name is None:
+        id_column_name = f'{column_name}_id'
+
+    if id_column_name in document_index.columns:
+        raise ValueError(f'Column {id_column_name} already exists in document_index')
+
+    categorical: pd.Categorical = pd.Categorical(document_index[column_name])
+
+    document_index[id_column_name] = categorical.codes
+
+    category_to_id: dict[Any, int] = {category: id for id, category in enumerate(categorical.categories)}
+
+    return category_to_id

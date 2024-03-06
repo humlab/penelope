@@ -84,7 +84,7 @@ class ComplexTrendsGUI:
         self, *, result: str | pc.VectorizedCorpus, folder: str = None, sender: Any = None, **args
     ) -> None:
         self.trends_service.corpus = pc.VectorizedCorpus.load(filename=result) if isinstance(result, str) else result
-        self.gui_trends.pivot_keys = pu.PivotKeys.load(folder) if isfile(folder) else None
+        self.gui_trends.pivot_keys = pu.PivotKeys.create(folder) if isfile(folder) else None
         self.content_placeholder.children = [self.gui_trends.layout()]
         self.gui_trends.display(trends_service=self.trends_service)
 
@@ -102,7 +102,7 @@ class SimpleTrendsGUI:
         folder: str = dirname(filename)
 
         sender.payload.corpus = pc.VectorizedCorpus.load(filename=filename)
-        sender.payload.pivot_key_specs = pu.PivotKeys.load(folder) if isdir(folder) else None
+        sender.payload.pivot_key_specs = pu.PivotKeys.create(folder) if isdir(folder) else None
         sender.payload.display(trends_service=sender.payload)
 
     def setup(self) -> Self:

@@ -62,8 +62,13 @@ class PivotKeysMixIn:
         )
 
         self.clear_label: str = '(clear)'
+
+        if pivot_key_specs is None and hasattr(self, 'config'):
+            pivot_key_specs = getattr(self, 'config').pivot_keys_specs
+
         self.pivot_key_specs: PivotKeySpecArg = pivot_key_specs
-        self.pivot_keys = pivot_key_specs or self.config.pivot_keys
+
+        self.pivot_keys = pivot_key_specs
 
     @property
     def pivot_keys(self) -> pu.PivotKeys:
@@ -74,11 +79,7 @@ class PivotKeysMixIn:
 
     @pivot_keys.setter
     def pivot_keys(self, value: pu.PivotKeys | dict):
-        if isinstance(value, str):
-            if value.endswith('.yaml') or value.endswith('.yml'):
-                value: dict = pu.PivotKeys.load(value)
-
-        self._pivot_keys = value if isinstance(value, pu.PivotKeys) else pu.PivotKeys(value)
+        self._pivot_keys = pu.PivotKeys.create(value)
 
         if value is None:
             return

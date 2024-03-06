@@ -79,7 +79,7 @@ class PivotTopicNetworkGUI(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn, nt
 
     def setup(self, **kwargs) -> "PivotTopicNetworkGUI":
         if self.pivot_key_specs is None:
-            self.pivot_keys = self.state.inferred_topics.corpus_config.pivot_keys
+            self.pivot_keys = self.state.inferred_topics.corpus_config.pivot_keys_specs
 
         super().setup(**kwargs)
 
