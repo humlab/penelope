@@ -11,6 +11,7 @@ from loguru import logger
 from penelope.utility import (
     FilenameFieldSpecs,
     PD_PoS_tag_groups,
+    codify_column,
     deprecated,
     dict_of_key_values_inverted_to_dict_of_value_key,
     extract_filenames_metadata,
@@ -374,6 +375,12 @@ class DocumentIndexHelper:
         (low, high) = DocumentIndexHelper.year_range(document_index)
         xs = np.arange(low, high + 1, 1)
         return xs
+
+    def codify_column(self, column_name: str, id_column_name: str = None) -> dict[Any, int]:
+        category_to_id: dict[Any, int] = codify_column(
+            self.document_index, column_name=column_name, id_column_name=id_column_name
+        )
+        return category_to_id
 
 
 KNOWN_TIME_PERIODS: dict = {'year': 1, 'lustrum': 5, 'decade': 10}
