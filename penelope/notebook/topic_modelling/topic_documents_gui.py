@@ -332,8 +332,8 @@ class WithPivotKeysText:
             )
 
         def setup(self, **kwargs):
-            if self.config and self.config.pivot_keys:
-                self.pivot_keys = self.config.pivot_keys
+            if self.config and self.config.pivot_keys_specs:
+                self.pivot_keys = self.config.pivot_keys_specs
 
             return super().setup(**kwargs)
 
@@ -353,8 +353,8 @@ class WithPivotKeysText:
             )
 
         def setup(self, **kwargs):
-            if self.config and self.config.pivot_keys:
-                self.pivot_keys = self.config.pivot_keys
+            if self.config and self.config.pivot_keys_specs:
+                self.pivot_keys = self.config.pivot_keys_specs
 
             return super().setup(**kwargs)
 

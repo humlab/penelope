@@ -71,7 +71,7 @@ class TopicDocumentNetworkGui(ox.PivotKeysMixIn, mx.AlertMixIn, mx.ComputeMixIn,
 
     def setup(self, default_threshold: float = None, **kwargs) -> "TopicDocumentNetworkGui":
         if self.pivot_key_specs is None:
-            self.pivot_keys = self.state.inferred_topics.corpus_config.pivot_keys
+            self.pivot_keys = self.state.inferred_topics.corpus_config.pivot_keys_specs
 
         super().setup(**kwargs)
 

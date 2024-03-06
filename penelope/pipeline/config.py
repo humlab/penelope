@@ -392,9 +392,10 @@ class CorpusConfig:
         return store
 
     @property
-    def pivot_keys(self) -> Any:
+    def pivot_keys_specs(self) -> Any:
         """Returns the pivot keys from the extra_opts section"""
-        return self.extra_opts.get("pivot_keys")
+        value = self.extra_opts.get("pivot_keys", {})
+        return value
 
 
 class DependencyResolver:
