@@ -1,6 +1,6 @@
 import os
 from io import StringIO
-from typing import List
+from typing import Any, List
 
 import numpy as np
 import pandas as pd
@@ -14,7 +14,7 @@ from penelope.corpus import (
     update_document_index_by_dicts_or_tuples,
     update_document_index_properties,
 )
-from penelope.utility import assert_is_strictly_increasing, is_strictly_increasing
+from penelope.utility import assert_is_strictly_increasing, codify_column, is_strictly_increasing
 
 TEST_DOCUMENT_INDEX = """
 ;filename;year;year_id;document_name;document_id;title;n_raw_tokens
@@ -282,3 +282,31 @@ def test_is_strictly_increasing():
 
     assert not is_strictly_increasing(pd.Series([0, -1, 2], dtype=np.int32))
     assert not is_strictly_increasing(pd.Series(['a', 'b', 'c']))
+
+
+def test_overload_document_index():
+
+    document_index_str: str = """
+filename;year;year_id;document_name;document_id;rating;n_raw_tokens
+tran_2009_01_test.txt;2009;1;tran_2009_01_test;0;Good;44
+tran_2009_02_test.txt;2009;2;tran_2009_02_test;1;Bad;59
+tran_2019_01_test.txt;2019;1;tran_2019_01_test;2;Excellent;68
+tran_2019_02_test.txt;2019;2;tran_2019_02_test;3;Good;59
+tran_2019_03_test.txt;2019;3;tran_2019_03_test;4;Good;173
+tran_2024_01_test.txt;2024;1;tran_2024_01_test;5;Bad;33
+tran_2024_02_test.txt;2024;2;tran_2024_02_test;6;Excellent;44
+tran_2029_01_test.txt;2029;1;tran_2029_01_test;7;Bad;24
+tran_2029_02_test.txt;2029;2;tran_2029_02_test;8;Good;12
+"""
+
+    di: pd.DataFrame = load_document_index(filename=StringIO(document_index_str), sep=';')
+
+    category_to_id: dict[Any, int] = codify_column(di, column_name='rating')
+
+    assert 'rating_id' in di.columns
+    assert category_to_id == {'Bad': 0, 'Excellent': 1, 'Good': 2}
+    assert list(di.rating_id) == [category_to_id[r] for r in di.rating]
+
+    id_to_category: dict[int, Any] = {v: k for k, v in category_to_id.items()}
+
+    assert list(di.rating) == [id_to_category[i] for i in di.rating_id]
