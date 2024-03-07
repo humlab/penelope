@@ -123,7 +123,7 @@ class PivotKeys:
         if isinstance(other, dict):
             self._pivot_keys.update(other)
         if isinstance(other, list):
-            self._pivot_keys.update({x['text_name']: x for x in other.pivot_keys})
+            self._pivot_keys.update({x['text_name']: x for x in other})
         self.is_satisfied()
         return self
 

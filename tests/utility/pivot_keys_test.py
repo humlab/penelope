@@ -114,3 +114,18 @@ tran_2029_02_test.txt;2029;tran_2029_02_test;8;Good;12
     assert 'rating_id' in di.columns
     assert 'rating' in pivot_keys
     assert 'abc' not in pivot_keys
+
+
+def test_create_filter_key_values_dict():
+    pivot_keys: PivotKeys = PivotKeys(
+        [
+            {
+                'text_name': 'gender',
+                'id_name': 'gender_id',
+                'values': {'unknown': 0, 'man': 1, 'woman': 2},
+            }
+        ]
+    )
+    opts = pivot_keys.create_filter_key_values_dict({'gender': ['man']}, decode=True)
+    assert opts is not None
+    assert opts.props == {'gender_id': [1]}
