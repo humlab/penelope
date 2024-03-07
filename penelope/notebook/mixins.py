@@ -78,8 +78,8 @@ class PivotKeysMixIn:
         return max(min(value, max_value), min_value)
 
     @pivot_keys.setter
-    def pivot_keys(self, value: pu.PivotKeys | dict):
-        self._pivot_keys = pu.PivotKeys.create(value)
+    def pivot_keys(self, value: pu.PivotKeys | dict | list | str):
+        self._pivot_keys = pu.PivotKeys(value)
 
         if value is None:
             return

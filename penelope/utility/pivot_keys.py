@@ -37,22 +37,26 @@ class PivotKeys:
 
     def __init__(self, pivot_keys: dict[str, PivotKeySpec] | list[PivotKeySpec] = None):
         self._pivot_keys_spec: dict[str, PivotKeySpec] = {}
-        self += pivot_keys
+        self.update(pivot_keys)
 
-    @staticmethod
-    def create(value) -> Self:
-        if isinstance(value, str):
-            if isfile(value):
-                data: dict = PivotKeys.try_load(value, default={})
+    def update(self, other: Self | dict | list | str) -> Self:
+        if isinstance(other, PivotKeys):
+            self._pivot_keys_spec.update(other.pivot_keys_spec)
+        if isinstance(other, dict):
+            self._pivot_keys_spec.update(other)
+        if isinstance(other, list):
+            self._pivot_keys_spec.update({x['text_name']: x for x in other})
+        if isinstance(other, str):
+            if isfile(other):
+                data: dict = PivotKeys.try_load(other, default={})
                 if data is not None:
                     return PivotKeys(pivot_keys=data)
-            if isdir(value):
-                return PivotKeys.load_by_probe(value)
-            logger.warning(f"Pivot keys file not found: {value}")
+            if isdir(other):
+                return PivotKeys.load_by_probe(other)
+            logger.warning(f"Pivot keys file not found: {other}")
             return PivotKeys()
-        if isinstance(value, PivotKeys):
-            return value
-        return PivotKeys(pivot_keys=value or {})
+        self.is_satisfied()
+        return self
 
     @staticmethod
     def create_by_index(document_index: pd.DataFrame, *text_columns: str) -> Self:
@@ -78,7 +82,7 @@ class PivotKeys:
         """Probes folder for pivot keys"""
 
         if isfile(join(folder, 'pivot_keys.yml')):
-            return PivotKeys.create(join(folder, 'pivot_keys.yml'))
+            return PivotKeys(join(folder, 'pivot_keys.yml'))
 
         for path in glob.glob(folder + '/*.y*ml'):
             data: dict = PivotKeys.try_load(path, default=None)
@@ -118,13 +122,7 @@ class PivotKeys:
         return False
 
     def __add__(self, other) -> Self:
-        if isinstance(other, PivotKeys):
-            self._pivot_keys_spec.update(other.pivot_keys_spec)
-        if isinstance(other, dict):
-            self._pivot_keys_spec.update(other)
-        if isinstance(other, list):
-            self._pivot_keys_spec.update({x['text_name']: x for x in other})
-        self.is_satisfied()
+        self.update(other)
         return self
 
     @property
@@ -166,7 +164,9 @@ class PivotKeys:
         if not isinstance(self._pivot_keys_spec, (list, dict)):
             raise TypeError(f"expected list/dict of pivot key specs, got {type(self._pivot_keys_spec)}")
 
-        items: dict = self._pivot_keys_spec if isinstance(self._pivot_keys_spec, list) else self._pivot_keys_spec.values()
+        items: dict = (
+            self._pivot_keys_spec if isinstance(self._pivot_keys_spec, list) else self._pivot_keys_spec.values()
+        )
 
         if not all(isinstance(x, dict) for x in items):
             raise TypeError("expected list of dicts")
