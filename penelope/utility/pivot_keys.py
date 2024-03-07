@@ -36,7 +36,7 @@ class PivotKeys:
     """
 
     def __init__(self, pivot_keys: dict[str, PivotKeySpec] | list[PivotKeySpec] = None):
-        self._pivot_keys: dict[str, PivotKeySpec] = {}
+        self._pivot_keys_spec: dict[str, PivotKeySpec] = {}
         self += pivot_keys
 
     @staticmethod
@@ -52,7 +52,7 @@ class PivotKeys:
             return PivotKeys()
         if isinstance(value, PivotKeys):
             return value
-        return PivotKeys(pivot_keys={})
+        return PivotKeys(pivot_keys=value or {})
 
     @staticmethod
     def create_by_index(document_index: pd.DataFrame, *text_columns: str) -> Self:
@@ -88,48 +88,48 @@ class PivotKeys:
         return PivotKeys()
 
     @property
-    def pivot_keys(self) -> dict[str, PivotKeySpec]:
-        return self._pivot_keys
+    def pivot_keys_spec(self) -> dict[str, PivotKeySpec]:
+        return self._pivot_keys_spec
 
-    @pivot_keys.setter
-    def pivot_keys(self, pivot_keys: dict[str, PivotKeySpec] | list[PivotKeySpec]) -> None:
+    @pivot_keys_spec.setter
+    def pivot_keys_spec(self, pivot_keys: dict[str, PivotKeySpec] | list[PivotKeySpec]) -> None:
         self += pivot_keys or {}
 
     def __contains__(self, text_name: str) -> bool:
-        return text_name in self._pivot_keys
+        return text_name in self._pivot_keys_spec
 
     def __getitem__(self, text_name: str, default: dict = None) -> dict:
-        return self._pivot_keys.get(text_name, default or {})
+        return self._pivot_keys_spec.get(text_name, default or {})
 
     def get(self, text_name: str, default: Any = None) -> dict:
-        return self._pivot_keys.get(text_name, default or {})
+        return self._pivot_keys_spec.get(text_name, default or {})
 
     def __len__(self) -> int:
-        return len(self._pivot_keys)
+        return len(self._pivot_keys_spec)
 
     def __eq__(self, other) -> bool:
         if other is None:
             return False
         if isinstance(other, dict):
-            return self._pivot_keys == other
+            return self._pivot_keys_spec == other
         if isinstance(other, PivotKeys):
             """FIXME: Might need to do a deep comparison"""
-            return self._pivot_keys == other._pivot_keys
+            return self._pivot_keys_spec == other._pivot_keys_spec
         return False
 
     def __add__(self, other) -> Self:
         if isinstance(other, PivotKeys):
-            self._pivot_keys.update(other.pivot_keys)
+            self._pivot_keys_spec.update(other.pivot_keys_spec)
         if isinstance(other, dict):
-            self._pivot_keys.update(other)
+            self._pivot_keys_spec.update(other)
         if isinstance(other, list):
-            self._pivot_keys.update({x['text_name']: x for x in other})
+            self._pivot_keys_spec.update({x['text_name']: x for x in other})
         self.is_satisfied()
         return self
 
     @property
     def key_name2key_id(self) -> dict:
-        return {x['text_name']: x['id_name'] for x in self._pivot_keys.values()}
+        return {x['text_name']: x['id_name'] for x in self._pivot_keys_spec.values()}
 
     @property
     def key_id2key_name(self) -> dict:
@@ -138,15 +138,15 @@ class PivotKeys:
 
     @property
     def text_names(self) -> list[str]:
-        return [x['text_name'] for x in self._pivot_keys.values()]
+        return [x['text_name'] for x in self._pivot_keys_spec.values()]
 
     @property
     def id_names(self) -> list[str]:
-        return [x['id_name'] for x in self._pivot_keys.values()]
+        return [x['id_name'] for x in self._pivot_keys_spec.values()]
 
     @property
     def has_pivot_keys(self) -> list[str]:
-        return len(self._pivot_keys) > 0
+        return len(self._pivot_keys_spec) > 0
 
     def key_value_name2id(self, text_name: str) -> dict[str, int]:
         """Returns name/id mapping for given key's value range"""
@@ -160,13 +160,13 @@ class PivotKeys:
         return [f'{k}{sep}{v}' for k in names for v in self.key_value_name2id(k).keys()]
 
     def is_satisfied(self) -> bool:
-        if self._pivot_keys is None:
+        if self._pivot_keys_spec is None:
             return True
 
-        if not isinstance(self._pivot_keys, (list, dict)):
-            raise TypeError(f"expected list/dict of pivot key specs, got {type(self._pivot_keys)}")
+        if not isinstance(self._pivot_keys_spec, (list, dict)):
+            raise TypeError(f"expected list/dict of pivot key specs, got {type(self._pivot_keys_spec)}")
 
-        items: dict = self._pivot_keys if isinstance(self._pivot_keys, list) else self._pivot_keys.values()
+        items: dict = self._pivot_keys_spec if isinstance(self._pivot_keys_spec, list) else self._pivot_keys_spec.values()
 
         if not all(isinstance(x, dict) for x in items):
             raise TypeError("expected list of dicts")
@@ -179,10 +179,10 @@ class PivotKeys:
         return True
 
     def is_id_name(self, name: str) -> bool:
-        return any(v['id_name'] == name for _, v in self.pivot_keys.items())
+        return any(v['id_name'] == name for _, v in self.pivot_keys_spec.items())
 
     def is_text_name(self, name: str) -> bool:
-        return any(k == name for k in self.pivot_keys)
+        return any(k == name for k in self.pivot_keys_spec)
 
     def create_filter_by_value_pairs(
         self, value_pairs: list[str], sep: str = ': ', vsep: str = ','
@@ -207,7 +207,7 @@ class PivotKeys:
 
     @property
     def single_key_options(self) -> dict:
-        return {v['text_name']: v['id_name'] for v in self.pivot_keys.values()}
+        return {v['text_name']: v['id_name'] for v in self.pivot_keys_spec.values()}
 
     def create_filter_key_values_dict(
         self, key_values: dict[str, list[str | int]], decode: bool = True
