@@ -315,7 +315,7 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         data.document_index = fix_renamed_columns(data.document_index)
         assert "year" in data.document_index.columns
 
-        data.topic_token_overview = data.load_topic_labels(folder, **CSV_OPTS)
+        data.topic_token_overview = data.load_topic_token_label_overview(folder, **CSV_OPTS)
 
         data.slim_types()
         if slim:
@@ -334,7 +334,6 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         if len(corpus_configs) > 0:
             return corpus_configs[0]
 
-        # raise FileNotFoundError(f"No CorpusConfig found in {folder}")
         logger.warning(f'No CorpusConfig found in {folder} (may affect certain operations)')
         return None
 
@@ -345,7 +344,8 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
             return f"topic_token_overview_label-{username}.csv"
         return "topic_token_overview_label.csv"
 
-    def load_topic_labels(self, folder: str, private: bool = False, **csv_opts: dict) -> pd.DataFrame:
+    def load_topic_token_label_overview(self, folder: str, private: bool = False, **csv_opts: dict) -> pd.DataFrame:
+        """Loads labeled topic_token_overview if exists, otherwise add id->'id' mapping as labels."""
         tto: pd.DataFrame = self.topic_token_overview
         filename: str = jj(folder, self.topic_labels_filename(private))
         if isfile(filename):
