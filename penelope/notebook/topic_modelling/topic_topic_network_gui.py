@@ -257,6 +257,10 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
                     display(g)
 
                 else:
+                    fg = self.topic_labels.get
+                    node_proportions: dict[str, float] = {
+                        fg(i): p for i, p in enumerate(self.topic_proportions)
+                    }
                     display_topic_topic_network(
                         data=self.network_data,
                         layout=self._network_layout.value,
@@ -265,7 +269,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
                         element_id=self.text_id,
                         node_range=self._node_range.value,
                         edge_range=self._edge_range.value,
-                        topic_proportions=self.topic_proportions,
+                        topic_proportions=node_proportions,
                     )
 
         except Exception as ex:
