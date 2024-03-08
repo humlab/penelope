@@ -124,7 +124,9 @@ def _plot_network(
             nodes_size = node_proportions
         else:
             nodes_size = 'size'
-            node_ids: list[str|int] = [ int(n) for n in sub_network.nodes ] if not isinstance(node_proportions, dict) else sub_network.nodes
+            node_ids: list[str | int] = (
+                [int(n) for n in sub_network.nodes] if not isinstance(node_proportions, dict) else sub_network.nodes
+            )
             nodes_weight: list[float] = project_values_to_range([node_proportions[n] for n in node_ids], *node_range)
             nodes_source.add(nodes_weight, nodes_size)
 

@@ -258,9 +258,7 @@ class TopicTopicGUI(mx.AlertMixIn, mx.ComputeMixIn, mx.TopicsStateGui):
 
                 else:
                     fg = self.topic_labels.get
-                    node_proportions: dict[str, float] = {
-                        fg(i): p for i, p in enumerate(self.topic_proportions)
-                    }
+                    node_proportions: dict[str, float] = {fg(i): p for i, p in enumerate(self.topic_proportions)}
                     display_topic_topic_network(
                         data=self.network_data,
                         layout=self._network_layout.value,
