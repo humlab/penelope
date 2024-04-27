@@ -281,9 +281,6 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
     def load(*, folder: str, slim: bool = False, verbose: bool = False):
         """Loads previously stored aggregate"""
 
-        if not isfile(jj(folder, "topic_token_weights.zip")):
-            return PickleUtility.explode(source=folder, target_folder=folder)
-
         corpus_config: CorpusConfig = InferredTopicsData.load_corpus_config(folder)
 
         filename_fields: FilenameFieldSpecs = corpus_config.text_reader_opts.filename_fields
