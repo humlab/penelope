@@ -22,7 +22,7 @@ def load_token_set(filename: str) -> set[str]:
     return set()
 
 
-def load_dict(filename: str) -> defaultdict(int):
+def load_dict(filename: str) -> defaultdict[int]:
     # logger.info(f"loading {filename}")
     if isfile(filename):
         with open(filename, 'rb') as fp:
