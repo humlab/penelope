@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "humlab-penelope"
-version = "0.7.69"
+version = "0.8.0"
 description = "Utilities that simplify enelpeing in Jupyter Lab"
 authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
 packages = [{ include = "penelope" }]
@@ -101,6 +101,36 @@ co-occurrence = { callable = "penelope.scripts.co_occurrence:main", extras = [
     "full",
 ] }
 pos-tag = "penelope.scripts.pos_tag:main"
+
+
+[tool.pyright]
+include = ["pyriksprot", "tests"]
+exclude = [
+    ".git",
+    ".vscode",
+    "**/__init__.py",
+    "**/__pycache__",
+    "tmp",
+    "data",
+    "tests/test_data",
+    "tests/output",
+]
+reportMissingTypeStubs = false
+reportUntypedFunctionDecorator = false
+reportUntypedClassDecorator = true
+reportOptionalSubscript = false
+reportOptionalMemberAccess = false
+reportOptionalCall = false
+reportOptionalIterable = false
+reportAssignmentType = false
+reportArgumentType = false
+reportMissingImports = true
+reportUnusedVariable = true
+reportUnusedImport = true
+reportUndefinedVariable = true
+reportUnboundVariable = true
+reportAttributeAccessIssue = false
+pythonVersion = "3.11"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
