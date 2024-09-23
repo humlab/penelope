@@ -8,7 +8,7 @@ from functools import cached_property
 from os.path import isfile
 from os.path import join as jj
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, List, Tuple
+from typing import TYPE_CHECKING, Callable, List, Self, Tuple
 
 import numpy as np
 import pandas as pd
@@ -105,19 +105,19 @@ class SlimItMixIn:
                 df[column] = self.slim_series(df[column], dtypes[column])
         return df
 
-    def slim_types(self) -> InferredTopicsData:
+    def slim_types(self) -> Self:
         self.topic_token_weights['token_id'] = self.remove_series_nan(self.topic_token_weights.token_id)
 
         pos_dtypes: dict = {x: np.int32 for x in pu.PD_PoS_tag_groups.index.to_list()}
 
-        self.slim_dataframe(self.document_index, dtypes={**DTYPES, **pos_dtypes})
-        self.slim_dataframe(self.topic_token_weights, dtypes=DTYPES)
-        self.slim_dataframe(self.document_topic_weights, dtypes=DTYPES)
-        self.slim_dataframe(self.topic_token_overview, dtypes=DTYPES)
+        self.slim_dataframe(self.document_index, dtypes={**DTYPES, **pos_dtypes})  # type: ignore
+        self.slim_dataframe(self.topic_token_weights, dtypes=DTYPES)  # type: ignore
+        self.slim_dataframe(self.document_topic_weights, dtypes=DTYPES)  # type: ignore
+        self.slim_dataframe(self.topic_token_overview, dtypes=DTYPES)  # type: ignore
 
         return self
 
-    def slimmer(self) -> InferredTopicsData:
+    def slimmer(self) -> Self:
         """document_index"""
         remove_columns = set(pu.PD_PoS_tag_groups.index.to_list()) | {'filename', 'year2', 'number'}
         self.document_index.drop(columns=list(remove_columns.intersection(self.document_index.columns)), inplace=True)
@@ -153,9 +153,10 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         topic_token_overview: pd.DataFrame,
         document_index: pd.DataFrame,
         document_topic_weights: pd.DataFrame,
-        topic_diagnostics: pd.DataFrame,
-        token_diagnostics: pd.DataFrame,
-        corpus_config: CorpusConfig = None,
+        topic_diagnostics: pd.DataFrame | None,
+        token_diagnostics: pd.DataFrame | None,
+        corpus_config: CorpusConfig | None = None,
+        overload_data: bool = True,
     ):
         """Container for predicted topics data."""
         super().__init__()
@@ -163,17 +164,33 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         self.dictionary: pd.DataFrame = dictionary
         self.document_index: pd.DataFrame = document_index
         self.topic_token_weights: pd.DataFrame = topic_token_weights
-        self.document_topic_weights: pd.DataFrame = pc.DocumentIndexHelper(document_index).overload(
-            document_topic_weights, 'year'
+        self.document_topic_weights: pd.DataFrame = (
+            pc.DocumentIndexHelper(document_index).overload(document_topic_weights, 'year')
+            if overload_data
+            else document_topic_weights
         )
+
         self.topic_token_overview: pd.DataFrame = topic_token_overview
-        self.topic_diagnostics: pd.DataFrame = topic_diagnostics
-        self.token_diagnostics: pd.DataFrame = token_diagnostics
+        self.topic_diagnostics: pd.DataFrame | None = topic_diagnostics
+        self.token_diagnostics: pd.DataFrame | None = token_diagnostics
         self.calculator = DocumentTopicsCalculator(self)
         self.corpus_config: CorpusConfig = corpus_config
 
-        if 'token' not in self.topic_token_weights.columns:
+        if overload_data and 'token' not in self.topic_token_weights.columns:
             self.topic_token_weights['token'] = self.topic_token_weights['token_id'].apply(self.id2term.get)
+
+    def copy(self) -> InferredTopicsData:
+        return InferredTopicsData(
+            dictionary=self.dictionary.copy(),
+            document_index=self.document_index.copy(),
+            topic_token_weights=self.topic_token_weights.copy(),
+            document_topic_weights=self.document_topic_weights.copy(),
+            topic_token_overview=self.topic_token_overview.copy(),
+            topic_diagnostics=self.topic_diagnostics.copy() if self.topic_diagnostics is not None else None,
+            token_diagnostics=self.token_diagnostics.copy() if self.token_diagnostics is not None else None,
+            corpus_config=self.corpus_config,
+            overload_data=False,
+        )
 
     @property
     def document_index_proper(self) -> pd.DataFrame:
@@ -192,17 +209,17 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         return self.num_topics
 
     @property
-    def timespan(self) -> Tuple[int, int]:
+    def timespan(self) -> Tuple[int | None, int | None]:
         return self.year_period
 
-    def startspan(self, n: int) -> Tuple[int, int]:
+    def startspan(self, n: int) -> tuple[int, int, int]:
         return (self.year_period[0], min(self.year_period[1], self.year_period[0] + n))
 
-    def stopspan(self, n: int) -> Tuple[int, int]:
+    def stopspan(self, n: int) -> tuple[int, int, int]:
         return (max(self.year_period[0], self.year_period[1] - n), self.year_period[1])
 
     @property
-    def year_period(self) -> Tuple[int, int]:
+    def year_period(self) -> tuple[int | None, int | None]:
         """Returns documents `year` interval (if exists)"""
         if 'year' not in self.document_topic_weights.columns:
             return (None, None)
@@ -244,10 +261,10 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         if self.corpus_config is not None:
             self.corpus_config.dump(jj(target_folder, "corpus.yml"))
             if self.corpus_config.corpus_version:
-                Path(target_folder / 'version').write_text(self.corpus_config.corpus_version)
+                (Path(target_folder) / 'version').write_text(self.corpus_config.corpus_version)
 
     def _store_csv(self, target_folder: str) -> None:
-        data: list[tuple[pd.DataFrame, str]] = [
+        data: list[tuple[pd.DataFrame | None, str]] = [
             (self.document_index.rename_axis(''), 'documents.csv'),
             (self.dictionary, 'dictionary.csv'),
             (self.topic_token_weights, 'topic_token_weights.csv'),
@@ -281,7 +298,10 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
     def load(*, folder: str, slim: bool = False, verbose: bool = False):
         """Loads previously stored aggregate"""
 
-        corpus_config: CorpusConfig = InferredTopicsData.load_corpus_config(folder)
+        corpus_config: CorpusConfig | None = InferredTopicsData.load_corpus_config(folder)
+
+        if corpus_config is None:
+            raise FileNotFoundError(f"No CorpusConfig found in {folder}")
 
         filename_fields: FilenameFieldSpecs = corpus_config.text_reader_opts.filename_fields
 
@@ -322,9 +342,9 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         return data
 
     @staticmethod
-    def load_corpus_config(folder: str) -> CorpusConfig:
+    def load_corpus_config(folder: str) -> CorpusConfig | None:
         """Load CorpusConfig if exists"""
-        corpus_configs: list[CorpusConfig] = pu.create_class("penelope.pipeline.CorpusConfig").find_all(
+        corpus_configs: list[CorpusConfig] = pu.create_class("penelope.pipeline.CorpusConfig").find_all(  # type: ignore
             folder=folder, set_folder=True
         )
 
@@ -346,7 +366,7 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         tto: pd.DataFrame = self.topic_token_overview
         filename: str = jj(folder, self.topic_labels_filename(private))
         if isfile(filename):
-            labeled_tto: pd.DataFrame = pd.read_csv(filename, **csv_opts)
+            labeled_tto: pd.DataFrame = pd.read_csv(filename, **csv_opts)  # type: ignore
             if self.is_satisfied_topic_token_overview(labeled_tto):
                 tto = labeled_tto
 
@@ -392,13 +412,108 @@ class InferredTopicsData(SlimItMixIn, MemoryUsageMixIn, tt.TopicTokensMixIn):
         topics = topics[columns_to_show]
 
         with suppress(BaseException):
-            topic_proportions = self.calculator.topic_proportions()
+            topic_proportions: pd.DataFrame = self.calculator.topic_proportions()
             if topic_proportions is not None:
                 topics['score'] = topic_proportions
 
         if topics is None:
             raise ValueError("bug-check: No topic_token_overview in loaded model!")
         return topics
+
+    def merge(self, cluster_mapping: dict[str, list[int]]) -> Self:
+
+        def _validate_clusters(clusters: dict[str, list[int]]) -> dict[str, list[int]]:
+            """Check if topic ids are valid"""
+            for cluster_name, topic_ids in clusters.items():
+
+                if any(t not in self.topic_token_overview.index for t in topic_ids):
+                    raise ValueError(f'Invalid topic id found in cluster {cluster_name}')
+
+                if len(topic_ids) < 2:
+                    logger.warning(f'Ignoring cluster {cluster_name} since it has less than 2 topics')
+
+            return {k: v for k, v in clusters.items() if len(v) > 1}
+
+        def _merge_to_cluster(data: pd.DataFrame, recodes: dict[int, int]) -> pd.DataFrame:
+            """Merge topic ids in data using recodes mapping"""
+            columns: list[str] = data.columns.to_list()
+            data['topic_id'] = data['topic_id'].replace(recodes)
+            groupby_columns: list[str] = data.columns.difference(['weight']).tolist()
+            data = data.groupby(groupby_columns).agg({'weight': 'sum'}).reset_index()
+            return data[columns]
+
+        cluster_mapping = _validate_clusters(cluster_mapping)
+
+        """Merge each topic cluster identified by key, and topic ids (values) into a single topics"""
+        for cluster_name, topic_ids in cluster_mapping.items():
+            recode_map: dict[int, int] = {t: topic_ids[0] for t in topic_ids[1:]}
+
+            self.document_topic_weights = _merge_to_cluster(self.document_topic_weights, recode_map)
+            self.topic_token_weights = _merge_to_cluster(self.topic_token_weights, recode_map)
+
+            # set column 'label' in dataframe self.topic_token_overview to cluster_name for first id in topic_id
+            self.topic_token_overview.loc[topic_ids[0], 'label'] = cluster_name
+
+        self.token_diagnostics = None
+        self.topic_diagnostics = None
+
+        return self
+
+    def compress(self, n_types: int = 500) -> Self:
+        """
+        Compresses inferred topics by removing empty topics and recoding topic ids.
+        """
+
+        tto: pd.DataFrame = self.topic_token_overview
+        ttw: pd.DataFrame = self.topic_token_weights
+        dtw: pd.DataFrame = self.document_topic_weights
+
+        keep_topics: set[int] = set(dtw.topic_id).union(ttw.topic_id)
+        empty_topics: set[int] = set(tto.index).difference(keep_topics)
+
+        if len(empty_topics) == 0:
+            return self
+
+        recoded_topic_ids: dict[int, int] = {t_id: i for i, t_id in enumerate(sorted(keep_topics))}
+        labels: dict[int, str] = self.topic_token_overview['label'].to_dict()
+        recoded_labels: dict[int, str] = {
+            recoded_topic_ids[t_id]: label for t_id, label in labels.items() if t_id in recoded_topic_ids
+        }
+
+        dtw['topic_id'] = dtw['topic_id'].replace(recoded_topic_ids)
+        ttw['topic_id'] = ttw['topic_id'].replace(recoded_topic_ids)
+
+        self.document_topic_weights = dtw
+        self.topic_token_weights = ttw
+
+        self.topic_token_overview = compute_topic_token_overview(ttw, self.id2token, n_types)
+        self.topic_token_overview['label'] = self.topic_token_overview.index.map(recoded_labels)
+
+        return self
+
+
+def compute_topic_token_overview(
+    topic_type_weights: pd.DataFrame, id2type: dict[int, str], n_types: int = 500
+) -> pd.DataFrame:
+    """
+    Group by topic_id and concatenate n_tokens words within group sorted by weight descending.
+    There must be a better way of doing this...
+    """
+    overview: pd.DataFrame = (
+        topic_type_weights.groupby('topic_id')
+        .apply(lambda x: sorted(list(zip(x["token_id"], x["weight"])), key=lambda z: z[1], reverse=True))
+        .apply(lambda x: [z[0] for z in x][:n_types])
+        .reset_index()
+    )
+    overview.columns = ['topic_id', 'token_ids']
+
+    overview['tokens'] = overview['token_ids'].apply(  # type: ignore
+        lambda token_ids: ' '.join([id2type.get(token_id) for token_id in token_ids])  # type: ignore
+    )
+    overview['alpha'] = 0.0
+    overview = overview.set_index('topic_id')
+
+    return overview
 
 
 def fix_renamed_columns(di: pd.DataFrame) -> pd.DataFrame:
@@ -415,7 +530,7 @@ def fix_renamed_columns(di: pd.DataFrame) -> pd.DataFrame:
 # FXIME: Reprecate pickled stora
 class PickleUtility:
     @staticmethod
-    def load(folder: str) -> InferredTopicsData:
+    def load(folder: str) -> InferredTopicsData | None:
         if not isfile(jj(folder, "inferred_topics.pickle")):
             return None
 

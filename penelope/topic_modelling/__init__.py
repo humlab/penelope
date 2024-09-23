@@ -19,6 +19,7 @@ from .topics_data import (
     PickleUtility,
     TopicPrevalenceOverTimeCalculator,
     compute_topic_proportions,
+    compute_topic_token_overview,
     compute_yearly_topic_weights,
     filter_topic_tokens_overview,
     get_topic_title,

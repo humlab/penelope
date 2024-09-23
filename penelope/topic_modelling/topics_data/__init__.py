@@ -20,7 +20,7 @@ from .prevelance import (
     compute_yearly_topic_weights,
 )
 from .token import TopicTokensMixIn, get_topic_title, get_topic_title2, get_topic_titles, top_topic_token_weights
-from .topics_data import InferredTopicsData, PickleUtility
+from .topics_data import InferredTopicsData, PickleUtility, compute_topic_token_overview
 
 YEARLY_AVERAGE_COMPUTE_METHODS = [
     {
