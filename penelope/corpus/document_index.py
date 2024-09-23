@@ -136,7 +136,7 @@ class DocumentIndexHelper:
         update_document_index_properties(self._document_index, document_name=document_name, property_bag=property_bag)
         return self
 
-    def overload(self, df: DocumentIndex, column_names: List[str]) -> DocumentIndex:
+    def overload(self, df: DocumentIndex, column_names: list[str] | str | None) -> DocumentIndex:
         return overload_by_document_index_properties(self._document_index, df=df, column_names=column_names)
 
     def apply_filename_fields(self, filename_fields: FilenameFieldSpecs):
@@ -713,7 +713,7 @@ def update_document_index_by_dicts_or_tuples(
 
 
 def overload_by_document_index_properties(
-    document_index: DocumentIndex, df: pd.DataFrame, column_names: List[str] = None
+    document_index: DocumentIndex, df: pd.DataFrame, column_names: list[str] | str | None = None
 ) -> DocumentIndex:
     """Add document `columns` to `df` if columns not already exists.
 

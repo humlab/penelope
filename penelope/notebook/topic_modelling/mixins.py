@@ -117,7 +117,7 @@ class AlertMixIn:
         self.alert(f"<span style='color=red'>{msg}</span>")
 
     def observe_slider_update_label(
-        self, slider: w.IntSlider, label: w.HTML, text: str, decimals: int = 2
+        self, slider: w.IntSlider | w.IntRangeSlider | w.FloatSlider, label: w.HTML, text: str, decimals: int = 2
     ) -> Callable[[Any], None]:
         is_range: bool = isinstance(slider, (w.IntRangeSlider, w.FloatRangeSlider))
         is_float: bool = isinstance(slider, (w.FloatSlider, w.FloatRangeSlider))
