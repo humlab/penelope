@@ -4,7 +4,7 @@ import contextlib
 import fnmatch
 import re
 import warnings
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Self, Sequence, Set, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -237,7 +237,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
     #     k, l = indptr[i], indptr[i + 1]
     #     return list(zip(indices[k:l], data[k:l]))
 
-    def filter(self, px) -> VectorizedCorpus:
+    def filter(self, px: Callable[[Any], bool] | utility.PropertyValueMaskingOpts | dict) -> Self:
         """Returns a new corpus that only contains docs for which `px` is true.
 
         Parameters
@@ -251,7 +251,13 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             Filtered corpus.
         """
 
-        di: pd.DataFrame = self.document_index[self.document_index.apply(px, axis=1)]
+        if isinstance(px, dict):
+            px = utility.PropertyValueMaskingOpts(**px)
+
+        mask: np.ndarray | pd.Series[bool] = (
+            self.document_index.apply(px, axis=1) if callable(px) else px.mask(self.document_index)
+        )
+        di: pd.DataFrame = self.document_index[mask]
         dtm: Any = self._bag_term_matrix[di.index, :]
         di = di.reset_index(drop=True)
         di['document_id'] = di.index
