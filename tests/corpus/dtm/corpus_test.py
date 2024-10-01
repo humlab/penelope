@@ -177,10 +177,23 @@ def test_filter():
         document_years=[2012, 2013, 2014, 2014, 2015],
     )
 
-    filtered_corpus: VectorizedCorpus = corpus.filter(lambda x: x['year'] == 2014)
-    assert filtered_corpus.shape == (2, 4)
-    assert len(filtered_corpus.document_index) == 2
-    assert len(filtered_corpus.document_index) == 2
+    filtered_by_lambda: VectorizedCorpus = corpus.filter(lambda x: x['year'] == 2014)
+    assert filtered_by_lambda.shape == (2, 4)
+    assert len(filtered_by_lambda.document_index) == 2
+    assert len(filtered_by_lambda.document_index) == 2
+    assert (filtered_by_lambda.document_index.year == 2014).all()
+
+    filtered_by_mask: VectorizedCorpus = corpus.filter({'year': 2014})
+    assert filtered_by_mask.shape == (2, 4)
+
+    assert (
+        pd.testing.assert_frame_equal(
+            corpus.filter(lambda x: x['year'] == 2014).document_index, corpus.filter({'year': 2014}).document_index
+        )
+        is None
+    )
+
+    assert corpus.filter(lambda x: x['year'] in [2014, 2015]).document_index.year.tolist() == [2014, 2014, 2015]
 
 
 def test_pick_top_tf_map(corpus: VectorizedCorpus):
