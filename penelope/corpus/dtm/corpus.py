@@ -251,6 +251,9 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             Filtered corpus.
         """
 
+        if not px:
+            return self
+        
         if isinstance(px, dict):
             px = utility.PropertyValueMaskingOpts(**px)
 
