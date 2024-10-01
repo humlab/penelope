@@ -4,7 +4,7 @@ import contextlib
 import fnmatch
 import re
 import warnings
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple, Union
+from typing import Any, Callable, Iterable, Optional, Sequence, Set, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -39,16 +39,16 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         self,
         bag_term_matrix: scipy.sparse.csr_matrix,
         *,
-        token2id: Dict[str, int],
+        token2id: dict[str, int],
         document_index: DocumentIndex,
-        overridden_term_frequency: Optional[Dict[int, int]] = None,
+        overridden_term_frequency: Optional[dict[int, int]] = None,
         **kwargs,
     ):
         """Class that encapsulates a bag-of-word matrix
 
         Args:
             bag_term_matrix (scipy.sparse.csr_matrix): Bag-of-word matrix
-            token2id (Dict[str, int]): Token to token/column index translation
+            token2id (dict[str, int]): Token to token/column index translation
             document_index (DocumentIndex): Corpus document/row metadata
             overridden_term_frequency (np.ndarrys, optional): Supplied if source TF
         """
@@ -61,12 +61,12 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             bag_term_matrix = bag_term_matrix.tocsr()
 
         self._bag_term_matrix: scipy.sparse.csr_matrix = bag_term_matrix
-        self._token2id: Mapping[str, int] = (
+        self._token2id: dict[str, int] = (
             token2id
             if isinstance(token2id, (dict, type(None)))
             else token2id.data if hasattr(token2id, 'data') else token2id
         )
-        self._id2token: Optional[Mapping[int, str]] = None
+        self._id2token: Optional[dict[int, str]] = None
         self._document_index: DocumentIndex = self._ingest_document_index(document_index=document_index)
         self._overridden_term_frequency: Optional[np.ndarray] = overridden_term_frequency
         self._payload: dict = dict(**kwargs)
@@ -95,17 +95,17 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         return self._bag_term_matrix
 
     @property
-    def token2id(self) -> Dict[str, int]:
+    def token2id(self) -> dict[str, int]:
         return self._token2id
 
     @property
-    def id2token(self) -> Mapping[int, str]:
+    def id2token(self) -> dict[int, str]:
         if self._id2token is None and self.token2id is not None:
             self._id2token = {i: t for t, i in self.token2id.items()}
         return self._id2token
 
     @property
-    def vocabulary(self) -> List[str]:
+    def vocabulary(self) -> list[str]:
         vocab = [self.id2token[i] for i in range(0, self.data.shape[1])]
         return vocab
 
@@ -131,7 +131,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         """Overridden global token frequencies (source corpus size)"""
         return self._overridden_term_frequency
 
-    def term_frequency_map(self) -> Mapping[str, int]:
+    def term_frequency_map(self) -> dict[str, int]:
         fg = self.id2token.get
         tf = self.term_frequency
         return {fg(i): tf[i] for i in range(0, len(self.token2id))}
@@ -175,7 +175,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         self._document_index = value
 
     @property
-    def payload(self) -> Mapping[Any, Any]:
+    def payload(self) -> dict[Any, Any]:
         return self._payload
 
     def remember(self, **kwargs) -> VectorizedCorpus:
@@ -237,12 +237,12 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
     #     k, l = indptr[i], indptr[i + 1]
     #     return list(zip(indices[k:l], data[k:l]))
 
-    def filter(self, px) -> VectorizedCorpus:
+    def filter(self, px: Callable[[Any], bool] | utility.PropertyValueMaskingOpts | dict) -> VectorizedCorpus:
         """Returns a new corpus that only contains docs for which `px` is true.
 
         Parameters
         ----------
-        px : Callable[Dict[str, Any], Boolean]
+        px : Callable[dict[str, Any], Boolean]
             The predicate that determines if document should be kept.
 
         Returns
@@ -251,7 +251,13 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             Filtered corpus.
         """
 
-        di: pd.DataFrame = self.document_index[self.document_index.apply(px, axis=1)]
+        if isinstance(px, dict):
+            px = utility.PropertyValueMaskingOpts(**px)
+
+        mask: np.ndarray | pd.Series[bool] = (
+            self.document_index.apply(px, axis=1) if callable(px) else px.mask(self.document_index)
+        )
+        di: pd.DataFrame = self.document_index[mask]
         dtm: Any = self._bag_term_matrix[di.index, :]
         di = di.reset_index(drop=True)
         di['document_id'] = di.index
@@ -317,7 +323,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
         return corpus
 
-    def token_indices(self, tokens: Iterable[str]) -> List[int]:
+    def token_indices(self, tokens: Iterable[str]) -> list[int]:
         """Returns token (column) indices for words `tokens`
 
         Parameters
@@ -394,7 +400,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
         Returns
         -------
-        Tuple[scipy.sparce.spmatrix. Dict[int,str]]
+        Tuple[scipy.sparce.spmatrix. dict[int,str]]
             The co-occurrence matrix
         """
         term_term_matrix = np.dot(self._bag_term_matrix.T, self._bag_term_matrix)
@@ -402,7 +408,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
         return term_term_matrix
 
-    def find_matching_words(self, word_or_regexp: Set[str], n_max_count: int, descending: bool = False) -> List[str]:
+    def find_matching_words(self, word_or_regexp: Set[str], n_max_count: int, descending: bool = False) -> list[str]:
         """Returns words in corpus that matches candidate tokens"""
         words = self.pick_n_top_words(
             find_matching_words_in_vocabulary(self.token2id, word_or_regexp),
@@ -412,13 +418,13 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         return words
 
     def find_matching_words_indices(
-        self, word_or_regexp: List[str], n_max_count: int, descending: bool = False
-    ) -> List[int]:
+        self, word_or_regexp: list[str], n_max_count: int, descending: bool = False
+    ) -> list[int]:
         """Returns `tokens´ indices` in corpus that matches candidate tokens"""
 
         # FIXME: Use https://github.com/WojciechMula/pyahocorasick to search for words
 
-        indices: List[int] = [
+        indices: list[int] = [
             self.token2id[token]
             for token in self.find_matching_words(word_or_regexp, n_max_count, descending=descending)
             if token in self.token2id
@@ -428,9 +434,9 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
     @staticmethod
     def create(
         bag_term_matrix: scipy.sparse.csr_matrix,
-        token2id: Dict[str, int],
+        token2id: dict[str, int],
         document_index: DocumentIndex,
-        overridden_term_frequency: Dict[str, int] = None,
+        overridden_term_frequency: dict[str, int] = None,
         **kwargs,
     ) -> "IVectorizedCorpus":
         return VectorizedCorpus(
@@ -444,7 +450,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
     @staticmethod
     def from_token_id_stream(
         stream: Iterable[Tuple[int, Iterable[int]]],
-        token2id: Mapping[str, int],
+        token2id: dict[str, int],
         document_index: pd.DataFrame,
         min_tf: int = 1,
         max_tokens: int = None,
@@ -522,7 +528,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
     #     self.data.eliminate_zeros()
 
 
-def find_matching_words_in_vocabulary(token2id: Mapping[str], candidate_words: Set[str]) -> Set[str]:
+def find_matching_words_in_vocabulary(token2id: dict[str], candidate_words: Set[str]) -> Set[str]:
     words = {w for w in candidate_words if w in token2id}
 
     remaining_words = [w for w in candidate_words if w not in words and len(w) > 0]
