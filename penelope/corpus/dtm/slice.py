@@ -17,7 +17,7 @@ from .interface import IVectorizedCorpus, IVectorizedCorpusProtocol
 class ISlicedCorpusProtocol(IVectorizedCorpusProtocol):
     def slice_by_tf(self, tf_threshold: int) -> IVectorizedCorpus: ...
 
-    def slice_by_n_top(self, n_top: int, inplace: bool = False) -> IVectorizedCorpus: ...
+    def slice_by_n_top(self, n_top: int | None, inplace: bool = False) -> IVectorizedCorpus: ...
 
     def slice_by_document_frequency(self, max_df=1.0, min_df=1, max_n_terms=None) -> IVectorizedCorpus: ...
 
@@ -156,19 +156,19 @@ class SliceMixIn:
     ) -> IVectorizedCorpus:
         """Translates corpus to new vocabulary. Tokens not found in target vocabulary are removed."""
 
-        common_tokens: List[str] = sorted(list(set(id2token.values()).intersection(self.token2id.keys())))
+        common_tokens: list[str] = sorted(list(set(id2token.values()).intersection(self.token2id.keys())))
         token2id: Mapping[str, int] = id2token2token2id(id2token)
         og = self.token2id.get
         ng = token2id.get
 
         D, T = self.data.shape[0], max(id2token) + 1
 
-        old_indicies = [og(token) for token in common_tokens]
-        new_indicies = [ng(token) for token in common_tokens]
+        old_indicies: list[int | None] = [og(token) for token in common_tokens]
+        new_indicies: list[int | None] = [ng(token) for token in common_tokens]
 
         # {self.id2token[x]: f"{x} => {new_indicies[i]}" for i, x in enumerate(old_indicies)}
 
-        slice_to_keep = self.data.tocsc()[:, old_indicies].tocoo()
+        slice_to_keep = self.data.tocsc()[:, old_indicies].tocoo()  # type: ignore
 
         new_dtm = sp.coo_matrix(
             (slice_to_keep.data, (slice_to_keep.row, [new_indicies[i] for i in slice_to_keep.col])), shape=(D, T)
