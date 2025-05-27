@@ -256,7 +256,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
         if not px:
             return self
-        
+
         if isinstance(px, dict):
             px = utility.PropertyValueMaskingOpts(**px)
 
@@ -295,7 +295,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         if axis is None or self.data.shape[1] == 0:
             return self
 
-        btm = sklearn.preprocessing.normalize(self._bag_term_matrix, axis=axis, norm=norm)
+        btm = sklearn.preprocessing.normalize(self._bag_term_matrix, axis=axis, norm=norm)  # type: ignore
 
         if keep_magnitude is True:
             factor = self._bag_term_matrix[0, :].sum() / btm[0, :].sum()
@@ -311,7 +311,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
         return corpus
 
-    def normalize_by_raw_counts(self):
+    def normalize_by_raw_counts(self) -> "VectorizedCorpus":
         if 'n_raw_tokens' not in self.document_index.columns:
             # logging.warning("Normalizing using DTM counts (not actual self counts)")
             # return self.normalize()
