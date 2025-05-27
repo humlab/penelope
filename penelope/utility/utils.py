@@ -21,7 +21,7 @@ from importlib import import_module
 from numbers import Number
 from random import randrange
 from types import FunctionType, ModuleType
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Set, Tuple, Type, TypeVar, Union
+from typing import Any, Callable, Generator, Iterable, Iterator, Set, Tuple, Type, TypeVar, Union
 
 import dotenv
 import numpy as np
@@ -237,7 +237,7 @@ def get_func_args(func: Callable) -> list[str]:
     ]
 
 
-def filter_kwargs(f: Callable, args: Mapping[str, Any]) -> Mapping[str, Any]:
+def filter_kwargs(f: Callable, args: dict[str, Any]) -> dict[str, Any]:
     """Removes keys in dict arg that are invalid arguments to function f
 
     Parameters
@@ -260,16 +260,16 @@ def filter_kwargs(f: Callable, args: Mapping[str, Any]) -> Mapping[str, Any]:
         return args
 
 
-def inspect_filter_args(f: Callable, args: Mapping) -> Mapping:
+def inspect_filter_args(f: Callable, args: dict) -> dict:
     return {k: args[k] for k in args.keys() if k in inspect.getfullargspec(f).args}
 
 
-def inspect_default_opts(f: Callable) -> Mapping:
+def inspect_default_opts(f: Callable) -> dict:
     sig = inspect.signature(f)
     return {name: param.default for name, param in sig.parameters.items() if param.name != 'self'}
 
 
-def dict_subset(d: Mapping, keys: list[str]) -> Mapping:
+def dict_subset(d: dict, keys: list[str]) -> dict:
     if keys is None:
         return d
     return {k: v for (k, v) in d.items() if k in keys}
@@ -281,7 +281,7 @@ def dict_split(d: dict[Any, Any], fn: Callable[[dict[Any, Any], str], bool]) -> 
     return {k: d[k] for k in true_keys}, {k: d[k] for k in set(d.keys()) - true_keys}
 
 
-def dict_to_list_of_tuples(d: Mapping) -> list[Tuple[Any, Any]]:
+def dict_to_list_of_tuples(d: dict) -> list[Tuple[Any, Any]]:
     if d is None:
         return []
     return [(k, v) for (k, v) in d.items()]
@@ -309,7 +309,7 @@ def dotcoalesce(d: dict, *paths: str, default: Any = None) -> Any:
     return default
 
 
-def list_of_dicts_to_dict_of_lists(dl: list[Mapping[str, Any]]) -> Mapping[str, list[Any]]:
+def list_of_dicts_to_dict_of_lists(dl: list[dict[str, Any]]) -> dict[str, list[Any]]:
     dict_of_lists = dict(zip(dl[0], zip(*[d.values() for d in dl])))
     return dict_of_lists
 
@@ -318,7 +318,7 @@ def tuple_of_lists_to_list_of_tuples(tl: Tuple[list[Any], ...]) -> list[Tuple[An
     return zip(*tl)  # type: ignore
 
 
-def dict_of_lists_to_list_of_dicts(dl: Mapping[str, list[Any]]) -> list[Mapping[str, Any]]:
+def dict_of_lists_to_list_of_dicts(dl: dict[str, list[Any]]) -> list[dict[str, Any]]:
     return [dict(zip(dl, t)) for t in zip(*dl.values())]
 
 
@@ -447,7 +447,7 @@ def normalize_array(x: np.ndarray, ord: int = 1):  # pylint: disable=redefined-b
     return x / (norm if norm != 0 else 1.0)
 
 
-def extract_counter_items_within_threshold(counter: Mapping, low: Number, high: Number) -> Set:
+def extract_counter_items_within_threshold(counter: dict, low: Number, high: Number) -> Set:
     item_values = set([])
     for x, wl in counter.items():
         if low <= x <= high:
