@@ -19,7 +19,7 @@ def assert_that_path_exists(path: str):
 
 
 def filename_satisfied_by(
-    filename: str, filename_filter: Union[list[str], Callable], filename_pattern: str = None
+    filename: str, filename_filter: Union[list[str], Callable], filename_pattern: str | None = None
 ) -> bool:
     """Returns true if filename is satisfied by filename filter, and matches pattern"""
 
@@ -46,7 +46,10 @@ def filename_satisfied_by(
 
 
 def filenames_satisfied_by(
-    filenames: list[str], filename_filter: Union[list[str], Callable] = None, filename_pattern: str = None, sort=True
+    filenames: list[str],
+    filename_filter: Union[list[str], Callable] | None = None,
+    filename_pattern: str | None = None,
+    sort=True,
 ) -> list[str]:
     """Filters list of filenames based on `filename_pattern` and `filename_filter`
 
@@ -89,7 +92,7 @@ def split_parts(path: str) -> tuple[str, str, str]:
     return folder, base, extension
 
 
-def path_add_suffix(path: str, suffix: str, new_extension: str = None) -> str:
+def path_add_suffix(path: str, suffix: str, new_extension: str | None = None) -> str:
     base, ext = splitext(path)
     return f'{base}{suffix}{ext if new_extension is None else new_extension}'
 
@@ -115,7 +118,7 @@ def path_add_sequence(path: str, i: int, j: int = 0) -> str:
     return path_add_suffix(path, f"_{str(i).zfill(j)}")
 
 
-def strip_path_and_add_counter(filename: str, i: int, n_zfill: int = 3):
+def strip_path_and_add_counter(filename: str, i: int, n_zfill: int = 3) -> str:
     return f'{basename(strip_extensions(filename))}_{str(i).zfill(n_zfill)}.txt'
 
 
@@ -129,7 +132,7 @@ def strip_path_and_extension(filename: str | list[str]) -> str | list[str]:
     return strip_extensions(strip_paths(filename))
 
 
-def strip_extensions(filename: Union[str, list[str]]) -> list[str]:
+def strip_extensions(filename: Union[str, list[str]]) -> str | list[str]:
     if isinstance(filename, str):
         return splitext(filename)[0]
     return [splitext(x)[0] for x in filename]
@@ -140,14 +143,14 @@ def suffix_filename(filename: str, suffix: str) -> str:
     return join(folder, f"{base}_{suffix}{extension}")
 
 
-def replace_extension(filename: str | list[str], extension: str) -> str:
+def replace_extension(filename: str | list[str], extension: str) -> str | list[str]:
     extension = '' if extension is None else '.' + extension if not extension.startswith('.') else extension
     if isinstance(filename, list):
         return [f"{splitext(f)[0]}{extension}" for f in filename]
     return f"{splitext(filename)[0]}{extension}"
 
 
-def replace_folder(filename: str | list[str], folder: str) -> str:
+def replace_folder(filename: str | list[str], folder: str) -> str | list[str]:
     """Replaces folder in filename"""
     if folder is None:
         folder = ''
@@ -156,7 +159,7 @@ def replace_folder(filename: str | list[str], folder: str) -> str:
     return join(folder or '', basename(filename))
 
 
-def replace_folder_and_extension(filename: str | list[str], folder: str, extension: str) -> str:
+def replace_folder_and_extension(filename: str | list[str], folder: str, extension: str) -> str | list[str]:
     return replace_extension(replace_folder(filename, folder), extension)
 
 
