@@ -4,16 +4,14 @@ import gzip
 import importlib
 import json
 import os
-import pickle
 import time
 from collections import defaultdict
 from os.path import join as jj
-from typing import Literal, Optional
+from typing import Callable, Literal, Optional
 
 import numpy as np
 import pandas as pd
 import scipy
-from loguru import logger
 
 from penelope.utility import read_json, strip_paths, write_json
 
@@ -50,45 +48,41 @@ def create_corpus_instance(
 def load_metadata(*, tag: str, folder: str) -> dict:
     """Loads metadata from disk."""
 
-    if os.path.isfile(jj(folder, f"{tag}_document_index.csv.gz")):
-        document_index: pd.DataFrame = pd.read_csv(
-            jj(folder, f"{tag}_document_index.csv.gz"), sep=';', compression="gzip", index_col=0
-        )
+    document_index: pd.DataFrame = load_document_index(tag, folder)
 
-        with gzip.open(jj(folder, f"{tag}_token2id.json.gz"), 'r') as fp:
-            token2id: dict = json.loads(fp.read().decode('utf-8'))
+    with gzip.open(jj(folder, f"{tag}_token2id.json.gz"), 'r') as fp:
+        token2id: dict = json.loads(fp.read().decode('utf-8'))
 
-        term_frequency = (
-            np.load(jj(folder, f"{tag}_overridden_term_frequency.npy"), allow_pickle=True)
-            if os.path.isfile(jj(folder, f"{tag}_overridden_term_frequency.npy"))
-            else None
-        )
+    term_frequency = (
+        np.load(jj(folder, f"{tag}_overridden_term_frequency.npy"), allow_pickle=True)
+        if os.path.isfile(jj(folder, f"{tag}_overridden_term_frequency.npy"))
+        else None
+    )
 
-        return {
-            'token2id': token2id,
-            'document_index': document_index,
-            'overridden_term_frequency': term_frequency,
-        }
+    return {
+        'token2id': token2id,
+        'document_index': document_index,
+        'overridden_term_frequency': term_frequency,
+    }
 
-    pickle_filename: str = jj(folder, f"{tag}_vectorizer_data.pickle")
-    if os.path.isfile(pickle_filename):
-        with open(pickle_filename, 'rb') as f:
-            data = pickle.load(f)
 
-        logger.warning(f"Loading from pickle: {pickle_filename}. Converting to individual files.")
-        store_metadata(tag=tag, folder=folder, mode='files', **data)
+def load_document_index(tag: str, folder: str) -> pd.DataFrame:
 
-        return data
-
-    raise ValueError("No metadata in folder")
+    probes: list[tuple[str, Callable[[str], pd.DataFrame]]] = [
+        ("feather", pd.read_feather),
+        ("csv.gz", lambda f: pd.read_csv(f, sep=';', compression="gzip", index_col=0)),
+    ]
+    for ext, fx in probes:
+        filename: str = jj(folder, f"{tag}_document_index.{ext}")
+        if os.path.isfile(filename):
+            return fx(filename)
+    raise FileNotFoundError(f"Document index with tag {tag} not found in folder {folder}")
 
 
 def store_metadata(*, tag: str, folder: str, mode: Literal['bundle', 'files'] = 'files', **data) -> None:
     """Stores metadata to disk."""
     if isinstance(data.get('token2id'), defaultdict):
-        data['token2id'] = dict(
-            data.get('token2id'),
-        )
+        data['token2id'] = dict(data.get('token2id', {}))
 
     if mode.startswith('bundle'):
         raise DeprecationWarning("Bundle mode not supported")
@@ -99,7 +93,9 @@ def store_metadata(*, tag: str, folder: str, mode: Literal['bundle', 'files'] = 
         # return
 
     if mode.startswith('files'):
-        data.get('document_index').to_csv(jj(folder, f"{tag}_document_index.csv.gz"), sep=';', compression="gzip")
+        di: pd.DataFrame = data.get('document_index')
+        di.to_csv(jj(folder, f"{tag}_document_index.csv.gz"), sep=';', compression="gzip")
+        di.to_feather(jj(folder, f"{tag}_document_index.feather"))
 
         with gzip.open(jj(folder, f"{tag}_token2id.json.gz"), 'w') as fp:  # 4. fewer bytes (i.e. gzip)
             fp.write(json.dumps(data.get('token2id')).encode('utf-8'))
@@ -295,7 +291,7 @@ class StoreMixIn:
         if not os.path.isdir(folder):
             raise FileNotFoundError("no DTM in selected folder")
 
-        tags: str = StoreMixIn.find_tags(folder)
+        tags: list[str] = StoreMixIn.find_tags(folder)
 
         if len(tags) != 1:
             raise FileNotFoundError("no (unique) DTM in selected folder")
