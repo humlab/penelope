@@ -109,6 +109,9 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         vocab = [self.id2token[i] for i in range(0, self.data.shape[1])]
         return vocab
 
+    def word_exists(self, word: str, ignore_case: bool = True) -> bool:
+        return self.token2id.get(word.lower() if ignore_case else word) is not None
+
     @property
     def T(self) -> scipy.sparse.csr_matrix:
         """Returns transpose of BoW matrix"""
