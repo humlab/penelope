@@ -21,7 +21,7 @@ from importlib import import_module
 from numbers import Number
 from random import randrange
 from types import FunctionType, ModuleType
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Sequence, Set, Tuple, Type, TypeVar, Union
+from typing import Any, Callable, Generator, Iterable, Iterator, Set, Tuple, Type, TypeVar, Union
 
 import dotenv
 import numpy as np
@@ -118,8 +118,8 @@ def isint(s: Any) -> bool:
         return False
 
 
-def filter_dict(d: Dict[str, Any], keys: Sequence[str] = None, filter_out: bool = False) -> Dict[str, Any]:
-    keys = set(d.keys()) - set(keys or []) if filter_out else (keys or [])
+def filter_dict(d: dict[str, Any], keys: list[str] = None, filter_out: bool = False) -> dict[str, Any]:
+    keys = set(d.keys()) - set(keys or []) if filter_out else (keys or [])  # type: ignore
     return {k: v for k, v in d.items() if k in keys}
 
 
@@ -135,7 +135,7 @@ def timecall(f):
     return f_wrapper
 
 
-def extend(target: Mapping, *args, **kwargs) -> Mapping:
+def extend(target: dict[Any, Any], *args, **kwargs) -> dict[Any, Any]:
     """Returns dictionary 'target' extended by supplied dictionaries (args) or named keywords
 
     Parameters
@@ -144,10 +144,10 @@ def extend(target: Mapping, *args, **kwargs) -> Mapping:
         Default dictionary (to be extended)
 
     args: [dict]
-        Optional. List of dicts to use when updating target
+        Optional. list of dicts to use when updating target
 
     args: [key=value]
-        Optional. List of key-value pairs to use when updating target
+        Optional. list of key-value pairs to use when updating target
 
     Returns
     -------
@@ -164,17 +164,17 @@ def extend(target: Mapping, *args, **kwargs) -> Mapping:
     return target
 
 
-def ifextend(target: Mapping, source: Mapping, p: bool) -> Mapping:
+def ifextend(target: dict[Any, Any], source: dict[Any, Any], p: bool) -> dict[Any, Any]:
     return extend(target, source) if p else target
 
 
-def extend_single(target: Mapping, source: Mapping, name: str) -> Mapping:
+def extend_single(target: dict[Any, Any], source: dict[Any, Any], name: str) -> dict[Any, Any]:
     if name in source:
         target[name] = source[name]
     return target
 
 
-def flatten(lofl: List[List[T]]) -> List[T]:
+def flatten(lofl: list[list[T]]) -> list[T]:
     """Returns a flat single list out of supplied list of lists."""
 
     return [item for sublist in lofl for item in sublist]
@@ -190,34 +190,34 @@ def better_flatten2(lst) -> Iterable[Any]:
             yield el
 
 
-def better_flatten(lst: Iterable[Any]) -> List[Any]:
+def better_flatten(lst: Iterable[Any]) -> list[Any]:
     if isinstance(lst, (str, bytes)):
-        return lst
+        return lst  # type: ignore
     return [x for x in better_flatten2(lst)]
 
 
-def project_series_to_range(series: Sequence[Number], low: Number, high: Number) -> Sequence[Number]:
+def project_series_to_range(series: list[Number], low: Number, high: Number) -> list[Number]:
     """Project a sequence of elements to a range defined by (low, high)"""
-    norm_series = series / series.max()
-    return norm_series.apply(lambda x: low + (high - low) * x)
+    norm_series = series / series.max()  # type: ignore
+    return norm_series.apply(lambda x: low + (high - low) * x)  # type: ignore
 
 
-def project_values_to_range(values: List[Number], low: Number, high: Number) -> List[Number]:
-    w_max = max(values)
-    return [low + (high - low) * (x / w_max) for x in values]
+def project_values_to_range(values: list[Number], low: Number, high: Number) -> list[Number]:
+    w_max: Number = max(values)  # type: ignore
+    return [low + (high - low) * (x / w_max) for x in values]  # type: ignore
 
 
-def project_to_range(value: Sequence[Number], low: Number, high: Number) -> Sequence[Number]:
+def project_to_range(value: list[Number], low: Number, high: Number) -> list[Number]:
     """Project a singlevalue to a range (low, high)"""
-    return low + (high - low) * value
+    return low + (high - low) * value  # type: ignore
 
 
-def clamp_values(values: Sequence[Number], low_high: Tuple[Number, Number]) -> Sequence[Number]:
+def clamp_values(values: list[Number], low_high: tuple[Number, Number]) -> list[Number]:
     """Clamps value to supplied interval."""
     if not values:
         return values
-    mw = max(values)
-    return [project_to_range(w / mw, low_high[0], low_high[1]) for w in values]
+    mw = max(values)  # type: ignore
+    return [project_to_range(w / mw, low_high[0], low_high[1]) for w in values]  # type: ignore
 
 
 def clamp(n: int, smallest: int, largest: int) -> int:
@@ -230,14 +230,14 @@ def _get_signature(func: Callable) -> inspect.Signature:
     return inspect.signature(func)
 
 
-def get_func_args(func: Callable) -> List[str]:
+def get_func_args(func: Callable) -> list[str]:
     sig = _get_signature(func)
     return [
         arg_name for arg_name, param in sig.parameters.items() if param.kind == inspect.Parameter.POSITIONAL_OR_KEYWORD
     ]
 
 
-def filter_kwargs(f: Callable, args: Mapping[str, Any]) -> Mapping[str, Any]:
+def filter_kwargs(f: Callable, args: dict[str, Any]) -> dict[str, Any]:
     """Removes keys in dict arg that are invalid arguments to function f
 
     Parameters
@@ -245,12 +245,12 @@ def filter_kwargs(f: Callable, args: Mapping[str, Any]) -> Mapping[str, Any]:
     f : [fn]
         Function to introspect
     args : dict
-        List of parameter names to test validity of.
+        list of parameter names to test validity of.
 
     Returns
     -------
     dict
-        Dict with invalid args filtered out.
+        dict with invalid args filtered out.
     """
 
     try:
@@ -260,28 +260,28 @@ def filter_kwargs(f: Callable, args: Mapping[str, Any]) -> Mapping[str, Any]:
         return args
 
 
-def inspect_filter_args(f: Callable, args: Mapping) -> Mapping:
+def inspect_filter_args(f: Callable, args: dict) -> dict:
     return {k: args[k] for k in args.keys() if k in inspect.getfullargspec(f).args}
 
 
-def inspect_default_opts(f: Callable) -> Mapping:
+def inspect_default_opts(f: Callable) -> dict:
     sig = inspect.signature(f)
     return {name: param.default for name, param in sig.parameters.items() if param.name != 'self'}
 
 
-def dict_subset(d: Mapping, keys: Sequence[str]) -> Mapping:
+def dict_subset(d: dict, keys: list[str]) -> dict:
     if keys is None:
         return d
     return {k: v for (k, v) in d.items() if k in keys}
 
 
-def dict_split(d: Mapping, fn: Callable[[Mapping, str], bool]) -> Mapping:
+def dict_split(d: dict[Any, Any], fn: Callable[[dict[Any, Any], str], bool]) -> tuple[dict[Any, Any], dict[Any, Any]]:
     """Splits a dictionary into two parts based on predicate"""
-    true_keys = {k for k in d.keys() if fn(d, k)}
+    true_keys: Set[Any] = {k for k in d.keys() if fn(d, k)}
     return {k: d[k] for k in true_keys}, {k: d[k] for k in set(d.keys()) - true_keys}
 
 
-def dict_to_list_of_tuples(d: Mapping) -> List[Tuple[Any, Any]]:
+def dict_to_list_of_tuples(d: dict) -> list[Tuple[Any, Any]]:
     if d is None:
         return []
     return [(k, v) for (k, v) in d.items()]
@@ -291,12 +291,12 @@ def revdict(d: dict) -> dict:
     return {v: k for k, v in d.items()}
 
 
-def dotget(d: dict, path: str, default: Any = None) -> Any:
+def dotget(d: dict | None, path: str | None, default: Any = None) -> Any | None:
     if path is None:
         return None
 
     for attr in path.split('.'):
-        d = d.get(attr)
+        d = d.get(attr)  # type: ignore
         if d is None:
             break
     return d or default
@@ -309,27 +309,26 @@ def dotcoalesce(d: dict, *paths: str, default: Any = None) -> Any:
     return default
 
 
-def list_of_dicts_to_dict_of_lists(dl: List[Mapping[str, Any]]) -> Mapping[str, List[Any]]:
+def list_of_dicts_to_dict_of_lists(dl: list[dict[str, Any]]) -> dict[str, list[Any]]:
     dict_of_lists = dict(zip(dl[0], zip(*[d.values() for d in dl])))
     return dict_of_lists
 
 
-def tuple_of_lists_to_list_of_tuples(tl: Tuple[List[Any], ...]) -> List[Tuple[Any, ...]]:
-    return zip(*tl)
+def tuple_of_lists_to_list_of_tuples(tl: Tuple[list[Any], ...]) -> list[Tuple[Any, ...]]:
+    return zip(*tl)  # type: ignore
 
 
-def dict_of_lists_to_list_of_dicts(dl: Mapping[str, List[Any]]) -> List[Mapping[str, Any]]:
+def dict_of_lists_to_list_of_dicts(dl: dict[str, list[Any]]) -> list[dict[str, Any]]:
     return [dict(zip(dl, t)) for t in zip(*dl.values())]
 
 
-def dict_of_key_values_inverted_to_dict_of_value_key(d: Dict[K, List[V]]) -> Dict[V, K]:
+def dict_of_key_values_inverted_to_dict_of_value_key(d: dict[K, list[V]]) -> dict[V, K]:
     return {value: key for key in d for value in d[key]}
 
 
-ListOfDicts = List[Mapping[str, Any]]
-
-
-def lists_of_dicts_merged_by_key(lst1: ListOfDicts, lst2: ListOfDicts, key: str) -> ListOfDicts:
+def lists_of_dicts_merged_by_key(
+    lst1: list[dict[str, Any]], lst2: list[dict[str, Any]], key: str
+) -> list[dict[str, Any]]:
     """Returns `lst1` where each items has been merged with corresponding item in `lst2` using common field `key`"""
     if lst2 is None or len(lst2) == 0 or key not in lst2[0]:
         return lst1 or []
@@ -352,7 +351,7 @@ def list_to_unique_list_with_preserved_order(seq):
     return [x for x in seq if not (x in seen or seen_add(x))]
 
 
-def uniquify(sequence: Iterable[T]) -> List[T]:
+def uniquify(sequence: Iterable[T]) -> list[T]:
     """Removes duplicates from a list whilst still preserving order"""
     seen = set()
     return [x for x in sequence if not (x in seen or seen.add(x))]
@@ -362,11 +361,11 @@ def sort_chained(x, f):
     return list(x).sort(key=f) or x
 
 
-def ls_sorted(path: str) -> List[str]:
+def ls_sorted(path: str) -> list[str]:
     return sort_chained(list(filter(os.path.isfile, glob.glob(path))), os.path.getmtime)
 
 
-def split(delimiters: Sequence[str], text: str, maxsplit: int = 0) -> List[str]:
+def split(delimiters: list[str], text: str, maxsplit: int = 0) -> list[str]:
     reg_ex = '|'.join(map(re.escape, delimiters))
     return re.split(reg_ex, text, maxsplit)
 
@@ -383,7 +382,7 @@ def left_chop(s: str, suffix: str) -> str:
 
 def slim_title(x: str) -> str:
     try:
-        m = re.match(r'.*\((.*)\)$', x).groups()
+        m = re.match(r'.*\((.*)\)$', x).groups()  # type: ignore
         if m is not None and len(m) > 0:
             return m[0]
         return ' '.join(x.split(' ')[:3]) + '...'
@@ -391,13 +390,13 @@ def slim_title(x: str) -> str:
         return x
 
 
-def complete_value_range(values: Sequence[Number], typef=str) -> List[Number]:
+def complete_value_range(values: list[Number], typef=str) -> list[Any]:
     """Create a complete range from min/max range in case values are missing
 
     Parameters
     ----------
     str_values : list
-        List of values to fill
+        list of values to fill
 
     Returns
     -------
@@ -406,8 +405,8 @@ def complete_value_range(values: Sequence[Number], typef=str) -> List[Number]:
     if len(values) == 0:
         return []
 
-    values = list(map(int, values))
-    values = range(min(values), max(values) + 1)
+    values = list(map(int, values))  # type: ignore
+    values = range(min(values), max(values) + 1)  # type: ignore
 
     return list(map(typef, values))
 
@@ -424,10 +423,10 @@ def trunc_year_by(series, divisor):
 
 
 # FIXA! Use numpy instead
-def normalize_values(values: Sequence[Number]) -> Sequence[Number]:
+def normalize_values(values: list[Number]) -> list[Number]:
     if len(values or []) == 0:
         return []
-    max_value = max(values)
+    max_value = max(values)  # type: ignore
     if max_value == 0:
         return values
     values = [x / max_value for x in values]
@@ -448,7 +447,7 @@ def normalize_array(x: np.ndarray, ord: int = 1):  # pylint: disable=redefined-b
     return x / (norm if norm != 0 else 1.0)
 
 
-def extract_counter_items_within_threshold(counter: Mapping, low: Number, high: Number) -> Set:
+def extract_counter_items_within_threshold(counter: dict, low: Number, high: Number) -> Set:
     item_values = set([])
     for x, wl in counter.items():
         if low <= x <= high:
@@ -456,7 +455,7 @@ def extract_counter_items_within_threshold(counter: Mapping, low: Number, high: 
     return item_values
 
 
-def chunks(lst: List[T], n: int) -> List[T]:
+def chunks(lst: list[T], n: int) -> Generator[list[T], None, None]:
     '''Returns list l in n-sized chunks'''
 
     if (n or 0) == 0:
@@ -466,7 +465,7 @@ def chunks(lst: List[T], n: int) -> List[T]:
         yield lst[i : i + n]
 
 
-def dataframe_to_tuples(df: pd.DataFrame, columns: List[str] = None) -> List[Tuple]:
+def dataframe_to_tuples(df: pd.DataFrame, columns: None | list[str] = None) -> list[Tuple]:
     """Returns rows in dataframe as tuples"""
     if columns is not None:
         df = df[columns]
@@ -488,14 +487,14 @@ def now_timestamp() -> str:
     return datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
 
-def timestamp(format_string: str = None) -> str:
+def timestamp(format_string: str | None = None) -> str:
     """Add timestamp to string that must contain exacly one placeholder"""
-    tz = now_timestamp()
+    tz: str = now_timestamp()
     return tz if format_string is None else format_string.format(tz)
 
 
 def pretty_print_matrix(
-    M, row_labels: List[str], column_labels: List[str], dtype: type = np.float64, float_fmt: str = "{0:.04f}"
+    M, row_labels: list[str], column_labels: list[str], dtype: type = np.float64, float_fmt: str = "{0:.04f}"
 ):
     """Pretty-print a matrix using Pandas."""
     df = pd.DataFrame(M, index=row_labels, columns=column_labels, dtype=dtype)
@@ -506,7 +505,7 @@ def pretty_print_matrix(
         print(df)
 
 
-def assert_is_strictly_increasing(series: pd.Series):
+def assert_is_strictly_increasing(series: pd.Series) -> None:
     """[summary]
 
     Args:
@@ -519,11 +518,11 @@ def assert_is_strictly_increasing(series: pd.Series):
         raise ValueError(f"series: {series.name} must be an integer typed, strictly increasing series starting from 0")
 
 
-def is_strictly_increasing(series: pd.Series, by_value=1, start_value: int = 0, sort_values: bool = True):
+def is_strictly_increasing(series: pd.Series, by_value=1, start_value: int = 0, sort_values: bool = True) -> bool:
     if len(series) == 0:
         return True
 
-    if not np.issubdtype(series.dtype, np.integer):
+    if not np.issubdtype(series.dtype, np.integer):  # type: ignore
         return False
 
     if sort_values:
@@ -537,17 +536,19 @@ def is_strictly_increasing(series: pd.Series, by_value=1, start_value: int = 0, 
         return False
 
     if by_value is not None:
-        if not np.all((series[1:].values - series[:-1].values) == by_value):
+        if not np.all((series[1:].values - series[:-1].values) == by_value):  # type: ignore
             return False
 
     return True
 
 
-def normalize_sparse_matrix_by_vector(spm: scipy.sparse.spmatrix, vector: np.ndarray = None) -> scipy.sparse.spmatrix:
+def normalize_sparse_matrix_by_vector(
+    spm: scipy.sparse.spmatrix, vector: np.ndarray | None = None
+) -> scipy.sparse.spmatrix:
     # https://stackoverflow.com/questions/42225269/scipy-sparse-matrix-division
     # diagonal matrix from the reciprocals of vector x sparse matrix
     vector = vector if vector is not None else spm.sum(axis=1).A1
-    nspm = scipy.sparse.diags(1.0 / vector) @ spm
+    nspm = scipy.sparse.diags(1.0 / vector) @ spm  # type: ignore
     nspm.data[(np.isnan(nspm.data) | np.isposinf(nspm.data))] = 0.0
     return nspm
 
@@ -631,7 +632,7 @@ def try_load_module(object_name: str) -> tuple[str, ModuleType] | None:
     return None
 
 
-def try_load_function_or_class_method(name: str, **args) -> Callable[[str], str]:
+def try_load_function_or_class_method(name: str, **args) -> Callable[[str], str] | None:
 
     value: Any = try_load_module(name)
 
@@ -713,9 +714,9 @@ def clear_attrib(obj, attrib):
 Q = TypeVar("Q")
 
 
-def deep_clone(obj: Q, ignores: List[str] = None, assign_ignores: bool = True) -> Q:
+def deep_clone(obj: Q, ignores: None | list[str] = None, assign_ignores: bool = True) -> Q:
     """Takes deep clone but avoids deep-copying ìgnores attributes."""
-    ignores_store: dict = {attrib: clear_attrib(obj, attrib) for attrib in ignores if hasattr(obj, attrib)}
+    ignores_store: dict = {attrib: clear_attrib(obj, attrib) for attrib in (ignores or []) if hasattr(obj, attrib)}
     other: Q = copy.deepcopy(obj)
     for attrib, value in ignores_store.items():
         setattr(obj, attrib, value)
@@ -779,16 +780,16 @@ class CommaStr(str):
         return self.__class__(','.join(part for part in self.parts() if part in x.split(',')))
 
     def __or__(self, x: str | CommaStr) -> CommaStr:
-        parts = self.split(',')
+        parts: list[str] = self.split(',')
         parts.extend(part for part in x.parts() if part not in parts)
         return self.__class__(','.join(parts))
 
     def parts(self) -> list[str]:
         return self.split(',')
 
-    def find_keys(self, key: str) -> list[str]:
+    def find_keys(self, key: str) -> Generator[str, None, None]:
         if '?' in key:
-            key: str = key.split('?')[0]
+            key = key.split('?')[0]
         for part in self.parts():
             if part == key or part.startswith(f"{key}?"):
                 yield part

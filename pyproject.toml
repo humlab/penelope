@@ -129,6 +129,7 @@ reportUnusedVariable = true
 reportUnusedImport = true
 reportUndefinedVariable = true
 reportUnboundVariable = true
+reportIncompatibleMethodOverride = false
 reportAttributeAccessIssue = false
 pythonVersion = "3.11"
 

@@ -2,7 +2,7 @@
 
 import abc
 from numbers import Number
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Protocol, Sequence, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Protocol, Sequence, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -17,63 +17,63 @@ class VectorizedCorpusError(ValueError): ...
 # pylint: disable=too-many-public-methods
 class IVectorizedCorpus(abc.ABC):
     @property
-    @abc.abstractproperty
-    def token2id(self) -> Mapping[int, str]: ...
+    @abc.abstractmethod
+    def token2id(self) -> dict[str, int]: ...
 
     @property
-    @abc.abstractproperty
+    @abc.abstractmethod
     def bag_term_matrix(self) -> scipy.sparse.csr_matrix: ...
 
     @property
-    @abc.abstractproperty
-    def id2token(self) -> Mapping[str, int]: ...
+    @abc.abstractmethod
+    def id2token(self) -> dict[int, str]: ...
 
     @property
-    @abc.abstractproperty
+    @abc.abstractmethod
     def vocabulary(self) -> List[str]: ...
 
     @abc.abstractmethod
     def nlargest(self, n_top: int, sort_indices: bool = False, override: bool = False) -> np.ndarray: ...
 
     @property
-    @abc.abstractproperty
+    @abc.abstractmethod
     def overridden_term_frequency(self) -> Dict[str, int]: ...
 
     @property
-    @abc.abstractproperty
+    @abc.abstractmethod
     def term_frequency(self) -> np.ndarray: ...
 
     @property
-    @abc.abstractproperty
+    @abc.abstractmethod
     def term_frequency0(self) -> np.ndarray: ...
 
     @property
-    @abc.abstractproperty
+    @abc.abstractmethod
     def document_token_counts(self) -> np.ndarray: ...
 
     @property
-    @abc.abstractproperty
+    @abc.abstractmethod
     def T(self) -> scipy.sparse.csr_matrix: ...
 
     @property
-    @abc.abstractproperty
+    @abc.abstractmethod
     def data(self) -> scipy.sparse.csr_matrix: ...
 
     @property
-    @abc.abstractproperty
+    @abc.abstractmethod
     def n_docs(self) -> int: ...
 
     @property
-    @abc.abstractproperty
+    @abc.abstractmethod
     def n_tokens(self) -> int: ...
 
     @property
-    @abc.abstractproperty
+    @abc.abstractmethod
     def document_index(self) -> DocumentIndex: ...
 
     @property
-    @abc.abstractproperty
-    def payload(self) -> Mapping[str, Any]: ...
+    @abc.abstractmethod
+    def payload(self) -> dict[str, Any]: ...
 
     @abc.abstractmethod
     def todense(self) -> "IVectorizedCorpus": ...
@@ -126,7 +126,7 @@ class IVectorizedCorpus(abc.ABC):
     def slice_by(self, px) -> "IVectorizedCorpus": ...
 
     @abc.abstractmethod
-    def translate_to_vocab(self, id2token: Mapping[int, str], inplace=False) -> "IVectorizedCorpus": ...
+    def translate_to_vocab(self, id2token: dict[int, str], inplace=False) -> "IVectorizedCorpus": ...
 
     @abc.abstractmethod
     def stats(self): ...
@@ -135,7 +135,7 @@ class IVectorizedCorpus(abc.ABC):
     def to_n_top_dataframe(self, n_top: int): ...
 
     @abc.abstractmethod
-    def token_indices(self, tokens: Iterable[str]): ...
+    def token_indices(self, tokens: Iterable[str]) -> list[int]: ...
 
     @abc.abstractmethod
     def tf_idf(self, norm: str = 'l2', use_idf: bool = True, smooth_idf: bool = True) -> "IVectorizedCorpus": ...
@@ -216,13 +216,13 @@ class IVectorizedCorpusProtocol(Protocol):
     def bag_term_matrix(self) -> scipy.sparse.csr_matrix: ...
 
     @property
-    def id2token(self) -> Mapping[int, str]: ...
+    def id2token(self) -> dict[int, str]: ...
 
     @property
-    def token2id(self) -> Mapping[str, int]: ...
+    def token2id(self) -> dict[str, int]: ...
 
     @property
-    def payload(self) -> Mapping[str, Any]: ...
+    def payload(self) -> dict[str, Any]: ...
 
     def remember(self, **kwargs) -> None: ...
 

@@ -118,7 +118,6 @@ from .utils import (
     DummyClass,
     DummyContext,
     DummyFunction,
-    ListOfDicts,
     assert_is_strictly_increasing,
     better_flatten,
     chunks,

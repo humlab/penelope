@@ -109,6 +109,9 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         vocab = [self.id2token[i] for i in range(0, self.data.shape[1])]
         return vocab
 
+    def word_exists(self, word: str, ignore_case: bool = True) -> bool:
+        return self.token2id.get(word.lower() if ignore_case else word) is not None
+
     @property
     def T(self) -> scipy.sparse.csr_matrix:
         """Returns transpose of BoW matrix"""
@@ -251,6 +254,9 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
             Filtered corpus.
         """
 
+        if not px:
+            return self
+
         if isinstance(px, dict):
             px = utility.PropertyValueMaskingOpts(**px)
 
@@ -289,7 +295,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
         if axis is None or self.data.shape[1] == 0:
             return self
 
-        btm = sklearn.preprocessing.normalize(self._bag_term_matrix, axis=axis, norm=norm)
+        btm = sklearn.preprocessing.normalize(self._bag_term_matrix, axis=axis, norm=norm)  # type: ignore
 
         if keep_magnitude is True:
             factor = self._bag_term_matrix[0, :].sum() / btm[0, :].sum()
@@ -305,7 +311,7 @@ class VectorizedCorpus(StoreMixIn, GroupByMixIn, SliceMixIn, StatsMixIn, CoOccur
 
         return corpus
 
-    def normalize_by_raw_counts(self):
+    def normalize_by_raw_counts(self) -> "VectorizedCorpus":
         if 'n_raw_tokens' not in self.document_index.columns:
             # logging.warning("Normalizing using DTM counts (not actual self counts)")
             # return self.normalize()
