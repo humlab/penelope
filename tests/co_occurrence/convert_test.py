@@ -92,5 +92,5 @@ def test_term_term_matrix_to_co_occurrences_with_no_ignore_ids():
 
     fg = text_corpus.token2id.get
     assert co_occurrences.value.sum() == term_term_matrix.sum()
-    assert 4 == int(co_occurrences[((co_occurrences.w1_id == fg('a')) & (co_occurrences.w2_id == fg('c')))].value)
-    assert 1 == int(co_occurrences[((co_occurrences.w1_id == fg('b')) & (co_occurrences.w2_id == fg('d')))].value)
+    assert 4 == int(co_occurrences[((co_occurrences.w1_id == fg('a')) & (co_occurrences.w2_id == fg('c')))].value.iloc[0])
+    assert 1 == int(co_occurrences[((co_occurrences.w1_id == fg('b')) & (co_occurrences.w2_id == fg('d')))].value.iloc[0])

@@ -169,7 +169,8 @@ def test_pipeline_to_co_occurrence_can_create_co_occurrence_bundle():
     )
 
     for filename in expected_TTMs:
-        document_id = int(bundle.document_index[bundle.document_index.filename == filename].document_id)
+        series = bundle.document_index[bundle.document_index.filename == filename].document_id
+        document_id = int(series.iloc[0])
         for (i, j), ij in bundle.token_ids_2_pair_id.items():
             pair = (bundle.token2id.id2token[i], bundle.token2id.id2token[j])
             if pair in expected_TTMs[filename]:

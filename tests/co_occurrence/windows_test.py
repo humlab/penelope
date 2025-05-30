@@ -99,9 +99,9 @@ def test_windows_iterator():
     _ = [x for x in windows_iter]
     document_index: pd.DataFrame = windows_iter.document_index
 
-    assert int(document_index[document_index.filename == 'tran_2019_01_test.txt']['n_windows']) == 2
-    assert int(document_index[document_index.filename == 'tran_2019_03_test.txt']['n_windows']) == 8
-    assert int(document_index[document_index.filename == 'tran_2019_01_test.txt']['n_tokens']) == 10
+    assert int(document_index[document_index.filename == 'tran_2019_01_test.txt']['n_windows'].iloc[0]) == 2
+    assert int(document_index[document_index.filename == 'tran_2019_03_test.txt']['n_windows'].iloc[0]) == 8
+    assert int(document_index[document_index.filename == 'tran_2019_01_test.txt']['n_tokens'].iloc[0]) == 10
 
 
 def test_co_occurrence_given_windows_and_vocabulary_succeeds():
