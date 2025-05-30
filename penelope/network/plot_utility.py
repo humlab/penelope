@@ -14,9 +14,6 @@ from .networkx.networkx_api import nx
 # pylint: disable=too-many-arguments,unnecessary-lambda,unsubscriptable-object,unsupported-assignment-operation
 
 
-if 'extend' not in globals():
-    extend = lambda a, b: a.update(b) or a
-
 layout_algorithms = {
     'Fruchterman-Reingold': lambda x, **args: nx.spring_layout(x, **args),
     'Eigenvectors of Laplacian': lambda x, **args: nx.spectral_layout(x, **args),
@@ -130,8 +127,8 @@ def _plot_network(
             nodes_weight: list[float] = project_values_to_range([node_proportions[n] for n in node_ids], *node_range)
             nodes_source.add(nodes_weight, nodes_size)
 
-    node_opts = extend(dict(color='green', alpha=1.0), node_opts or {})
-    line_opts = extend(dict(color='black', alpha=0.4), line_opts or {})
+    node_opts = dict(color='green', alpha=1.0) | (node_opts or {})
+    line_opts = dict(color='black', alpha=0.4) | (line_opts or {})
 
     p = figure(width=figsize[0], height=figsize[1], sizing_mode='scale_width', x_axis_type=None, y_axis_type=None)
 
