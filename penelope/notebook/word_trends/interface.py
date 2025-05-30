@@ -64,7 +64,10 @@ class TabularCompiler:
         data: dict = {
             **{temporal_key: corpus.document_index[temporal_key]},
             **{key: corpus.document_index[key] for key in pivot_keys_id_names},
-            **{corpus.id2token[token_id]: corpus.bag_term_matrix.getcol(token_id).A.ravel() for token_id in indices},
+            **{
+                corpus.id2token[token_id]: corpus.bag_term_matrix.getcol(token_id).toarray().ravel()
+                for token_id in indices
+            },
         }
 
         return pd.DataFrame(data=data)

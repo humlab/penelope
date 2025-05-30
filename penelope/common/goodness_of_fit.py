@@ -75,47 +75,64 @@ def get_gof_by_polynomial(dtm: scipy.sparse.spmatrix, x_offset: float = 0.0) -> 
 
 
 def get_gof_chisquare_to_uniform(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
+    n_cols = dtm.shape[1]
     try:
-        chi2_stats, chi2_p = list(
-            zip(*[gof_chisquare_to_uniform(dtm.getcol(i).A.ravel()) for i in range(0, dtm.shape[1])])
-        )
-    except:  # pylint: disable=bare-except
-        chi2_stats, chi2_p = np.nan, np.nan
-    return pd.DataFrame({'chi2_stats': chi2_stats, 'chi2_p': chi2_p}, index=range(0, dtm.shape[1]), dtype=np.float64)
+        stats_ps = [
+            gof_chisquare_to_uniform(dtm.getcol(i).toarray().ravel()) for i in range(n_cols)  # <-- changed here
+        ]
+        chi2_stats, chi2_p = zip(*stats_ps)
+    except Exception:
+        chi2_stats = [np.nan] * n_cols
+        chi2_p = [np.nan] * n_cols
+
+    return pd.DataFrame({'chi2_stats': chi2_stats, 'chi2_p': chi2_p}, index=range(n_cols), dtype=np.float64)
 
 
 def get_earth_mover_distance(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
+    n_cols = dtm.shape[1]
     try:
-        emd = [earth_mover_distance(dtm.getcol(i).A.ravel()) for i in range(0, dtm.shape[1])]
-    except:  # pylint: disable=bare-except
-        emd = np.nan
-    return pd.DataFrame({'earth_mover': emd}, index=range(0, dtm.shape[1]), dtype=np.float64)
+        emd = [earth_mover_distance(dtm.getcol(i).toarray().ravel()) for i in range(n_cols)]
+    except Exception:
+        emd = [np.nan] * n_cols
+
+    return pd.DataFrame({'earth_mover': emd}, index=range(n_cols), dtype=np.float64)
 
 
 def get_entropy_to_uniform(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
+    n_cols = dtm.shape[1]
     try:
-        e = [entropy(dtm.getcol(i).A.ravel()) for i in range(0, dtm.shape[1])]
-    except:  # pylint: disable=bare-except
-        e = np.nan
-    return pd.DataFrame({'entropy': e}, index=range(0, dtm.shape[1]), dtype=np.float64)
+        e = [entropy(dtm.getcol(i).toarray().ravel()) for i in range(n_cols)]
+    except Exception:
+        e = [np.nan] * n_cols
+
+    return pd.DataFrame({'entropy': e}, index=range(n_cols), dtype=np.float64)
 
 
 def get_kullback_leibler_divergence_to_uniform(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
+    n_cols = dtm.shape[1]
     try:
-        kld = [kullback_leibler_divergence_to_uniform(dtm.getcol(i).A.ravel()) for i in range(0, dtm.shape[1])]
-    except:  # pylint: disable=bare-except
-        kld = np.nan
-    return pd.DataFrame({'kld': kld}, index=range(0, dtm.shape[1]), dtype=np.float64)
+        kld = [kullback_leibler_divergence_to_uniform(dtm.getcol(i).toarray().ravel()) for i in range(n_cols)]
+    except Exception:
+        kld = [np.nan] * n_cols
+
+    return pd.DataFrame({'kld': kld}, index=range(n_cols), dtype=np.float64)
+
+
+from scipy.stats import skew as scipy_skew
 
 
 def get_skew(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
+    n_cols = dtm.shape[1]
     try:
         if not isinstance(dtm, scipy.sparse.spmatrix):
-            raise GoodnessOfFitComputeError("get_skew expects a sparse matrixs")
-        skew = [scipy.stats.skew(dtm.getcol(i).A.ravel()) for i in range(0, dtm.shape[1])]
-    except:  # pylint: disable=bare-except
-        skew = np.nan
-    return pd.DataFrame({'skew': skew}, index=range(0, dtm.shape[1]), dtype=np.float64)
+            raise GoodnessOfFitComputeError("get_skew expects a sparse matrix")
+
+        skew_vals = [scipy_skew(dtm.getcol(i).toarray().ravel()) for i in range(n_cols)]
+    except Exception:
+        # On any error, produce a list of NaNs matching the number of columns
+        skew_vals = [np.nan] * n_cols
+
+    return pd.DataFrame({'skew': skew_vals}, index=range(n_cols), dtype=np.float64)
 
 
 def get_basic_statistics(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:

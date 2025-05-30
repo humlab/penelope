@@ -144,7 +144,7 @@ def test_slice_by_tf_when_all_tokens_above_n_count_returns_same_corpus(slice_cor
 
     assert slice_corpus.token2id == t_corpus.token2id
     assert (slice_corpus.term_frequency == t_corpus.term_frequency).all()
-    assert np.allclose(slice_corpus.bag_term_matrix.todense().A, t_corpus.bag_term_matrix.todense().A)
+    assert np.allclose(slice_corpus.bag_term_matrix.toarray(), t_corpus.bag_term_matrix.toarray())
 
 
 def test_slice_by_n_top_when_all_tokens_above_n_count_returns_same_corpus(slice_corpus: VectorizedCorpus):
@@ -152,7 +152,7 @@ def test_slice_by_n_top_when_all_tokens_above_n_count_returns_same_corpus(slice_
 
     assert slice_corpus.token2id == t_corpus.token2id
     assert (slice_corpus.term_frequency == t_corpus.term_frequency).all()
-    assert np.allclose(slice_corpus.bag_term_matrix.todense().A, t_corpus.bag_term_matrix.todense().A)
+    assert np.allclose(slice_corpus.bag_term_matrix.toarray(), t_corpus.bag_term_matrix.toarray())
 
 
 def test_slice_by_n_top_when_n_top_less_than_n_tokens_returns_corpus_with_top_n_counts(slice_corpus: VectorizedCorpus):

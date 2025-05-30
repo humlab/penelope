@@ -138,7 +138,7 @@ def yearly_token_distribution_multiple_line_plot(
     for token_id in indices:
         try:
             # ys = x_corpus.data[:, token_id]
-            ys = x_corpus.data.getcol(token_id).A.ravel()
+            ys = x_corpus.data.getcol(token_id).toarray().ravel()
             p = yearly_token_distribution_single_line_plot(
                 xs,
                 ys,
