@@ -1,4 +1,4 @@
-from typing import List, Mapping, Union
+from typing import List, Mapping, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -22,7 +22,7 @@ class CoOccurrenceHelper:
         corpus: VectorizedCorpus,
         source_token2id: Token2Id,
         pivot_keys: Union[str, List[str]] = None,
-        co_occurrences: pd.DataFrame = None,
+        co_occurrences: Optional[pd.DataFrame] = None,
     ):
         self.corpus: VectorizedCorpus = corpus
         self.source_token2id: Token2Id = source_token2id
@@ -31,13 +31,13 @@ class CoOccurrenceHelper:
         self.co_occurrences: pd.DataFrame = (
             co_occurrences if co_occurrences is not None else self.corpus.to_co_occurrences(source_token2id)
         )
-        self.data: pd.DataFrame = None
-        self.data_pivot_keys: List[str] = None
+        self.data: Optional[pd.DataFrame] = None
+        self.data_pivot_keys: Optional[List[str]] = None
 
         self.reset()
 
     def reset(self) -> "CoOccurrenceHelper":
-        self.data: pd.DataFrame = self.co_occurrences  # .copy()
+        self.data = self.co_occurrences  # .copy()
         self.data_pivot_keys = self.corpus_pivot_keys
 
         if 'time_period' not in self.data.columns:
@@ -47,14 +47,14 @@ class CoOccurrenceHelper:
         return self
 
     def normalize(
-        self, pivot_keys: Union[str, List[str]], taget_name='value_n_t', normalize_key: str = 'n_raw_tokens'
+        self, pivot_keys: list[str], taget_name='value_n_t', normalize_key: str = 'n_raw_tokens'
     ) -> "CoOccurrenceHelper":
         self.data[taget_name] = self._normalize(self.data, pivot_keys=pivot_keys, normalize_key=normalize_key)
 
         return self
 
     def _normalize(
-        self, data: pd.DataFrame, pivot_keys: Union[str, List[str]], normalize_key: str = 'n_raw_tokens'
+        self, data: pd.DataFrame, pivot_keys: list[str], normalize_key: str = 'n_raw_tokens'
     ) -> "CoOccurrenceHelper":
         """Normalizes groups defined by `pivot_keys` by raw token counts (given by document index)"""
 
@@ -62,7 +62,7 @@ class CoOccurrenceHelper:
             x for x in (pivot_keys + [normalize_key]) if x not in self.corpus.document_index.columns
         ]
         if len(missing_columns) > 0:
-            raise f"BugCheck: expected {','.join(missing_columns)} to be corpus' document index."
+            raise Exception(f"BugCheck: expected {','.join(missing_columns)} to be corpus' document index.")
 
         series: pd.Series = (
             data.value
