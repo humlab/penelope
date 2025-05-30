@@ -100,7 +100,7 @@ def plot_multiple_value_series(
     if kind.lower() == 'bar':
         offset = data[category_name].min() % n_tick
         data[category_name] = data[category_name].astype(str)
-        p.axis.formatter = bm.FuncTickFormatter(
+        p.axis.formatter = bm.CustomJSTickFormatter (
             code=f"""
             return ((index == 0) || ((index - {offset}) % {n_tick} == 0)) ? tick : "";
         """
