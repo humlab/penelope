@@ -119,8 +119,6 @@ def get_kullback_leibler_divergence_to_uniform(dtm: scipy.sparse.spmatrix) -> pd
     return pd.DataFrame({'kld': kld}, index=range(n_cols), dtype=np.float64)
 
 
-
-
 def get_skew(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:
     n_cols = dtm.shape[1]
     try:
