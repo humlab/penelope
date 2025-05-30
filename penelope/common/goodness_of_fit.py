@@ -9,6 +9,7 @@ from bokeh import layouts as bl
 from bokeh import models as bm
 from bokeh import plotting as bp
 from pandas.core.frame import DataFrame
+from scipy.stats import skew as scipy_skew
 from tqdm.auto import tqdm
 
 from penelope.corpus import VectorizedCorpus
@@ -118,7 +119,6 @@ def get_kullback_leibler_divergence_to_uniform(dtm: scipy.sparse.spmatrix) -> pd
     return pd.DataFrame({'kld': kld}, index=range(n_cols), dtype=np.float64)
 
 
-from scipy.stats import skew as scipy_skew
 
 
 def get_skew(dtm: scipy.sparse.spmatrix) -> pd.DataFrame:

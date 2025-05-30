@@ -279,7 +279,7 @@ class MultiLinePivotKeysMixIn(PivotKeysMixIn):
 
         self._color_presets = color_presets
         self._color_palette: str = get_color_palette()
-        self._next_color: w.Button = w.Button(description="\u2B6E")
+        self._next_color: w.Button = w.Button(description="\u2b6e")
         self._line_color: w.ColorPicker = w.ColorPicker(concise=True, description="", value=next(self._color_palette))
         self._line_color_preset_picker: w.Dropdown = w.Dropdown(description="", value=None)
 
