@@ -1,9 +1,9 @@
 from penelope.utility import deprecated
 
+from ...common.word_trends import TrendsService
 from .. import utility as notebook_utility
 from .displayers import DEFAULT_WORD_TREND_DISPLAYERS
 from .gofs_gui import GoFsGUI
-from .interface import TrendsService
 from .trends_gui import TrendsGUI
 
 

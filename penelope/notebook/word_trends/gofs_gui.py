@@ -1,8 +1,8 @@
 import penelope.common.goodness_of_fit as gof
 
+from ...common.word_trends import TrendsService
 from .. import grid_utility as gu
 from .. import utility as notebook_utility
-from .interface import TrendsService
 
 
 class GoFsGUI:

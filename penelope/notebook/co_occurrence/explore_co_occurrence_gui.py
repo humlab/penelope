@@ -1,20 +1,21 @@
 from loguru import logger
 
 from penelope import co_occurrence
+from penelope.common import word_trends as wt
 from penelope.notebook.word_trends.displayers.display_top_table import CoOccurrenceTopTokensDisplayer
 
 from .. import utility as notebook_utility
-from .. import word_trends
+from .. import word_trends as wt_gui
 from ..co_occurrence.tabular_gui import TabularCoOccurrenceGUI
 
 
 class ExploreGUI:
     def __init__(self, bundle: co_occurrence.Bundle):
         self.bundle: co_occurrence.Bundle = bundle
-        self.trends_service: word_trends.BundleTrendsService = None
+        self.trends_service: wt.BundleTrendsService = None
         self.tab_main: notebook_utility.OutputsTabExt = None
-        self.trends_gui: word_trends.TrendsBaseGUI = None
-        self.gofs_gui: word_trends.GoFsGUI = None
+        self.trends_gui: wt_gui.TrendsBaseGUI = None
+        self.gofs_gui: wt_gui.GoFsGUI = None
         self.gofs_enabled: bool = False
         self.n_top_count: int = 5000
 
@@ -22,15 +23,15 @@ class ExploreGUI:
         self.tab_main = notebook_utility.OutputsTabExt(
             ["Data", "Trends", "Options", "GoF", "TopTokens"], layout={'width': '98%'}
         )
-        self.trends_gui = word_trends.CoOccurrenceTrendsGUI(
+        self.trends_gui = wt_gui.CoOccurrenceTrendsGUI(
             bundle=self.bundle,
             n_top_count=self.n_top_count,
-        ).setup(displayers=word_trends.DEFAULT_WORD_TREND_DISPLAYERS)
-        self.gofs_gui = word_trends.GoFsGUI().setup() if self.gofs_enabled else None
+        ).setup(displayers=wt_gui.DEFAULT_WORD_TREND_DISPLAYERS)
+        self.gofs_gui = wt_gui.GoFsGUI().setup() if self.gofs_enabled else None
 
         return self
 
-    def display(self, trends_service: word_trends.BundleTrendsService) -> "ExploreGUI":
+    def display(self, trends_service: wt.BundleTrendsService) -> "ExploreGUI":
         try:
             self.trends_service = trends_service
 

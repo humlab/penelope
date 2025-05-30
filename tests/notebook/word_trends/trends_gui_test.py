@@ -2,9 +2,10 @@ import unittest.mock as mock
 
 import ipywidgets
 
+from penelope.common.word_trends import TrendsService
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook import pick_file_gui as pfg
-from penelope.notebook.word_trends import ITrendDisplayer, TrendsGUI, TrendsService, main_gui
+from penelope.notebook.word_trends import ITrendDisplayer, TrendsGUI, main_gui
 
 # from ..utils import create_abc_corpus
 # pylint: disable=protected-access
