@@ -6,6 +6,8 @@ SPACY_MODEL=en_core_web_sm
 
 RUN_TIMESTAMP := $(shell /bin/date "+%Y-%m-%d-%H%M%S")
 
+include .env
+
 fast-release: clean tidy build guard_clean_working_repository bump.patch tag publish
 
 release: ready guard_clean_working_repository bump.patch tag  publish
@@ -183,8 +185,12 @@ update:
 	@poetry update
 
 nltk_data:
-	@mkdir -p $(NLTK_DATA)
-	@poetry run python -m nltk.downloader -d $(NLTK_DATA) stopwords punkt sentiwordnet
+	@if [ "$(NLTK_DATA)" != "" ]; then \
+		mkdir -p $(NLTK_DATA)  && poetry run python -m nltk.downloader -d $(NLTK_DATA) \
+			stopwords punkt sentiwordnet punkt_tab ;
+	else \
+		echo "NLTK_DATA is not set, skipping NLTK data download" ; \
+	fi
 
 spacy_data:
 	@poetry run python -m spacy download $(SPACY_MODEL)
