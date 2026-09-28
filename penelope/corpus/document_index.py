@@ -695,20 +695,27 @@ def update_document_index_properties(
 def update_document_index_by_dicts_or_tuples(
     document_index: pd.DataFrame,
     *,
-    data: List[Tuple[Any, ...]],
-    columns: List[str] = None,
+    data: list[tuple],
+    columns: list[str] = None,
     dtype=None,
-    default: Any = 0,
+    default=0,
 ) -> pd.DataFrame:
-    """Update di columns with values given as list of tuples. Inplace update. Create columns that don't exist."""
-    di_data: pd.DataFrame = pd.DataFrame.from_records(data, columns=columns).set_index('document_name')
-    new_cols: List[str] = [k for k in di_data.columns if k not in document_index.columns]
-    if len(new_cols) > 0:
-        document_index[new_cols] = default
+    di_data = pd.DataFrame.from_records(data, columns=columns).set_index("document_name")
+
+    new_cols = [k for k in di_data.columns if k not in document_index.columns]
+
+    for k in new_cols:
+        target_dtype = dtype if dtype is not None else di_data[k].dtype
+        document_index[k] = pd.Series(default, index=document_index.index, dtype=target_dtype)
+
+    for k in di_data.columns:
+        if k in document_index.columns:
+            try:
+                di_data[k] = di_data[k].astype(document_index[k].dtype)
+            except (TypeError, ValueError):
+                pass
+
     document_index.update(di_data)
-    if dtype is not None:
-        for k in new_cols:
-            document_index[k] = document_index[k].astype(dtype, errors='ignore')
     return document_index
 
 
