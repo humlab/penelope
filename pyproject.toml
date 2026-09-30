@@ -1,6 +1,6 @@
 [project]
 name = "humlab-penelope"
-version = "0.8.3"
+version = "0.8.4"
 description = "Utilities that simplify enelpeing in Jupyter Lab"
 authors = [{ name = "Roger Mähler", email = "roger.mahler@hotmail.com" }]
 classifiers = [
