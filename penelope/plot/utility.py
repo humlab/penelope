@@ -100,11 +100,9 @@ def plot_multiple_value_series(
     if kind.lower() == 'bar':
         offset = data[category_name].min() % n_tick
         data[category_name] = data[category_name].astype(str)
-        p.axis.formatter = bm.CustomJSTickFormatter(
-            code=f"""
+        p.axis.formatter = bm.CustomJSTickFormatter(code=f"""
             return ((index == 0) || ((index - {offset}) % {n_tick} == 0)) ? tick : "";
-        """
-        )
+        """)
         p.vbar_stack(columns, x=category_name, width=0.2, source=data, color=colors, legend_label=columns, **plot_opts)
     else:
         p.xaxis.ticker = generate_temporal_ticks(category_series[0])

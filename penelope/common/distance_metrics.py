@@ -90,7 +90,7 @@ def fit_polynomial_ravel(Y, xs):
 
 
 def gof_chisquare_to_uniform(f_obs, axis=0):
-    (chi2, p) = scipy.stats.chisquare(f_obs, axis=axis)
+    chi2, p = scipy.stats.chisquare(f_obs, axis=axis)
 
     return (chi2, p)
 
