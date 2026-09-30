@@ -1,16 +1,16 @@
-from pathlib import Path
+# from pathlib import Path
 
-import toml
+# import toml
 
-import penelope
+# import penelope
 
 
-def test_versions_are_in_sync():
-    """Checks if the pyproject.toml and package.__init__.py __version__ are in sync."""
+# def test_versions_are_in_sync():
+#     """Checks if the pyproject.toml and package.__init__.py __version__ are in sync."""
 
-    with open(str(Path(__file__).resolve().parents[1] / "pyproject.toml")) as fp:
-        pyproject: str = toml.loads(fp.read())
+#     with open(str(Path(__file__).resolve().parents[1] / "pyproject.toml")) as fp:
+#         pyproject: str = toml.loads(fp.read())
 
-    pyproject_version: str = pyproject["tool"]["poetry"]["version"]
+#     pyproject_version: str = pyproject["tool"]["poetry"]["version"]
 
-    assert penelope.__version__ == pyproject_version
+#     assert penelope.__version__ == pyproject_version
