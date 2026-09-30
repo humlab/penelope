@@ -21,10 +21,10 @@ watch:
 ready: tools clean tidy full-test lint build
 
 build: requirements.txt
-	@poetry build
+	@uv build
 
 publish:
-	@poetry publish
+	@uv publish
 
 lint: tidy pylint flake8
 
@@ -32,48 +32,48 @@ tidy: black isort
 
 test: output-dir
 	@echo SKIPPING LONG RUNNING TESTS!
-	@poetry run pytest -m "not long_running" --durations=0 tests
+	@uv run pytest -m "not long_running" --durations=0 tests
 	@rm -rf ./tests/output/*
 
 pytest: output-dir
-	@poetry run pytest -m "not long_running" --durations=0 tests
+	@uv run pytest -m "not long_running" --durations=0 tests
 
 test-coverage: output-dir
 	@echo SKIPPING LONG RUNNING TESTS!
-	@poetry run pytest -m "not long_running" --cov=$(PACKAGE_FOLDER) --cov-report=html tests
+	@uv run pytest -m "not long_running" --cov=$(PACKAGE_FOLDER) --cov-report=html tests
 	@rm -rf ./tests/output/*
 
 full-test: output-dir
-	@poetry run pytest tests
+	@uv run pytest tests
 	@rm -rf ./tests/output/*
 
 long-test: output-dir
-	@poetry run pytest -m "long_running" --durations=0 tests
+	@uv run pytest -m "long_running" --durations=0 tests
 	@rm -rf ./tests/output/*
 
 full-test-coverage: output-dir
 	@mkdir -p ./tests/output
-	@poetry run pytest --cov=$(PACKAGE_FOLDER) --cov-report=html tests
+	@uv run pytest --cov=$(PACKAGE_FOLDER) --cov-report=html tests
 	@rm -rf ./tests/output/*
 
 output-dir:
 	@mkdir -p ./tests/output
 
 retest:
-	@poetry run pytest --durations=0 --last-failed tests
+	@uv run pytest --durations=0 --last-failed tests
 
 install: tools
-	@poetry install --no-root --extras=full # --remove-untracked
+	@uv sync --extra full
 
 info:
-	@poetry run python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'
+	@uv run python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])'
 
 TYPINGS_PACKAGES=spacy IPython bokeh ftfy gensim holoviews ipycytoscape ipyfilechooser ipywidgets itertoolz networkx nltk numpy pydotplus scipy sklearn smart_open statsmodels textacy tqdm
 .PHONY: typings
 .ONESHELL: typings
 typings:
 	@for package in $(TYPINGS_PACKAGES); do \
-		poetry run pyright --createstub $$package ; \
+		uv run pyright --createstub $$package ; \
 	done
 
 .ONESHELL: guard_clean_working_repository
@@ -91,8 +91,7 @@ version:
 
 .PHONY: tools
 tools:
-	@pip install --upgrade pip --quiet
-	@pip install poetry --upgrade --quiet
+	@uv sync --extra full
 
 bump.patch: bump.version.patch sync.package.version
 	@git add pyproject.toml requirements.txt penelope/__init__.py
@@ -100,7 +99,7 @@ bump.patch: bump.version.patch sync.package.version
 	@git push
 
 bump.version.patch:
-	@poetry version patch
+	@uv version --bump patch
 
 sync.package.version:
 	@sed -i 's/__version__ = .*/__version__ = $(shell awk '/^version = /{print $$NF}' pyproject.toml)/g' penelope/__init__.py
@@ -108,23 +107,23 @@ sync.package.version:
 
 .PHONY: tag
 tag:
-	@poetry build
+	@uv build
 	@git push
 	@git tag $(shell grep "^version \= " pyproject.toml | sed "s/version = //" | sed "s/\"//g") -a
 	@git push origin --tags
 
 # test-coverage:
-# 	-poetry run coverage --rcfile=.coveragerc run -m pytest
-# 	-poetry run coveralls
+# 	-uv run coverage --rcfile=.coveragerc run -m pytest
+# 	-uv run coveralls
 
 .PHONY: pylint
 pylint:
-	@time poetry run pylint $(SOURCE_FOLDERS)
-	# @poetry run mypy --version
-	# @poetry run mypy .
+	@time uv run pylint $(SOURCE_FOLDERS)
+	# @uv run mypy --version
+	# @uv run mypy .
 
 pylint-source:
-	@time poetry run pylint penelope
+	@time uv run pylint penelope
 
 
 show-size:
@@ -139,7 +138,7 @@ show-size:
 									sort -h
 
 pylint_diff:
-	@time poetry run pylint -j 2 `git diff --name-only --diff-filter=d | grep -E '\.py$' | tr '\n' ' '`
+	@time uv run pylint -j 2 $$(git diff --name-only --diff-filter=d | grep -E '\.py$$' | tr '\n' ' ')
 
 # https://nerderati.com/speed-up-pylint-by-reducing-the-files-it-examines/
 # delta_files=`git diff --name-only --diff-filter=d | grep -E '\.py$' | tr '\n' ' '`
@@ -147,26 +146,26 @@ pylint_diff:
 pylint_diff_only:
 	@delta_files=$$(git status --porcelain | awk '{print $$2}' | grep -E '\.py$$' | tr '\n' ' ')
 	@if [[ "$$delta_files" != "" ]]; then
-		time poetry run pylint -j 2 $$delta_files
+		time uv run pylint -j 2 $$delta_files
 	fi
 
 pylint_by_file:
 	@-find $(SOURCE_FOLDERS) -type f -name "*.py" | \
 		grep -v .ipynb_checkpoints | \
-			poetry run xargs -I @@ bash -c '{ echo "@@" ; pylint "@@" ; }'
+			uv run xargs -I @@ bash -c '{ echo "@@" ; pylint "@@" ; }'
 
-	# xargs poetry run pylint --disable=W0511 | sort | uniq
+	# xargs uv run pylint --disable=W0511 | sort | uniq
 
 flake8:
-	@poetry run flake8 --version
-	@poetry run flake8 --extend-exclude './tmp' $(SOURCE_FOLDERS)
+	@uv run flake8 --version
+	@uv run flake8 --extend-exclude './tmp' $(SOURCE_FOLDERS)
 
 isort:
-	@poetry run isort --profile black --float-to-top --line-length 120 --py 311 $(SOURCE_FOLDERS)
+	@uv run isort --profile black --float-to-top --line-length 120 --py 312 $(SOURCE_FOLDERS)
 
 black: clean
-	@poetry run black --version
-	@poetry run black  $(SOURCE_FOLDERS)
+	@uv run black --version
+	@uv run black  $(SOURCE_FOLDERS)
 
 clean:
 	@rm -rf .pytest_cache build dist .eggs *.egg-info
@@ -177,24 +176,24 @@ clean:
 	@rm -rf tests/output
 
 clean_cache:
-	@poetry cache clear pypi --all
+	@uv cache clean
 
 data: nltk_data spacy_data
 
 update:
-	@poetry update
+	@uv lock --upgrade
 
 nltk_data:
 	@if [ "$(NLTK_DATA)" != "" ]; then \
-		mkdir -p $(NLTK_DATA)  && poetry run python -m nltk.downloader -d $(NLTK_DATA) \
+		mkdir -p $(NLTK_DATA)  && uv run python -m nltk.downloader -d $(NLTK_DATA) \
 			stopwords punkt sentiwordnet punkt_tab ;
 	else \
 		echo "NLTK_DATA is not set, skipping NLTK data download" ; \
 	fi
 
 spacy_data:
-	@poetry run python -m spacy download $(SPACY_MODEL)
-	@poetry run python -m spacy link $(SPACY_MODEL) en --force
+	@uv run python -m spacy download $(SPACY_MODEL)
+	@uv run python -m spacy link $(SPACY_MODEL) en --force
 
 gh:
 	@sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
@@ -207,26 +206,26 @@ install_graphtool:
 	@sudo apt-key adv --keyserver keys.openpgp.org --recv-key 612DEFB798507F25
 	@sudo apt update && apt install python3-graph-tool
 
-requirements.txt: poetry.lock
-	@poetry export --without-hashes -f requirements.txt --output requirements.txt
+requirements.txt: uv.lock
+	@uv export --no-hashes --format requirements-txt --output-file requirements.txt
 
 check-gh: gh-exists
 gh-exists: ; @which gh > /dev/null
 
 profile-vocabulary-pyinstrument: make-profile-reports
-	@PYTHONPATH=. poetry run python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_vocabulary-pyinstrument.html ./tests/profiling/vocabulary.py
+	@PYTHONPATH=. uv run python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_vocabulary-pyinstrument.html ./tests/profiling/vocabulary.py
 
 profile-co_occurrence-pyinstrument: make-profile-reports
-	@poetry run python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_workflow-pyinstrument.html ./tests/profiling/profile-workflow-pyinstrument.py
+	@uv run python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_workflow-pyinstrument.html ./tests/profiling/profile-workflow-pyinstrument.py
 
 profile-co_occurrence-cprofile: make-profile-reports
-	@poetry run python ./tests/profiling/profile-workflow-cprofile.py &> ./profile-reports/$(RUN_TIMESTAMP)_workflow-pyinstrument.txt
+	@uv run python ./tests/profiling/profile-workflow-cprofile.py &> ./profile-reports/$(RUN_TIMESTAMP)_workflow-pyinstrument.txt
 
 profile-compute-keyness-pyinstrument: make-profile-reports
-	@poetry run python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_keyness-pyinstrument.html ./tests/profiling/profile-compute-keyness.py
+	@uv run python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_keyness-pyinstrument.html ./tests/profiling/profile-compute-keyness.py
 
 profile-compute-keyness-cprofile: make-profile-reports
-	@poetry run python -m cProfile ./tests/profiling/profile-compute-keyness.py &> ./profile-reports/$(RUN_TIMESTAMP)_workflow-cprofile.txt
+	@uv run python -m cProfile ./tests/profiling/profile-compute-keyness.py &> ./profile-reports/$(RUN_TIMESTAMP)_workflow-cprofile.txt
 
 profile-load-riksprot-parlaclarin-pyinstrument: make-profile-reports
 	@PYTHONPATH=. python -m pyinstrument -r html -o ./profile-reports/$(RUN_TIMESTAMP)_riksprot-parlaclarin-pyinstrument.html ./tests/profiling/riksprot-parlaclarin.py
@@ -301,7 +300,7 @@ stubs:
 
 venus:
 	# @tar czvf ./tmp/VENUS.$(RUN_TIMESTAMP).tar.gz ./tests/test_data/VENUS
-	@poetry run python -c 'from tests.pipeline.fixtures import create_test_data_bundles; create_test_data_bundles()'
+	@uv run python -c 'from tests.pipeline.fixtures import create_test_data_bundles; create_test_data_bundles()'
 
 help:
 	@echo "Higher level recepies: "

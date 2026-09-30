@@ -22,7 +22,7 @@ def find_root_folder(*, project_name: str) -> str:
 
 
 def find_data_folder(*, project_name: str, project_short_name: str) -> str:
-    probe_names: str = [
+    probe_names: list[str] = [
         f'/data/{project_short_name}',
         f'/data/staging-{project_short_name}',
         f"/home/jovyan/work/{project_name}",

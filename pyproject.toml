@@ -1,106 +1,94 @@
-[tool.poetry]
+[project]
 name = "humlab-penelope"
 version = "0.8.3"
 description = "Utilities that simplify enelpeing in Jupyter Lab"
-authors = ["Roger Mähler <roger.mahler@hotmail.com>"]
-packages = [{ include = "penelope" }]
-exclude = ["**/.venv"]
+authors = [{ name = "Roger Mähler", email = "roger.mahler@hotmail.com" }]
 classifiers = [
-    'License :: OSI Approved :: Apache Software License',
     'Operating System :: OS Independent',
     'Topic :: Software Development',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
 ]
 license = "Apache-2.0"
 readme = "README.md"
-homepage = "https://github.com/humlab/penelope"
-repository = "https://github.com/humlab/penelope"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "bokeh",
+    "ftfy",
+    "ipycytoscape",
+    "ipydatagrid>=1.1.8,<2.0.0",
+    "ipyfilechooser",
+    "ipywidgets",
+    "jupyter_bokeh",
+    "loguru",
+    "lxml",
+    "more_itertools",
+    "msgpack>=1.0.2,<2.0.0",
+    "nltk>=3.5,<4.0.0",
+    "numpy",
+    "openpyxl>=3.0.5,<4.0.0",
+    "requests>=2.24.0,<3.0.0",
+    "scipy==1.12.0",
+    "toml",
+    "tqdm",
+    "click",
+    "smart-open>=6.4",
+    "python-dotenv",
+    "urllib3",
+    "pandas>=2.1.0,<3.0.0",
+    "networkx>=3.1,<4.0.0",
+    "regex",
+]
 
-[tool.poetry.dependencies]
-bokeh = "*"
-ftfy = "*"
-ipycytoscape = "*"
-ipydatagrid = "^1.1.8"
-ipyfilechooser = "*"
-ipywidgets = "*"
-jupyter_bokeh = "*"
-loguru = "*"
-lxml = "*"
-more_itertools = "*"
-msgpack = "^1.0.2"
-nltk = "^3.5"
-numpy = "*"
-openpyxl = "^3.0.5"
-python = "==3.11.*"
-requests = "^2.24.0"
-scipy = "==1.12.0"
-toml = "*"
-tqdm = "*"
+[project.urls]
+Homepage = "https://github.com/humlab/penelope"
+Repository = "https://github.com/humlab/penelope"
 
-gensim = { version = "*", optional = true }
-spacy = { version = "==3.7.0", optional = true }
-pyarrow = { version = "*", optional = true }
-textacy = { version = "*", optional = true }
-wordcloud = { version = "*", optional = true }
-PyYAML = { version = "*", optional = true }
-click = "*"
-smart-open = ">=6.4.*"
-python-dotenv = "*"
-urllib3 = "*"
-pandas = "*"
-networkx = "^3.1"
-regex = "*"
-
-[tool.poetry.extras]
+[project.optional-dependencies]
 full = [
     "pyarrow",
     "textacy",
-    "spacy",
+    "spacy==3.7.0",
     "gensim",
     "wordcloud",
     "PyYAML",
-    "click",
 ]
 
-#lite = ["jupyterlite"]
-
-[tool.poetry.group.dev.dependencies]
-black = "*"
-coverage = "*"
-flake8 = "*"
-flake8-pytest-style = "*"
-isort = "*"
-memory-profiler = "*"
-mypy = "*"
-pep8-naming = "*"
-pycodestyle = "*"
-pyflakes = "*"
-pyinstrument = "*"
-pylint = "*"
-pyright = "*"
-pytest = "*"
-pytest-cov = "*"
-pytest-xdist = "*"
-recommonmark = "*"
-Sphinx = "*"
-ruff = "^0.0.289"
-
-
-[tool.poetry_bumpversion.file."penelope/__init__.py"]
-
-[tool.poetry.scripts]
+[project.scripts]
 vectorize = "penelope.scripts.dtm.vectorize:main"
 vectorize-id = "penelope.scripts.dtm.vectorize_id:main"
 tm-predict = "penelope.scripts.tm.predict:click_main"
 tm-train-id = "penelope.scripts.tm.train_id:click_main"
 tm-train-legacy = "penelope.scripts.tm.train_legacy:click_main"
 tm-train = "penelope.scripts.tm.train:click_main"
-co-occurrence = { callable = "penelope.scripts.co_occurrence:main", extras = [
-    "full",
-] }
+co-occurrence = "penelope.scripts.co_occurrence:main"
 pos-tag = "penelope.scripts.pos_tag:main"
+
+#lite = ["jupyterlite"]
+
+[dependency-groups]
+dev = [
+    "black",
+    "coverage",
+    "flake8",
+    "flake8-pytest-style",
+    "isort",
+    "memory-profiler",
+    "mypy",
+    "pep8-naming",
+    "pycodestyle",
+    "pyflakes",
+    "pyinstrument",
+    "pylint",
+    "pyright",
+    "pytest",
+    "pytest-cov",
+    "pytest-xdist",
+    "recommonmark",
+    "Sphinx",
+    "ruff>=0.0.289",
+]
 
 
 [tool.pyright]
@@ -131,7 +119,7 @@ reportUndefinedVariable = true
 reportUnboundVariable = true
 reportIncompatibleMethodOverride = false
 reportAttributeAccessIssue = false
-pythonVersion = "3.11"
+pythonVersion = "3.12"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -143,7 +131,7 @@ addopts = [
     # "-s",
     #"-n4",
 ]
-log_cli = "False"
+log_cli = "false"
 testpaths = ["tests"]
 norecursedirs = [
     "test_data",
@@ -161,19 +149,12 @@ norecursedirs = [
 ]
 python_files = "*_test.py"
 python_functions = "test_*"
-filterwarnings = [
-    "ignore::_pytest.warning_types.PytestCollectionWarning",
-    "ignore::DeprecationWarning",
-    "ignore::PendingDeprecationWarning",
-    "ignore::RuntimeWarning",
-    "ignore::UserWarning",
-]
+
 # timeout = 300
-basetemp = "tests/output/tmp"
 
 [tool.black]
 line-length = 120
-target-version = ["py311"]
+target-version = ["py312"]
 skip-string-normalization = true
 exclude = '''
 (
@@ -202,7 +183,7 @@ extra_standard_library = ["__paths__"]
 # black = "black penelope"
 # black_ci = "black -check penelope"
 # flake8 = "flake8 penelope/ tests/"
-# generate_requirements = "poetry export -f requirements.txt -o requirements.txt"
+# generate_requirements = "uv export --format requirements-txt --output-file requirements.txt"
 # pre_safety = "task generate_requirements"
 # safety = "safety check  -r requirements.txt"
 # isort = "isort -rc penelope"
@@ -233,7 +214,7 @@ sort = "Name"
 [tool.ruff]
 
 line-length = 140
-target-version = "py311"
+target-version = "py312"
 exclude = [
     "__init__.py",
     "test_data",
@@ -250,8 +231,8 @@ exclude = [
 ]
 ignore = ["E501", "E722", "E731"]
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
 
-#[tool.poetry.build]
-#generate-setup-file = true
+[tool.setuptools.packages.find]
+include = ["penelope*"]
