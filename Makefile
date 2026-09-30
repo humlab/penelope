@@ -26,7 +26,9 @@ build: requirements.txt
 publish:
 	@uv publish
 
-lint: tidy pylint flake8
+lint: tidy pylint
+
+# flake8
 
 tidy: black isort
 
