@@ -21,6 +21,8 @@ def en_nlp() -> Language:
     except (OSError, SystemExit) as exc:
         pytest.skip(f"spaCy model en_core_web_sm is unavailable: {exc}")
 
+    return None
+
 
 @pytest.fixture(scope="session")
 def tagger(en_nlp) -> SpacyTagger:
