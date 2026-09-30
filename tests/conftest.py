@@ -16,7 +16,10 @@ from .fixtures import MARY_TEST_CORPUS
 @pytest.fixture(scope="session")
 def en_nlp() -> Language:
     pytest.importorskip("spacy")
-    return load_model(model="en_core_web_sm", disable="ner")
+    try:
+        return load_model(model="en_core_web_sm", disable="ner")
+    except (OSError, SystemExit) as exc:
+        pytest.skip(f"spaCy model en_core_web_sm is unavailable: {exc}")
 
 
 @pytest.fixture(scope="session")
