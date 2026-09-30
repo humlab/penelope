@@ -146,7 +146,7 @@ def debug_main(
         corpus_config=config,
         corpus_source=corpus_source,
         file_pattern='**/*.feather',
-        extract_opts=extract_opts,
+        extract_opts=extract_opts,  # pylint: disable=possibly-used-before-assignment ; type: ignore
         vectorize_opts=vectorize_opts,  # pylint: disable=possibly-used-before-assignment ; type: ignore
         transform_opts=transform_opts,  # pylint: disable=possibly-used-before-assignment ; type: ignore
         target_name=target_name,
