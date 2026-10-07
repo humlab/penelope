@@ -231,8 +231,14 @@ exclude = [
 ]
 ignore = ["E501", "E722", "E731"]
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=62.3"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"*" = ["**/*"]
 
 [tool.setuptools.packages.find]
 include = ["penelope*"]
