@@ -585,7 +585,7 @@ wheels = [
 
 [[package]]
 name = "humlab-penelope"
-version = "0.8.4"
+version = "0.8.3"
 source = { editable = "." }
 dependencies = [
     { name = "bokeh" },
