@@ -4,6 +4,39 @@
 > All notable changes to this project will be documented in this file
 
 
+## [0.8.3](https://github.com/humlab/penelope/compare/v0.8.2...v0.8.3) (2026-10-07)
+
+### 🐛 Bug Fixes
+
+* add 'too-many-positional-arguments' to Pylint disable list ([4a50395](https://github.com/humlab/penelope/commit/4a503956fc5da38f3cd1fe8befa54c693f138acf))
+* add conditional check for NLTK_DATA before downloading data ([3920012](https://github.com/humlab/penelope/commit/392001289ec833cfc95f82c1c9b511ac5ea60102))
+* clean up imports and improve readability in various modules ([45e53d1](https://github.com/humlab/penelope/commit/45e53d124803e39d992cca949aefa0b6fdc647f2))
+* fix broken release package  (0.8.4 yanked) ([03ca8a9](https://github.com/humlab/penelope/commit/03ca8a9f655b91fd83a37217d9e4a65ac89e5a2e))
+* handle missing spaCy model gracefully in en_nlp fixture ([715ad1c](https://github.com/humlab/penelope/commit/715ad1c194aca253f4f3344054ea4e740c25cf18))
+* remove flake8 from lint target in Makefile ([b607f52](https://github.com/humlab/penelope/commit/b607f52657bdc929b79bffab6662b5db1caf2ba0))
+* remove unnecessary blank lines in goodness_of_fit.py ([f0fce73](https://github.com/humlab/penelope/commit/f0fce739c07c6fcb57da74d3db6f73b8d8b93ad1))
+* replace .A.ravel() with .toarray().ravel() for sparse matrix compatibility ([2c07f6a](https://github.com/humlab/penelope/commit/2c07f6a7a3725f7004503cbfb5ff93cf36b4b4d2))
+* replace custom extend function with dictionary unpacking for node and line options ([0c5501d](https://github.com/humlab/penelope/commit/0c5501de63706b32d2cef4ce143e8c492a7672dc))
+* return None in en_nlp fixture for better handling of unavailable spaCy model ([8e36761](https://github.com/humlab/penelope/commit/8e36761768f5a37757a66549885dde0e04ed4665))
+* suppress pylint warnings for possibly used before assignment in bugger.py ([38e6202](https://github.com/humlab/penelope/commit/38e62020978b647b7dc6e459c09886a7bd2f40c0))
+* update aggregation method to use string "mean" for consistency ([d75315b](https://github.com/humlab/penelope/commit/d75315b8d11259cd44b59fc532ce7746bcad2cd9))
+* update DataFrame indexing to use .iloc for consistency in tests ([70ec56d](https://github.com/humlab/penelope/commit/70ec56dcbe23087dff4c6862b1168a9fbf2a7349))
+* update dependency versions in pyproject.toml ([9005bd0](https://github.com/humlab/penelope/commit/9005bd0b41274511c16ad5e1ec272856e8433cd9))
+* update humlab-penelope version to 0.8.4 in uv.lock ([3725768](https://github.com/humlab/penelope/commit/3725768860855474411b30e8e13213502320cda1))
+* update name of CustomJSTickFormatter to CustomJSTickFormatter (Bokeh >= 3.0) ([4431ed2](https://github.com/humlab/penelope/commit/4431ed2d5e63f8a7a6cb08de6a843365f10ef16f))
+* update NLTK data paths and correct download syntax in post-install script ([53da2fa](https://github.com/humlab/penelope/commit/53da2fafc1bb7e239760f8b8451ea8b3e0d21e5e))
+* update requirements for Python 3.11 compatibility ([b3be817](https://github.com/humlab/penelope/commit/b3be817d6478458ded9afe0d0c3a81fa0644aa7c))
+* update tick formatter in plot_multiple_value_series to use CustomJSTickFormatter ([394f656](https://github.com/humlab/penelope/commit/394f656c3d1ff59dd7023bc98a2ca098ee9592ff))
+* update token column handling to use bracket notation for fillna ([6d1dc5c](https://github.com/humlab/penelope/commit/6d1dc5c7a5d6deef4043bf6247698d1dba1d9f36))
+* update type hints for co_occurrences and data attributes in CoOccurrenceHelper ([f4b6f3a](https://github.com/humlab/penelope/commit/f4b6f3a876255478cc45fde18327dbfa8f26c955))
+* update XML parsing to use io.StringIO for diagnostics data ([974e3f8](https://github.com/humlab/penelope/commit/974e3f8a1414d8130e482a2e51abdfe1d24b58ab))
+
+### 🧑‍💻 Code Refactoring
+
+* enhance update_document_index_by_dicts_or_tuples for dtype handling and default value assignment ([b9ae4b0](https://github.com/humlab/penelope/commit/b9ae4b05429592493b81f531f0df9e26ea85859a))
+* move non-gui logic from notebook module to common module. ([6f8c9d9](https://github.com/humlab/penelope/commit/6f8c9d9e5968c1b0e7dcc7e9b96c59c564a20dbf))
+* simplify tuple unpacking in various files for improved readability ([0578085](https://github.com/humlab/penelope/commit/0578085297698092a926db23604710dd9b07f669))
+
 ## [0.4.0](https://github.com/humlab/penelope/compare/v0.3.18...v0.4.0) (2025-05-29)
 
 ### 🍕 Features
