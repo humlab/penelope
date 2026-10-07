@@ -30,5 +30,5 @@
         "commandCenter.border": "#e7e7e799"
     },
     "sqltools.detectNodeRuntime": false,
-    "python.defaultInterpreterPath": "/home/roger/.cache/pypoetry/virtualenvs/humlab-penelope-ATiWKElI-py3.11/bin/python",
+    // "python.defaultInterpreterPath": "/home/roger/.cache/pypoetry/virtualenvs/humlab-penelope-ATiWKElI-py3.11/bin/python",
 }
