@@ -11,7 +11,7 @@
     "python.testing.unittestEnabled": false,
     "workbench.colorCustomizations": {
         "activityBar.activeBackground": "#66874f",
-        "activityBar.activeBorder": "#afbcd0",
+        "activityBar.activeBorder": "#e7e7e7",
         "activityBar.background": "#66874f",
         "activityBar.foreground": "#e7e7e7",
         "activityBar.inactiveForeground": "#e7e7e799",
@@ -25,10 +25,17 @@
         "titleBar.inactiveBackground": "#4e673c99",
         "titleBar.inactiveForeground": "#e7e7e799",
         "sash.hoverBorder": "#66874f",
-        "statusBarItem.remoteBackground": "#4e673c",
+        "statusBarItem.remoteBackground": "#232e3c",
         "statusBarItem.remoteForeground": "#e7e7e7",
-        "commandCenter.border": "#e7e7e799"
+        "commandCenter.border": "#e7e7e799",
+        "activityBarTop.activeBackground": "#66874f",
+        "activityBarTop.activeBorder": "#e7e7e7",
+        "activityBarTop.background": "#66874f",
+        "activityBarTop.foreground": "#e7e7e7",
+        "activityBarTop.inactiveForeground": "#e7e7e799",
+        "commandCenter.foreground": "#e7e7e7",
+        "statusBar.debuggingBackground": "#4e673c",
+        "statusBar.debuggingForeground": "#e7e7e7"
     },
-    "sqltools.detectNodeRuntime": false,
-    "python.defaultInterpreterPath": "/home/roger/.cache/pypoetry/virtualenvs/humlab-penelope-ATiWKElI-py3.11/bin/python",
+    "sqltools.detectNodeRuntime": false
 }

@@ -11,7 +11,7 @@
         "peacock.remoteColor": "#421405",
         "workbench.colorCustomizations": {
             "activityBar.activeBackground": "#712209",
-            "activityBar.activeBorder": "#afbcd0",
+            "activityBar.activeBorder": "#e7e7e7",
             "activityBar.background": "#712209",
             "activityBar.foreground": "#e7e7e7",
             "activityBar.inactiveForeground": "#e7e7e799",
@@ -26,10 +26,9 @@
             "titleBar.inactiveForeground": "#e7e7e799",
             "commandCenter.border": "#e7e7e799",
             "sash.hoverBorder": "#712209",
-            "statusBarItem.remoteBackground": "#421405",
+            "statusBarItem.remoteBackground": "#097724",
             "statusBarItem.remoteForeground": "#e7e7e7",
             "editor.background": "#000000",
-            "tab.activeBackground": "#455a0b",
             "sideBar.background": "#000000",
             "gitDecoration.ignoredResourceForeground": "#7f7a7a",
             "terminal.background": "#000000",
@@ -37,7 +36,15 @@
             "scrollbarSlider.activeBackground": "#287545",
             "scrollbarSlider.hoverBackground": "#198e3c",
             "scrollbarSlider.background": "#515a54",
-            "debugConsole.background": "#000000"
+            "debugConsole.background": "#000000",
+            "activityBarTop.activeBackground": "#712209",
+            "activityBarTop.activeBorder": "#e7e7e7",
+            "activityBarTop.background": "#712209",
+            "activityBarTop.foreground": "#e7e7e7",
+            "activityBarTop.inactiveForeground": "#e7e7e799",
+            "commandCenter.foreground": "#e7e7e7",
+            "statusBar.debuggingBackground": "#421405",
+            "statusBar.debuggingForeground": "#e7e7e7"
         },
         "files.exclude": {
             "**/__pycache__": true,
