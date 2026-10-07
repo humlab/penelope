@@ -4,6 +4,12 @@
 > All notable changes to this project will be documented in this file
 
 
+## [0.8.5](https://github.com/humlab/penelope/compare/v0.8.4...v0.8.5) (2026-10-07)
+
+### 🐛 Bug Fixes
+
+* update humlab-penelope version from 0.8.4 to 0.8.5 in uv.lock ([011acca](https://github.com/humlab/penelope/commit/011acca73b1a6d720bc72a5faada136ad5498676))
+
 ## [0.8.4](https://github.com/humlab/penelope/compare/v0.8.3...v0.8.4) (2026-10-07)
 
 ### 🐛 Bug Fixes
