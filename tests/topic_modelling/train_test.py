@@ -338,8 +338,8 @@ DIAGNOSTICS_XML: str = """<?xml version="1.0" encoding="UTF-8"?>
 
 
 def test_parse_diagnostics():
-    topics: pd.DataFrame = pd.read_xml(DIAGNOSTICS_XML, xpath=".//topic")
-    words: pd.DataFrame = pd.read_xml(DIAGNOSTICS_XML, xpath=".//word")
+    topics: pd.DataFrame = pd.read_xml(io.StringIO(DIAGNOSTICS_XML), xpath=".//topic")
+    words: pd.DataFrame = pd.read_xml(io.StringIO(DIAGNOSTICS_XML), xpath=".//word")
 
     # diags: untangle.Element = untangle.parse(DIAGNOSTICS_XML)
     # topics: pd.DataFrame = pd.DataFrame([t.attributes for t in diags.model.topic]).set_index('id')

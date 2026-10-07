@@ -149,7 +149,7 @@ class LoadIdTaggedFrame(PoSCountMixIn, DefaultResolveMixIn, ITask):
     @cached_property
     def vocabulary(self) -> pd.DataFrame:
         vocab: pd.DataFrame = pd.read_feather(jj(self.corpus_source, 'token2id.feather'))
-        vocab.token.fillna('', inplace=True)
+        vocab["token"] = vocab["token"].fillna("")
         return vocab
 
     @cached_property

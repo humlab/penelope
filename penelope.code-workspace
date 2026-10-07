@@ -1,0 +1,60 @@
+{
+	"folders": [
+        {
+            "path": "penelope"
+        },
+        {
+            "path": "disutrano"
+        }
+    ],
+    "settings": {
+        "peacock.remoteColor": "#421405",
+        "workbench.colorCustomizations": {
+            "activityBar.activeBackground": "#712209",
+            "activityBar.activeBorder": "#e7e7e7",
+            "activityBar.background": "#712209",
+            "activityBar.foreground": "#e7e7e7",
+            "activityBar.inactiveForeground": "#e7e7e799",
+            "activityBarBadge.background": "#0c942c",
+            "activityBarBadge.foreground": "#e7e7e7",
+            "statusBar.background": "#421405",
+            "statusBar.foreground": "#e7e7e7",
+            "statusBarItem.hoverBackground": "#712209",
+            "titleBar.activeBackground": "#421405",
+            "titleBar.activeForeground": "#e7e7e7",
+            "titleBar.inactiveBackground": "#42140599",
+            "titleBar.inactiveForeground": "#e7e7e799",
+            "commandCenter.border": "#e7e7e799",
+            "sash.hoverBorder": "#712209",
+            "statusBarItem.remoteBackground": "#097724",
+            "statusBarItem.remoteForeground": "#e7e7e7",
+            "editor.background": "#000000",
+            "sideBar.background": "#000000",
+            "gitDecoration.ignoredResourceForeground": "#7f7a7a",
+            "terminal.background": "#000000",
+            "outputView.background": "#000000",
+            "scrollbarSlider.activeBackground": "#287545",
+            "scrollbarSlider.hoverBackground": "#198e3c",
+            "scrollbarSlider.background": "#515a54",
+            "debugConsole.background": "#000000",
+            "activityBarTop.activeBackground": "#712209",
+            "activityBarTop.activeBorder": "#e7e7e7",
+            "activityBarTop.background": "#712209",
+            "activityBarTop.foreground": "#e7e7e7",
+            "activityBarTop.inactiveForeground": "#e7e7e799",
+            "commandCenter.foreground": "#e7e7e7",
+            "statusBar.debuggingBackground": "#421405",
+            "statusBar.debuggingForeground": "#e7e7e7"
+        },
+        "files.exclude": {
+            "**/__pycache__": true,
+            "**/.pytest_cache": true,
+            "**/.venv": true
+        },
+        "files.watcherExclude": {
+            "**/.venv": true,
+            "**/data": true
+        },
+        "sqltools.useNodeRuntime": false
+    }
+}

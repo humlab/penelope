@@ -1,67 +1,303 @@
-asttokens==2.4.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-bokeh==3.3.4 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-bqplot==0.12.43 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-certifi==2024.2.2 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-charset-normalizer==3.3.2 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-click==8.1.7 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-colorama==0.4.6 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0" and (sys_platform == "win32" or platform_system == "Windows")
-comm==0.2.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-contourpy==1.2.0 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-decorator==5.1.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-et-xmlfile==1.1.0 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-executing==2.0.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-ftfy==6.1.3 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-gast==0.4.0 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-idna==3.6 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-ipycytoscape==1.3.3 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-ipydatagrid==1.2.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-ipyfilechooser==0.6.0 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-ipython==8.22.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-ipywidgets==8.1.2 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-jedi==0.19.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-jinja2==3.1.3 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-joblib==1.3.2 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-jupyter-bokeh==4.0.0 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-jupyterlab-widgets==3.0.10 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-loguru==0.7.2 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-lxml==5.1.0 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-markupsafe==2.1.5 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-matplotlib-inline==0.1.6 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-more-itertools==10.2.0 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-msgpack==1.0.7 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-networkx==3.2.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-nltk==3.8.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-numpy==1.26.4 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-openpyxl==3.1.2 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-packaging==23.2 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-pandas==2.2.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-parso==0.8.3 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-pexpect==4.9.0 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0" and (sys_platform != "win32" and sys_platform != "emscripten")
-pillow==10.2.0 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-prompt-toolkit==3.0.43 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-ptyprocess==0.7.0 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0" and (sys_platform != "win32" and sys_platform != "emscripten")
-pure-eval==0.2.2 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-py2vega==0.6.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-pygments==2.17.2 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-python-dateutil==2.8.2 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-python-dotenv==1.0.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-pytz==2024.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-pyyaml==6.0.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-regex==2023.12.25 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-requests==2.31.0 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-scipy==1.12.0 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-six==1.16.0 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-smart-open==6.4.0 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-spectate==1.0.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-stack-data==0.6.3 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-toml==0.10.2 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-tornado==6.4 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-tqdm==4.66.2 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-traitlets==5.14.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-traittypes==0.2.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-tzdata==2024.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-urllib3==2.2.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-wcwidth==0.2.13 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-widgetsnbextension==4.0.10 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
-win32-setctime==1.1.0 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0" and sys_platform == "win32"
-xyzservices==2023.10.1 ; python_version >= "3.11.dev0" and python_version < "3.12.dev0"
+# This file was autogenerated by uv via the following command:
+#    uv export --no-hashes --format requirements-txt --output-file requirements.txt
+-e .
+alabaster==1.0.0
+    # via sphinx
+ast-serialize==0.11.2
+    # via mypy
+astroid==4.0.4
+    # via pylint
+asttokens==3.0.2
+    # via stack-data
+babel==2.18.0
+    # via sphinx
+black==26.5.1
+bokeh==3.10.0
+    # via
+    #   humlab-penelope
+    #   jupyter-bokeh
+bqplot==0.13.1
+    # via ipydatagrid
+bqscales==0.3.7
+    # via bqplot
+certifi==2026.7.22
+    # via requests
+charset-normalizer==3.5.1
+    # via requests
+click==8.5.0
+    # via
+    #   black
+    #   humlab-penelope
+    #   nltk
+cloudpickle==3.1.2
+    # via joblib
+colorama==0.4.6 ; sys_platform == 'win32'
+    # via
+    #   ipython
+    #   loguru
+    #   pylint
+    #   pytest
+    #   sphinx
+    #   tqdm
+comm==0.2.3
+    # via ipywidgets
+commonmark==0.9.2
+    # via recommonmark
+coverage==7.16.2
+    # via pytest-cov
+defusedxml==0.7.1
+    # via nltk
+dill==0.4.1
+    # via pylint
+docutils==0.22.4
+    # via
+    #   recommonmark
+    #   sphinx
+et-xmlfile==2.0.0
+    # via openpyxl
+execnet==2.1.2
+    # via pytest-xdist
+executing==2.2.1
+    # via stack-data
+flake8==7.4.1
+    # via pep8-naming
+flake8-plugin-utils==1.3.3
+    # via flake8-pytest-style
+flake8-pytest-style==2.2.0
+ftfy==6.3.1
+    # via humlab-penelope
+gast==0.7.0
+    # via py2vega
+idna==3.20
+    # via requests
+imagesize==2.0.1
+    # via sphinx
+iniconfig==2.3.0
+    # via pytest
+ipycytoscape==1.3.3
+    # via humlab-penelope
+ipydatagrid==1.4.0
+    # via humlab-penelope
+ipyfilechooser==0.6.0
+    # via humlab-penelope
+ipython==9.17.1
+    # via ipywidgets
+ipython-pygments-lexers==1.1.1
+    # via ipython
+ipywidgets==8.1.9
+    # via
+    #   bqplot
+    #   bqscales
+    #   humlab-penelope
+    #   ipycytoscape
+    #   ipydatagrid
+    #   ipyfilechooser
+    #   jupyter-bokeh
+isort==9.0.1
+    # via pylint
+jedi==0.20.0
+    # via ipython
+jinja2==3.1.6
+    # via
+    #   bokeh
+    #   sphinx
+joblib==1.6.0
+    # via nltk
+jupyter-bokeh==4.1.0
+    # via humlab-penelope
+jupyterlab-widgets==3.0.17
+    # via ipywidgets
+librt==0.15.0 ; platform_python_implementation != 'PyPy'
+    # via mypy
+loguru==0.7.3
+    # via humlab-penelope
+lxml==6.1.3
+    # via humlab-penelope
+markupsafe==3.0.3
+    # via jinja2
+matplotlib-inline==0.2.2
+    # via ipython
+mccabe==0.7.0
+    # via
+    #   flake8
+    #   pylint
+memory-profiler==0.61.0
+more-itertools==11.1.0
+    # via humlab-penelope
+msgpack==1.2.2
+    # via humlab-penelope
+mypy==2.3.1
+mypy-extensions==1.1.0
+    # via
+    #   black
+    #   isort
+    #   mypy
+narwhals==2.26.0
+    # via bokeh
+networkx==3.7
+    # via humlab-penelope
+nltk==3.10.3
+    # via humlab-penelope
+nodeenv==1.11.0
+    # via pyright
+numpy==1.26.4
+    # via
+    #   bokeh
+    #   bqplot
+    #   bqscales
+    #   humlab-penelope
+    #   pandas
+    #   scipy
+openpyxl==3.1.5
+    # via humlab-penelope
+packaging==26.3
+    # via
+    #   black
+    #   bokeh
+    #   pytest
+    #   sphinx
+pandas==2.3.3
+    # via
+    #   bqplot
+    #   humlab-penelope
+    #   ipydatagrid
+parso==0.8.7
+    # via jedi
+pathspec==1.1.1
+    # via
+    #   black
+    #   mypy
+pep8-naming==0.15.1
+pexpect==4.9.0 ; sys_platform != 'emscripten' and sys_platform != 'win32'
+    # via ipython
+pillow==12.3.0
+    # via bokeh
+platformdirs==4.12.1
+    # via
+    #   black
+    #   pylint
+pluggy==1.6.0
+    # via
+    #   pytest
+    #   pytest-cov
+prompt-toolkit==3.0.53
+    # via ipython
+psutil==7.2.2
+    # via
+    #   ipython
+    #   memory-profiler
+ptyprocess==0.7.0 ; sys_platform != 'emscripten' and sys_platform != 'win32'
+    # via pexpect
+pure-eval==0.2.4
+    # via stack-data
+py2vega==0.7.0
+    # via ipydatagrid
+pycodestyle==2.15.0
+    # via flake8
+pyflakes==4.0.0
+    # via flake8
+pygments==2.21.0
+    # via
+    #   ipython
+    #   ipython-pygments-lexers
+    #   pytest
+    #   sphinx
+pyinstrument==5.1.3
+pylint==4.0.9
+pyright==1.1.414
+pytest==9.1.1
+    # via
+    #   pytest-cov
+    #   pytest-xdist
+pytest-cov==7.1.0
+pytest-xdist==3.8.0
+python-dateutil==2.9.0.post0
+    # via pandas
+python-dotenv==1.2.3
+    # via humlab-penelope
+pytokens==0.4.1
+    # via black
+pytz==2026.4
+    # via pandas
+pyyaml==6.0.3
+    # via bokeh
+recommonmark==0.7.1
+regex==2026.9.10
+    # via
+    #   humlab-penelope
+    #   nltk
+requests==2.34.2
+    # via
+    #   humlab-penelope
+    #   sphinx
+roman-numerals==4.1.0
+    # via sphinx
+ruff==0.16.9
+scipy==1.12.0
+    # via humlab-penelope
+six==1.17.0
+    # via python-dateutil
+smart-open==6.4.0
+    # via humlab-penelope
+snowballstemmer==3.1.1
+    # via sphinx
+spectate==1.0.1
+    # via ipycytoscape
+sphinx==9.1.0
+    # via recommonmark
+sphinxcontrib-applehelp==2.0.0
+    # via sphinx
+sphinxcontrib-devhelp==2.0.0
+    # via sphinx
+sphinxcontrib-htmlhelp==2.1.0
+    # via sphinx
+sphinxcontrib-jsmath==1.0.1
+    # via sphinx
+sphinxcontrib-qthelp==2.0.0
+    # via sphinx
+sphinxcontrib-serializinghtml==2.0.0
+    # via sphinx
+stack-data==0.6.3
+    # via ipython
+toml==0.10.2
+    # via humlab-penelope
+tomlkit==0.15.1
+    # via pylint
+tornado==6.5.10 ; sys_platform != 'emscripten'
+    # via bokeh
+tqdm==4.70.1
+    # via
+    #   humlab-penelope
+    #   nltk
+traitlets==5.16.1
+    # via
+    #   bqplot
+    #   bqscales
+    #   ipython
+    #   ipywidgets
+    #   matplotlib-inline
+    #   traittypes
+traittypes==0.2.3
+    # via
+    #   bqplot
+    #   bqscales
+typing-extensions==4.16.0
+    # via
+    #   mypy
+    #   pyright
+tzdata==2026.4
+    # via pandas
+urllib3==2.8.0
+    # via
+    #   humlab-penelope
+    #   requests
+wcwidth==0.9.1
+    # via
+    #   ftfy
+    #   prompt-toolkit
+widgetsnbextension==4.0.16
+    # via ipywidgets
+win32-setctime==1.2.0 ; sys_platform == 'win32'
+    # via loguru
+xyzservices==2026.9.1
+    # via bokeh

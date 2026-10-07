@@ -2,9 +2,9 @@ import os
 
 from penelope.common.curve_fit import pchip_spline
 from penelope.common.keyness.metrics import KeynessMetric  # , rolling_average_smoother
+from penelope.common.word_trends import TrendsComputeOpts
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.word_trends.displayers import TopTokensDisplayer
-from penelope.notebook.word_trends.interface import TrendsComputeOpts
 
 # pylint: disable=protected-access
 

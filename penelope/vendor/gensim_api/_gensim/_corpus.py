@@ -173,7 +173,7 @@ class SimpleExtTextCorpus(ExtTextCorpus):
         ]
 
         if self.lowercase:
-            token_filters = token_filters + [(lambda tokens: [x.lower() for x in tokens])]
+            token_filters = token_filters + [lambda tokens: [x.lower() for x in tokens]]
 
         return token_filters
 

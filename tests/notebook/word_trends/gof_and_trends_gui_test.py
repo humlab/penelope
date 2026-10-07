@@ -3,9 +3,10 @@ from unittest.mock import MagicMock, Mock, patch
 import pandas as pd
 
 from penelope.common.goodness_of_fit import GofData
+from penelope.common.word_trends import TrendsService
 from penelope.corpus import VectorizedCorpus
 from penelope.notebook.utility import OutputsTabExt
-from penelope.notebook.word_trends import GoFsGUI, GofTrendsGUI, TrendsGUI, TrendsService
+from penelope.notebook.word_trends import GoFsGUI, GofTrendsGUI, TrendsGUI
 
 
 def trends_service_mock():

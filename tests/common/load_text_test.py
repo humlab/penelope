@@ -17,9 +17,7 @@ of tra-
 
     result = dehyphen(text)
 
-    assert (
-        result
-        == """The choreography
+    assert result == """The choreography
 which makes one's
 head spin in its complex
 patterns
@@ -27,7 +25,6 @@ has
 been evolved through hun-dreds of years
 of tradition
 and training."""
-    )
 
 
 TEST_DOCUMENT_INFO: dict = {

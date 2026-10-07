@@ -6,8 +6,9 @@ import pandas as pd
 import pytest
 
 from penelope import co_occurrence
+from penelope.common import word_trends as wt
 from penelope.common.keyness.metrics import KeynessMetric
-from penelope.notebook.word_trends import BundleTrendsService
+from penelope.common.word_trends import TrendsComputeOpts, TrendsService
 from penelope.notebook.word_trends.displayers import (
     BarDisplayer,
     ITrendDisplayer,
@@ -20,7 +21,6 @@ from penelope.notebook.word_trends.displayers import (
     create_network,
 )
 from penelope.notebook.word_trends.displayers.display_top_table import CoOccurrenceTopTokensDisplayer
-from penelope.notebook.word_trends.interface import TrendsComputeOpts, TrendsService
 from penelope.utility.pandas_utils import unstack_data
 from tests.fixtures import simple_corpus_with_pivot_keys
 
@@ -109,8 +109,8 @@ def bundle() -> co_occurrence.Bundle:
 
 
 @pytest.fixture(scope="module")
-def trends_service(bundle) -> BundleTrendsService:
-    trends_service: BundleTrendsService = BundleTrendsService(bundle=bundle)
+def trends_service(bundle) -> wt.BundleTrendsService:
+    trends_service: wt.BundleTrendsService = wt.BundleTrendsService(bundle=bundle)
     return trends_service
 
 

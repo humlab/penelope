@@ -3,9 +3,10 @@ import os
 import pytest
 
 from penelope import co_occurrence
+from penelope.common import word_trends as wt
 from penelope.common.keyness import KeynessMetric, KeynessMetricSource
+from penelope.notebook import word_trends as wt_gui
 from penelope.notebook.co_occurrence import ExploreGUI
-from penelope.notebook.word_trends import BundleTrendsService, CoOccurrenceTrendsGUI, TrendsComputeOpts
 
 # pylint: disable=redefined-outer-name, protected-access
 
@@ -25,11 +26,11 @@ def test_load_bundle():
     gui_explore.setup()
     gui_explore.layout()
 
-    trends_service: BundleTrendsService = BundleTrendsService(bundle=bundle)
+    trends_service: wt.BundleTrendsService = wt.BundleTrendsService(bundle=bundle)
 
     gui_explore.display(trends_service)
 
-    # compute_opts: TrendsComputeOpts = TrendsComputeOpts(
+    # compute_opts: wt.TrendsComputeOpts = wt.TrendsComputeOpts(
     #     normalize=False,
     #     smooth=False,
     #     keyness=KeynessMetric.TF,
@@ -41,7 +42,7 @@ def test_load_bundle():
     #     fill_gaps=False
     # )
 
-    compute_opts: TrendsComputeOpts = TrendsComputeOpts(
+    compute_opts: wt.TrendsComputeOpts = wt.TrendsComputeOpts(
         normalize=False,
         keyness=KeynessMetric.TF,
         temporal_key='decade',
@@ -56,7 +57,7 @@ def test_load_bundle():
         keyness_source=KeynessMetricSource.Full,
     )
 
-    trends_gui: CoOccurrenceTrendsGUI = gui_explore.trends_gui
+    trends_gui: wt_gui.CoOccurrenceTrendsGUI = gui_explore.trends_gui
 
     set_options(trends_gui, compute_opts)
 
@@ -79,7 +80,7 @@ def test_load_bundle():
     # trends_gui.trends_service.transform(trends_gui.options)
 
 
-def set_options(trends_gui: CoOccurrenceTrendsGUI, opts: TrendsComputeOpts) -> CoOccurrenceTrendsGUI:
+def set_options(trends_gui: wt_gui.CoOccurrenceTrendsGUI, opts: wt.TrendsComputeOpts) -> wt_gui.CoOccurrenceTrendsGUI:
     trends_gui.buzy(True)
     trends_gui.observe(False)
     trends_gui._smooth.value = opts.smooth

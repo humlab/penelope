@@ -11,8 +11,8 @@ from penelope.common.keyness import KeynessMetric, KeynessMetricSource
 from penelope.notebook import mixins as mx
 from penelope.notebook import widgets_utils as wu
 
+from ...common.word_trends import TrendsComputeOpts, TrendsService
 from .displayers import ITrendDisplayer
-from .interface import TrendsComputeOpts, TrendsService
 
 BUTTON_LAYOUT = w.Layout(width='120px')
 OUTPUT_LAYOUT = w.Layout(width='600px')

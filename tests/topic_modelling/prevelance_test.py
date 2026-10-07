@@ -95,15 +95,13 @@ def simple_test_data():
     # 4;2;0.00;2020
     # 4;3;0.00;2020
     document_index = pd.read_csv(
-        io.StringIO(
-            """;filename;year;year_serial_id;document_id;document_name;n_tokens
+        io.StringIO(""";filename;year;year_serial_id;document_id;document_name;n_tokens
 a;a.txt;2019;1;0;a;68
 b;b.txt;2019;2;1;b;59
 c;c.txt;2019;3;2;c;173
 d;d.txt;2020;1;3;d;33
 e;e.txt;2020;2;4;e;44
-"""
-        ),
+"""),
         sep=';',
     )
 

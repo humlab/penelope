@@ -1,9 +1,9 @@
 import pytest
 
 from penelope import co_occurrence
+from penelope.common import word_trends as wt
 from penelope.notebook import utility as notebook_utility
 from penelope.notebook.co_occurrence import ExploreGUI
-from penelope.notebook.word_trends import BundleTrendsService
 
 # pylint: disable=redefined-outer-name
 
@@ -17,8 +17,8 @@ def bundle() -> co_occurrence.Bundle:
 
 
 @pytest.fixture(scope="module")
-def trends_service(bundle) -> BundleTrendsService:
-    trends_service: BundleTrendsService = BundleTrendsService(bundle=bundle)
+def trends_service(bundle) -> wt.BundleTrendsService:
+    trends_service: wt.BundleTrendsService = wt.BundleTrendsService(bundle=bundle)
     return trends_service
 
 
@@ -29,7 +29,7 @@ def test_ExploreCoOccurrencesGUI_create_and_layout(bundle: co_occurrence.Bundle)
 
 
 @pytest.mark.long_running
-def test_ExploreCoOccurrencesGUI_display(bundle: co_occurrence.Bundle, trends_service: BundleTrendsService):
+def test_ExploreCoOccurrencesGUI_display(bundle: co_occurrence.Bundle, trends_service: wt.BundleTrendsService):
     gui: ExploreGUI = ExploreGUI(bundle=bundle).setup()
 
     _: notebook_utility.OutputsTabExt = gui.layout()

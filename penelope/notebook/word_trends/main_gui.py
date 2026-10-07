@@ -8,10 +8,10 @@ import penelope.pipeline as pp
 import penelope.utility as pu
 from penelope.workflows.vectorize import dtm as workflow
 
+from ...common.word_trends import TrendsService
 from .. import dtm as dtm_gui
 from .. import pick_file_gui as pfg
 from . import DEFAULT_WORD_TREND_DISPLAYERS
-from .interface import TrendsService
 from .trends_gui import TrendsGUI
 
 # pylint: disable=unused-argument

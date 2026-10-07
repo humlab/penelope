@@ -9,8 +9,8 @@ import pytest
 
 from penelope import utility as pu
 from penelope.common.keyness import KeynessMetric
+from penelope.common.word_trends import TrendsComputeOpts, TrendsService
 from penelope.corpus import VectorizedCorpus
-from penelope.notebook.word_trends import TrendsComputeOpts, TrendsService
 from tests.fixtures import simple_corpus_with_pivot_keys
 
 

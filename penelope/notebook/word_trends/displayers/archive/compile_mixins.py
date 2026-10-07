@@ -38,7 +38,7 @@
 #         xs_data, ys_data = [], []
 
 #         for j in indices:
-#             xs_j, ys_j = categories, bag_term_matrix.getcol(j).A.ravel()
+#             xs_j, ys_j = categories, bag_term_matrix.getcol(j).toarray().ravel()
 #             for smoother in smoothers:
 #                 xs_j, ys_j = smoother(xs_j, ys_j)
 #             xs_data.append(xs_j)
@@ -65,7 +65,7 @@
 #         data = {
 #             **{temporal_key: corpus.document_index[temporal_key]},
 #             **{corpus.document_index[pivot_key_id] for pivot_key_id in pivot_keys_id_names},
-#             **{corpus.id2token[token_id]: corpus.bag_term_matrix.getcol(token_id).A.ravel() for token_id in indices},
+#             **{corpus.id2token[token_id]: corpus.bag_term_matrix.getcol(token_id).toarray().ravel() for token_id in indices},
 #         }
 
 #         return pd.DataFrame(data=data)

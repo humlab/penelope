@@ -138,7 +138,7 @@ def _compute_average_yearly_topic_weights_above_threshold(
     yearly_weights: pd.DataFrame = (
         document_topic_weights[document_topic_weights.weight >= threshold]
         .groupby(['year', 'topic_id'])
-        .agg(**{target_name: ('weight', np.mean)})
+        .agg(**{target_name: ('weight', "mean")})
     )
     return yearly_weights
 

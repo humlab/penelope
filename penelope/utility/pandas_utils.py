@@ -72,11 +72,9 @@ def create_mask2(df: pd.DataFrame, masks: Sequence[dict]) -> np.ndarray:
 
 class CreateMaskError(Exception):
     def __init__(self):
-        super().__init__(
-            """
+        super().__init__("""
         tuple length must be 2 or 3 and first element must be sign, second (optional) a binary op.
-    """
-        )
+    """)
 
 
 def size_of(df: pd.DataFrame, unit: Literal['bytes', 'kB', 'MB', 'GB'], total: bool = False) -> int | dict:
