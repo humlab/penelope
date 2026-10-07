@@ -4,6 +4,14 @@
 > All notable changes to this project will be documented in this file
 
 
+## [0.8.4](https://github.com/humlab/penelope/compare/v0.8.3...v0.8.4) (2026-10-07)
+
+### 🐛 Bug Fixes
+
+* downgrade humlab-penelope version from 0.8.4 to 0.8.3 in uv.lock ([4e8f7de](https://github.com/humlab/penelope/commit/4e8f7deddc16c35cb167fcd1c4425d6bbdf4316e))
+* update humlab-penelope version from 0.8.3 to 0.8.4 in pyproject.toml ([444d8cb](https://github.com/humlab/penelope/commit/444d8cb9a658a345c6b4f8c164a297b9ebc38586))
+* update humlab-penelope version from 0.8.3 to 0.8.4 in uv.lock ([cbcf717](https://github.com/humlab/penelope/commit/cbcf717054d637ed2941b43cba33419c695c291c))
+
 ## [0.8.3](https://github.com/humlab/penelope/compare/v0.8.2...v0.8.3) (2026-10-07)
 
 ### 🐛 Bug Fixes
