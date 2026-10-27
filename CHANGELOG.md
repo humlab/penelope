@@ -4,6 +4,13 @@
 > All notable changes to this project will be documented in this file
 
 
+## [0.8.7](https://github.com/humlab/penelope/compare/v0.8.6...v0.8.7) (2026-10-27)
+
+### 🐛 Bug Fixes
+
+* update humlab-penelope version from 0.8.5 to 0.8.6 ([e17da4b](https://github.com/humlab/penelope/commit/e17da4b11b602977e34fd4dd3b0e9085c34f0915))
+* update humlab-penelope version from 0.8.6 to 0.8.7 ([16cf8f6](https://github.com/humlab/penelope/commit/16cf8f6c35caf28eb2f17737d57b59a0879eba94))
+
 ## [0.8.6](https://github.com/humlab/penelope/compare/v0.8.5...v0.8.6) (2026-10-27)
 
 ### 🐛 Bug Fixes
