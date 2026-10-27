@@ -21,7 +21,7 @@ watch:
 ready: tools clean tidy full-test lint build
 
 build: requirements.txt
-	@uv build
+	@uv build --clear
 
 publish:
 	@uv publish
