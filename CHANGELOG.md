@@ -4,6 +4,13 @@
 > All notable changes to this project will be documented in this file
 
 
+## [0.8.8](https://github.com/humlab/penelope/compare/v0.8.7...v0.8.8) (2026-10-27)
+
+### 🐛 Bug Fixes
+
+* downgrade bokeh version to 3.9.2 and update dependencies ([9af1028](https://github.com/humlab/penelope/commit/9af10288d6ab9cb8cab453120d8f5d9384acb31c))
+* pin bokeh version to 3.9.2 in dependencies ([0cf671f](https://github.com/humlab/penelope/commit/0cf671f002eeedca377c161728e5eae4907c74a2))
+
 ## [0.8.7](https://github.com/humlab/penelope/compare/v0.8.6...v0.8.7) (2026-10-27)
 
 ### 🐛 Bug Fixes
