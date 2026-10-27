@@ -4,6 +4,12 @@
 > All notable changes to this project will be documented in this file
 
 
+## [0.8.11](https://github.com/humlab/penelope/compare/v0.8.10...v0.8.11) (2026-10-27)
+
+### 🐛 Bug Fixes
+
+* update build command to include --clear option ([149bdce](https://github.com/humlab/penelope/commit/149bdce174053a5ce6537371cd41a6d61b822eb8))
+
 ## [0.8.10](https://github.com/humlab/penelope/compare/v0.8.9...v0.8.10) (2026-10-27)
 
 ### 🐛 Bug Fixes
