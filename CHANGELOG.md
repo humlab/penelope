@@ -4,6 +4,12 @@
 > All notable changes to this project will be documented in this file
 
 
+## [0.8.9](https://github.com/humlab/penelope/compare/v0.8.8...v0.8.9) (2026-10-27)
+
+### 🐛 Bug Fixes
+
+* downgrade bokeh version to 3.9.2 and add contourpy as a dependency ([e74246b](https://github.com/humlab/penelope/commit/e74246ba6855a2fcd0d96cbf3ca5fc7896d83bcc))
+
 ## [0.8.8](https://github.com/humlab/penelope/compare/v0.8.7...v0.8.8) (2026-10-27)
 
 ### 🐛 Bug Fixes
