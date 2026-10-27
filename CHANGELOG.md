@@ -4,6 +4,13 @@
 > All notable changes to this project will be documented in this file
 
 
+## [0.8.6](https://github.com/humlab/penelope/compare/v0.8.5...v0.8.6) (2026-10-27)
+
+### 🐛 Bug Fixes
+
+* add size parameter to circle in plot_topic_word_distribution function ([ce8d1b2](https://github.com/humlab/penelope/commit/ce8d1b2e1d1747eb99e1e5e1bab742b96000efd6))
+* update activity bar and status bar colors in VSCode settings ([bf0de79](https://github.com/humlab/penelope/commit/bf0de79b43337057b72422a1936266fe78b9cc77))
+
 ## [0.8.5](https://github.com/humlab/penelope/compare/v0.8.4...v0.8.5) (2026-10-07)
 
 ### 🐛 Bug Fixes
