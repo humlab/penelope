@@ -22,7 +22,7 @@ def plot_topic_word_distribution(tokens: pd.DataFrame, **args):
     p = bokeh.plotting.figure(toolbar_location="right", sizing_mode='scale_width', **args)
     p.left[0].formatter.use_scientific = False  # pylint: disable=unsubscriptable-object
 
-    _ = p.circle(x='xs', y='ys', source=source)
+    _ = p.circle(x='xs', y='ys', size=4, source=source)
 
     label_style = dict(level='overlay', text_font_size='8pt', angle=np.pi / 6.0)
 
