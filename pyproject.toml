@@ -14,7 +14,7 @@ license = "Apache-2.0"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "bokeh",
+    "bokeh==3.9.2",
     "ftfy",
     "ipycytoscape",
     "ipydatagrid>=1.1.8,<2.0.0",
